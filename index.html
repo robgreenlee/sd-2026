@@ -1,0 +1,862 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lamorinda B · SDCC 14U Boys A Scenario Explorer</title>
+<meta name="description" content="Interactive what-if explorer for Lamorinda B at the 2026 San Diego County Cup (14U Boys A). Click winners and see Lamorinda's path through the bracket and final placement.">
+<meta property="og:title" content="Lamorinda B · SDCC Scenario Explorer">
+<meta property="og:description" content="Click winners, see Lamorinda's path through the tournament. Share scenarios via link.">
+<meta property="og:type" content="website">
+<style>
+:root { color-scheme: light; }
+*, *::before, *::after { box-sizing: border-box; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  background: #f8fafc;
+  color: #0f172a;
+  margin: 0;
+  padding: 20px;
+  font-size: 14px;
+  line-height: 1.5;
+  max-width: 1400px;
+  margin-left: auto;
+  margin-right: auto;
+}
+h1 { font-size: 24px; margin: 0; font-weight: 700; color: #0f172a; letter-spacing: -0.01em; }
+h2 {
+  font-size: 14px;
+  margin: 28px 0 12px;
+  color: #0f172a;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding-bottom: 8px;
+  border-bottom: 2px solid #e2e8f0;
+}
+h3 {
+  font-size: 12px;
+  margin: 18px 0 8px;
+  color: #64748b;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+a { color: #047857; text-decoration: none; }
+a:hover { text-decoration: underline; }
+.subtitle { color: #64748b; font-size: 13px; margin: 4px 0 0; }
+.hdr { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; gap: 16px; flex-wrap: wrap; }
+.hdr-actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+
+.btn {
+  background: white;
+  border: 1px solid #cbd5e1;
+  color: #475569;
+  padding: 7px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+  font-family: inherit;
+  white-space: nowrap;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.12s;
+}
+.btn:hover { background: #f1f5f9; border-color: #94a3b8; text-decoration: none; }
+.btn.primary { background: #047857; color: white; border-color: #047857; }
+.btn.primary:hover { background: #065f46; border-color: #065f46; }
+.btn.copied { background: #10b981; color: white; border-color: #10b981; }
+
+.pool-section { margin-bottom: 8px; }
+.games-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+  gap: 10px;
+}
+
+.game-card {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 10px 12px;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.game-card.is-lam { border-color: #10b981; background: linear-gradient(180deg, #f0fdf4 0%, #ffffff 50%); }
+.game-card.is-complete { box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+
+.game-meta {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: #64748b;
+  margin-bottom: 8px;
+  font-variant-numeric: tabular-nums;
+}
+.game-id { font-weight: 700; color: #334155; }
+
+.team-row {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 8px;
+  align-items: stretch;
+}
+.team-btn {
+  background: white;
+  border: 1.5px solid #cbd5e1;
+  border-radius: 6px;
+  padding: 8px 6px;
+  font-size: 13px;
+  cursor: pointer;
+  text-align: center;
+  font-weight: 500;
+  color: #1e293b;
+  transition: all 0.12s;
+  font-family: inherit;
+  line-height: 1.3;
+}
+.team-btn:hover:not(:disabled) { border-color: #10b981; background: #f0fdf4; }
+.team-btn.winner { background: #10b981; color: white; border-color: #10b981; font-weight: 600; }
+.team-btn.loser { background: #f8fafc; color: #94a3b8; border-color: #e2e8f0; }
+.team-btn.is-lam { color: #047857; font-weight: 600; }
+.team-btn.winner.is-lam { color: white; background: #047857; border-color: #047857; }
+.vs-label { font-size: 10px; color: #94a3b8; font-weight: 700; text-transform: uppercase; align-self: center; }
+
+.next-hint {
+  margin-top: 6px;
+  font-size: 11px;
+  color: #64748b;
+  font-style: italic;
+}
+
+.standings-box {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 6px 14px;
+  margin-top: 10px;
+}
+.standing-row {
+  display: grid;
+  grid-template-columns: 44px 1fr auto;
+  gap: 10px;
+  align-items: center;
+  padding: 6px 0;
+  border-bottom: 1px solid #f1f5f9;
+}
+.standing-row:last-child { border-bottom: none; }
+.standing-row.lam { background: #f0fdf4; padding: 6px 8px; border-radius: 4px; margin: 3px -8px; border-bottom: none; }
+.pos-badge {
+  font-weight: 700;
+  font-size: 11px;
+  text-align: center;
+  padding: 3px 0;
+  border-radius: 4px;
+  letter-spacing: 0.02em;
+}
+.pos-badge.p1 { color: #059669; background: #d1fae5; }
+.pos-badge.p2 { color: #1d4ed8; background: #dbeafe; }
+.pos-badge.p3 { color: #64748b; background: #f1f5f9; }
+.team-name { font-weight: 500; }
+.team-name.lam { color: #047857; font-weight: 700; }
+.record-text { font-variant-numeric: tabular-nums; color: #64748b; font-size: 12px; font-weight: 500; }
+.standings-note { font-size: 11px; color: #92400e; padding: 4px 0; font-style: italic; }
+
+.tiebreaker-box {
+  background: #fef9c3;
+  border: 1px solid #facc15;
+  border-radius: 8px;
+  padding: 10px 14px;
+  margin: 10px 0;
+}
+.tb-title { color: #713f12; font-weight: 700; font-size: 13px; }
+.tb-desc { margin: 4px 0 10px; color: #854d0e; font-size: 12px; }
+.tb-pickers { display: flex; flex-direction: column; gap: 6px; }
+.tb-row { display: grid; grid-template-columns: 80px 1fr; gap: 8px; align-items: center; }
+.tb-row label { font-size: 12px; font-weight: 600; color: #713f12; }
+.tb-row select {
+  padding: 5px 8px;
+  font-size: 13px;
+  border: 1px solid #ca8a04;
+  border-radius: 4px;
+  background: white;
+  font-family: inherit;
+  color: #1e293b;
+}
+
+.path-callout {
+  background: #ecfdf5;
+  border-left: 4px solid #10b981;
+  padding: 10px 14px;
+  border-radius: 0 8px 8px 0;
+  margin: 10px 0;
+  font-size: 13px;
+  color: #064e3b;
+}
+.path-callout strong { color: #047857; }
+
+.placement-hero {
+  background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+  color: white;
+  padding: 20px 24px;
+  border-radius: 10px;
+  margin: 16px 0;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);
+}
+.placement-hero.silver { background: linear-gradient(135deg, #1d4ed8 0%, #3b82f6 100%); box-shadow: 0 4px 12px rgba(59,130,246,0.25); }
+.placement-hero.mid { background: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%); box-shadow: 0 4px 12px rgba(168,85,247,0.2); }
+.placement-hero.low { background: linear-gradient(135deg, #64748b 0%, #94a3b8 100%); box-shadow: none; }
+.placement-hero .hero-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; opacity: 0.9; font-weight: 600; }
+.placement-hero .hero-place { font-size: 40px; font-weight: 800; margin: 6px 0 2px; line-height: 1; letter-spacing: -0.02em; }
+.placement-hero .hero-desc { font-size: 13px; opacity: 0.95; }
+
+.empty-state {
+  color: #94a3b8;
+  padding: 16px;
+  text-align: center;
+  font-size: 13px;
+  background: white;
+  border: 1px dashed #cbd5e1;
+  border-radius: 8px;
+}
+
+footer {
+  margin-top: 32px;
+  padding-top: 16px;
+  border-top: 1px solid #e2e8f0;
+  font-size: 12px;
+  color: #94a3b8;
+  text-align: center;
+}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<footer>
+  Built for the 2026 San Diego County Cup · 14U Boys A · Lamorinda B
+</footer>
+
+<script>
+// ==================== CONSTANTS ====================
+const LAM = 'Lamorinda B';
+const SCHEDULE_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT9gy5sbeJYRi2PfYvCmgieSjGeOCVhbAkaU0qedF5YItn4Nyrqf670DpcfbhlLsDJ5nu-iaKGqp1Md/pubhtml?urp=gmail_link#gid=549792273';
+
+const POOLS = {
+  G: { label: 'Pool G', teams: ['Lamorinda B', 'Tsunami Black', 'OCWPC B'], games: [11, 14, 58] },
+  B: { label: 'Pool B', teams: ['Santa Cruz', 'ECA A', 'Shore Aquatics'], games: [2, 6, 57] },
+  J: { label: 'Pool J', teams: ['SD Shores Gold', 'Carmel WPC', 'Pasadena'], games: [15, 19, 59] },
+};
+
+const GAMES = {
+  11: { pool: 'G', time: 'Fri 6:00 PM', loc: 'West Hills', home: 'Tsunami Black', away: 'OCWPC B' },
+  14: { pool: 'G', time: 'Fri 8:15 PM', loc: 'West Hills', home: 'Lamorinda B', away: 'Tsunami Black' },
+  58: { pool: 'G', time: 'Sat 8:45 AM', loc: 'Tierrasanta', home: 'Lamorinda B', away: 'OCWPC B' },
+  2:  { pool: 'B', time: 'Fri 3:45 PM', loc: 'Mesa',        home: 'ECA A', away: 'Shore Aquatics' },
+  6:  { pool: 'B', time: 'Fri 6:45 PM', loc: 'Mesa',        home: 'Santa Cruz', away: 'Shore Aquatics' },
+  57: { pool: 'B', time: 'Sat 8:00 AM', loc: 'Tierrasanta', home: 'Santa Cruz', away: 'ECA A' },
+  15: { pool: 'J', time: 'Fri 3:00 PM', loc: 'Tierrasanta', home: 'Carmel WPC', away: 'Pasadena' },
+  19: { pool: 'J', time: 'Fri 6:00 PM', loc: 'Tierrasanta', home: 'SD Shores Gold', away: 'Pasadena' },
+  59: { pool: 'J', time: 'Sat 9:30 AM', loc: 'Tierrasanta', home: 'SD Shores Gold', away: 'Carmel WPC' },
+};
+
+const SAT_CROSSOVER = {
+  1: {
+    poolCode: 'O', label: 'Pool O - Championship Track',
+    slots: { O1: ['B', 0], O2: ['G', 0], O3: ['J', 0] },
+    games: [
+      { num: 63, time: 'Sat 12:30 PM', a: 'O1', b: 'O2' },
+      { num: 67, time: 'Sat 3:30 PM',  a: 'O1', b: 'O3' },
+      { num: 71, time: 'Sat 6:30 PM',  a: 'O2', b: 'O3' },
+    ],
+  },
+  2: {
+    poolCode: 'S', label: 'Pool S - 5\u20138 Track',
+    slots: { S1: ['B', 1], S2: ['G', 1], S3: ['J', 1] },
+    games: [
+      { num: 62, time: 'Sat 11:45 AM', a: 'S1', b: 'S2' },
+      { num: 66, time: 'Sat 2:45 PM',  a: 'S1', b: 'S3' },
+      { num: 70, time: 'Sat 5:45 PM',  a: 'S2', b: 'S3' },
+    ],
+  },
+  3: {
+    poolCode: 'W', label: 'Pool W - 9\u201312 Track',
+    slots: { W1: ['B', 2], W2: ['G', 2], W3: ['J', 2] },
+    games: [
+      { num: 61, time: 'Sat 11:00 AM', a: 'W1', b: 'W2' },
+      { num: 65, time: 'Sat 2:00 PM',  a: 'W1', b: 'W3' },
+      { num: 69, time: 'Sat 5:00 PM',  a: 'W2', b: 'W3' },
+    ],
+  },
+};
+
+const SUNDAY_PATHS = {
+  'O-1': {
+    bracket: 'Championship bracket (places 1\u20134)',
+    games: [
+      { num: 96, time: 'Sun 8:45 AM', loc: 'Southwestern College 2', opp: '1st of Pool P', role: 'Semifinal', winTo: 97, loseTo: 98 },
+      { num: 97, time: 'Sun 1:20 PM', loc: 'Southwestern College 1', opp: 'Winner of game 95', role: 'Championship final', terminal: true, winPlace: 1, losePlace: 2 },
+      { num: 98, time: 'Sun 1:35 PM', loc: 'Southwestern College 2', opp: 'Loser of game 95', role: '3rd-place game', terminal: true, winPlace: 3, losePlace: 4 },
+    ],
+  },
+  'O-2': {
+    bracket: '5\u20138 place bracket',
+    games: [
+      { num: 89, time: 'Sun 8:45 AM', loc: 'Tierrasanta', opp: '2nd of Pool P', role: '5\u20138 semi', winTo: 93, loseTo: 94 },
+      { num: 93, time: 'Sun 11:45 AM', loc: 'Tierrasanta', opp: 'Winner of game 88', role: '5th-place game', terminal: true, winPlace: 5, losePlace: 6 },
+      { num: 94, time: 'Sun 12:30 PM', loc: 'Tierrasanta', opp: 'Loser of game 88', role: '7th-place game', terminal: true, winPlace: 7, losePlace: 8 },
+    ],
+  },
+  'O-3': {
+    bracket: '9\u201312 place bracket',
+    games: [
+      { num: 74, time: 'Sun 8:45 AM', loc: 'Mesa College', opp: '3rd of Pool P', role: '9\u201312 semi', winTo: 79, loseTo: 80 },
+      { num: 79, time: 'Sun 12:30 PM', loc: 'Mesa College', opp: 'Winner of game 73', role: '9th-place game', terminal: true, winPlace: 9, losePlace: 10 },
+      { num: 80, time: 'Sun 1:15 PM', loc: 'Mesa College', opp: 'Loser of game 73', role: '11th-place game', terminal: true, winPlace: 11, losePlace: 12 },
+    ],
+  },
+  'S-1': {
+    bracket: '13\u201316 place bracket',
+    games: [
+      { num: 82, time: 'Sun 8:45 AM', loc: 'West Hills HS', opp: '1st of Pool T', role: '13\u201316 semi', winTo: 86, loseTo: 87 },
+      { num: 86, time: 'Sun 11:45 AM', loc: 'West Hills HS', opp: 'Winner of game 81', role: '13th-place game', terminal: true, winPlace: 13, losePlace: 14 },
+      { num: 87, time: 'Sun 12:30 PM', loc: 'West Hills HS', opp: 'Loser of game 81', role: '15th-place game', terminal: true, winPlace: 15, losePlace: 16 },
+    ],
+  },
+  'S-2': { bracket: 'Consolation crossover', games: [{ num: 84, time: 'Sun 10:15 AM', loc: 'West Hills HS', opp: '2nd of Pool T', role: 'Crossover', terminal: true, noPlacement: true }] },
+  'S-3': { bracket: 'Consolation crossover', games: [{ num: 92, time: 'Sun 11:00 AM', loc: 'Tierrasanta', opp: '3rd of Pool T', role: 'Crossover', terminal: true, noPlacement: true }] },
+  'W-1': { bracket: 'Consolation crossover', games: [{ num: 78, time: 'Sun 11:45 AM', loc: 'Mesa College', opp: '1st of Pool X', role: 'Crossover', terminal: true, noPlacement: true }] },
+  'W-2': { bracket: 'Consolation crossover', games: [{ num: 76, time: 'Sun 10:15 AM', loc: 'Mesa College', opp: '2nd of Pool X', role: 'Crossover', terminal: true, noPlacement: true }] },
+  'W-3': { bracket: 'Consolation crossover', games: [{ num: 91, time: 'Sun 10:15 AM', loc: 'Tierrasanta', opp: '3rd of Pool X', role: 'Crossover', terminal: true, noPlacement: true }] },
+};
+
+// ==================== STATE ====================
+const state = {
+  poolResults: {},
+  satResults: {},
+  sunResults: {},
+  tiebreakers: {},
+};
+
+function resetAll() {
+  state.poolResults = {};
+  state.satResults = {};
+  state.sunResults = {};
+  state.tiebreakers = {};
+  render();
+}
+
+function clearDownstreamFromPool() {
+  state.satResults = {};
+  state.sunResults = {};
+  Object.keys(state.tiebreakers).forEach(k => { if (k.startsWith('SAT_')) delete state.tiebreakers[k]; });
+}
+function clearDownstreamFromSat() {
+  state.sunResults = {};
+}
+
+// ==================== URL STATE ====================
+function encodeState() {
+  const minimal = {
+    p: state.poolResults,
+    s: state.satResults,
+    u: state.sunResults,
+    t: state.tiebreakers,
+  };
+  const empty = !Object.keys(minimal.p).length && !Object.keys(minimal.s).length
+    && !Object.keys(minimal.u).length && !Object.keys(minimal.t).length;
+  if (empty) return '';
+  try {
+    const json = JSON.stringify(minimal);
+    return btoa(unescape(encodeURIComponent(json)))
+      .replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
+  } catch (e) { return ''; }
+}
+
+function decodeStateFromHash() {
+  const m = location.hash.match(/[#&]s=([^&]+)/);
+  if (!m) return false;
+  try {
+    let b64 = m[1].replace(/-/g, '+').replace(/_/g, '/');
+    while (b64.length % 4) b64 += '=';
+    const obj = JSON.parse(decodeURIComponent(escape(atob(b64))));
+    state.poolResults = obj.p || {};
+    state.satResults = obj.s || {};
+    state.sunResults = obj.u || {};
+    state.tiebreakers = obj.t || {};
+    return true;
+  } catch (e) { return false; }
+}
+
+let _urlUpdateTimer = null;
+function updateURL() {
+  if (_urlUpdateTimer) clearTimeout(_urlUpdateTimer);
+  _urlUpdateTimer = setTimeout(() => {
+    const enc = encodeState();
+    const newHash = enc ? '#s=' + enc : '';
+    const newUrl = location.pathname + location.search + newHash;
+    history.replaceState(null, '', newUrl);
+  }, 100);
+}
+
+function copyShareLink(btn) {
+  const url = location.origin + location.pathname + location.search + (encodeState() ? '#s=' + encodeState() : '');
+  const fallback = () => {
+    const ta = document.createElement('textarea');
+    ta.value = url; document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); } catch (e) {}
+    document.body.removeChild(ta);
+  };
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(url).catch(fallback);
+  } else { fallback(); }
+  btn.classList.add('copied');
+  btn.textContent = 'Copied!';
+  setTimeout(() => { btn.classList.remove('copied'); btn.textContent = 'Copy share link'; }, 1500);
+}
+
+// ==================== LOGIC ====================
+function getPoolStanding(poolCode) {
+  const pool = POOLS[poolCode];
+  const wins = {};
+  pool.teams.forEach(t => wins[t] = 0);
+  let complete = true;
+  pool.games.forEach(g => {
+    const w = state.poolResults[g];
+    if (!w) complete = false;
+    else wins[w]++;
+  });
+  if (!complete) return { ready: false, wins };
+  const sorted = [...pool.teams].sort((a, b) => wins[b] - wins[a]);
+  const allTied = sorted.every(t => wins[t] === 1);
+  if (allTied) {
+    const tb = state.tiebreakers[poolCode];
+    if (!tb || tb.length !== 3 || tb.some(x => !x) || new Set(tb).size !== 3) {
+      return { ready: false, needsTiebreaker: true, tbKey: poolCode, wins, teams: pool.teams };
+    }
+    return { ready: true, order: tb, wins, tied: true };
+  }
+  return { ready: true, order: sorted, wins, tied: false };
+}
+
+function getLamPoolFinish() {
+  const s = getPoolStanding('G');
+  if (!s.ready) return null;
+  return s.order.indexOf(LAM) + 1;
+}
+
+function getSatCrossover() {
+  const finish = getLamPoolFinish();
+  return finish ? SAT_CROSSOVER[finish] : null;
+}
+
+function resolveSlot(slot) {
+  const cross = getSatCrossover();
+  if (!cross) return null;
+  const spec = cross.slots[slot];
+  if (!spec) return null;
+  const [poolCode, seedIdx] = spec;
+  const s = getPoolStanding(poolCode);
+  if (!s.ready) return null;
+  return s.order[seedIdx];
+}
+
+function getSatStanding() {
+  const cross = getSatCrossover();
+  if (!cross) return { ready: false };
+  const teamBySlot = {};
+  for (const slot of Object.keys(cross.slots)) {
+    const t = resolveSlot(slot);
+    if (!t) return { ready: false };
+    teamBySlot[slot] = t;
+  }
+  const teams = Object.values(teamBySlot);
+  const wins = {};
+  teams.forEach(t => wins[t] = 0);
+  let complete = true;
+  for (const g of cross.games) {
+    const w = state.satResults[g.num];
+    if (!w) complete = false;
+    else wins[w]++;
+  }
+  if (!complete) return { ready: false, wins, teamBySlot };
+  const sorted = [...teams].sort((a, b) => wins[b] - wins[a]);
+  const allTied = sorted.every(t => wins[t] === 1);
+  if (allTied) {
+    const tbKey = 'SAT_' + cross.poolCode;
+    const tb = state.tiebreakers[tbKey];
+    if (!tb || tb.length !== 3 || tb.some(x => !x) || new Set(tb).size !== 3) {
+      return { ready: false, needsTiebreaker: true, tbKey, teams, wins, teamBySlot };
+    }
+    return { ready: true, order: tb, wins, tied: true, teamBySlot };
+  }
+  return { ready: true, order: sorted, wins, tied: false, teamBySlot };
+}
+
+function getLamSatFinish() {
+  const s = getSatStanding();
+  if (!s.ready) return null;
+  return s.order.indexOf(LAM) + 1;
+}
+
+function getSundayPath() {
+  const cross = getSatCrossover();
+  const finish = getLamSatFinish();
+  if (!cross || !finish) return null;
+  return SUNDAY_PATHS[cross.poolCode + '-' + finish];
+}
+
+function getSundayPathTrace() {
+  const path = getSundayPath();
+  if (!path) return null;
+  const trace = [];
+  let currentIdx = 0;
+  while (currentIdx < path.games.length) {
+    const g = path.games[currentIdx];
+    trace.push(g);
+    const result = state.sunResults[g.num];
+    if (!result) break;
+    if (g.terminal) break;
+    const nextNum = result === 'w' ? g.winTo : g.loseTo;
+    const nextIdx = path.games.findIndex(x => x.num === nextNum);
+    if (nextIdx < 0) break;
+    currentIdx = nextIdx;
+  }
+  return { path, trace };
+}
+
+function getFinalPlacement() {
+  const t = getSundayPathTrace();
+  if (!t) return null;
+  const last = t.trace[t.trace.length - 1];
+  const result = state.sunResults[last.num];
+  if (!result) return { pending: true };
+  if (!last.terminal) return { pending: true };
+  if (last.noPlacement) return { done: true, noPlacement: true };
+  return { done: true, place: result === 'w' ? last.winPlace : last.losePlace };
+}
+
+// ==================== DOM HELPERS ====================
+function el(tag, props, ...children) {
+  const e = document.createElement(tag);
+  if (props) {
+    for (const k in props) {
+      if (props[k] == null || props[k] === false) continue;
+      if (k === 'style' && typeof props[k] === 'object') Object.assign(e.style, props[k]);
+      else if (k.startsWith('on')) e.addEventListener(k.slice(2).toLowerCase(), props[k]);
+      else if (k === 'class' || k === 'className') e.className = props[k];
+      else if (k === 'html') e.innerHTML = props[k];
+      else if (k === 'value') e.value = props[k];
+      else if (k === 'selected') e.selected = props[k];
+      else e.setAttribute(k, props[k]);
+    }
+  }
+  for (const c of children) {
+    if (c == null || c === false) continue;
+    if (Array.isArray(c)) c.forEach(cc => cc != null && cc !== false && e.appendChild(typeof cc === 'string' || typeof cc === 'number' ? document.createTextNode(String(cc)) : cc));
+    else if (typeof c === 'string' || typeof c === 'number') e.appendChild(document.createTextNode(String(c)));
+    else e.appendChild(c);
+  }
+  return e;
+}
+
+// ==================== RENDER PIECES ====================
+function renderTeamButton(team, winner, onClick) {
+  const isLam = team === LAM;
+  const cls = 'team-btn'
+    + (isLam ? ' is-lam' : '')
+    + (winner === team ? ' winner' : '')
+    + (winner && winner !== team ? ' loser' : '');
+  return el('button', { class: cls, onClick: () => onClick(team) }, team);
+}
+
+function renderMatchupCard(opts) {
+  const isLam = opts.home === LAM || opts.away === LAM;
+  const complete = !!opts.winner;
+  return el('div', { class: 'game-card' + (isLam ? ' is-lam' : '') + (complete ? ' is-complete' : '') },
+    el('div', { class: 'game-meta' },
+      el('span', { class: 'game-id' }, '#' + opts.num),
+      el('span', {}, opts.time + ' \u00b7 ' + opts.loc),
+    ),
+    el('div', { class: 'team-row' },
+      renderTeamButton(opts.home, opts.winner, opts.onClick),
+      el('span', { class: 'vs-label' }, 'vs'),
+      renderTeamButton(opts.away, opts.winner, opts.onClick),
+    ),
+    opts.extra || null,
+  );
+}
+
+function renderStandingsBox(standing) {
+  const rows = standing.order.map((team, i) => {
+    const pos = i + 1;
+    const wins = standing.wins[team] != null ? standing.wins[team] : 0;
+    const losses = 2 - wins;
+    return el('div', { class: 'standing-row' + (team === LAM ? ' lam' : '') },
+      el('span', { class: 'pos-badge p' + pos }, ['1st','2nd','3rd'][pos-1]),
+      el('span', { class: 'team-name' + (team === LAM ? ' lam' : '') }, team),
+      el('span', { class: 'record-text' }, wins + '\u2013' + losses),
+    );
+  });
+  const note = standing.tied ? el('div', { class: 'standings-note' }, 'Three-way tie at 1\u20131 \u00b7 seeding set manually above') : null;
+  return el('div', { class: 'standings-box' }, ...rows, note);
+}
+
+function renderTiebreaker(tbKey, teams) {
+  const current = state.tiebreakers[tbKey] || [null, null, null];
+  const setSeed = (pos, team) => {
+    const next = [...(state.tiebreakers[tbKey] || [null, null, null])];
+    for (let i = 0; i < 3; i++) if (next[i] === team) next[i] = null;
+    next[pos] = team || null;
+    state.tiebreakers[tbKey] = next;
+    if (tbKey === 'G') clearDownstreamFromPool();
+    else if (tbKey.startsWith('SAT_')) clearDownstreamFromSat();
+    render();
+  };
+  const makeSelect = (pos) => {
+    const opts = [el('option', { value: '' }, '\u2014 pick team \u2014')];
+    teams.forEach(t => {
+      const o = el('option', { value: t }, t);
+      if (current[pos] === t) o.selected = true;
+      opts.push(o);
+    });
+    return el('select', { onChange: (e) => setSeed(pos, e.target.value) }, ...opts);
+  };
+  return el('div', { class: 'tiebreaker-box' },
+    el('div', { class: 'tb-title' }, 'Three-way tie \u2014 all teams 1\u20131'),
+    el('p', { class: 'tb-desc' }, 'The tournament breaks this by goal differential. Pick the seeding manually:'),
+    el('div', { class: 'tb-pickers' },
+      el('div', { class: 'tb-row' }, el('label', {}, '1st seed'), makeSelect(0)),
+      el('div', { class: 'tb-row' }, el('label', {}, '2nd seed'), makeSelect(1)),
+      el('div', { class: 'tb-row' }, el('label', {}, '3rd seed'), makeSelect(2)),
+    ),
+  );
+}
+
+function renderPoolPlaySection() {
+  const container = el('div', {});
+  ['G', 'B', 'J'].forEach(poolCode => {
+    const pool = POOLS[poolCode];
+    const standing = getPoolStanding(poolCode);
+    const section = el('div', { class: 'pool-section' });
+    section.appendChild(el('h3', {}, pool.label + ' \u00b7 ' + pool.teams.join(' \u00b7 ')));
+    const grid = el('div', { class: 'games-grid' });
+    pool.games.forEach(gNum => {
+      const g = GAMES[gNum];
+      grid.appendChild(renderMatchupCard({
+        num: gNum,
+        time: g.time,
+        loc: g.loc,
+        home: g.home,
+        away: g.away,
+        winner: state.poolResults[gNum],
+        onClick: (team) => {
+          state.poolResults[gNum] = team;
+          delete state.tiebreakers[poolCode];
+          clearDownstreamFromPool();
+          render();
+        },
+      }));
+    });
+    section.appendChild(grid);
+    if (standing.needsTiebreaker) {
+      section.appendChild(renderTiebreaker(standing.tbKey, standing.teams));
+    } else if (standing.ready) {
+      section.appendChild(renderStandingsBox(standing));
+    }
+    container.appendChild(section);
+  });
+  return container;
+}
+
+function renderSaturdaySection() {
+  const gStanding = getPoolStanding('G');
+  const bStanding = getPoolStanding('B');
+  const jStanding = getPoolStanding('J');
+  if (!gStanding.ready) {
+    return el('div', { class: 'empty-state' }, 'Complete Pool G games (including any tiebreaker) to see the Saturday crossover.');
+  }
+  if (!bStanding.ready || !jStanding.ready) {
+    const finish = getLamPoolFinish();
+    const cross = SAT_CROSSOVER[finish];
+    return el('div', {},
+      el('div', { class: 'path-callout' },
+        'Lamorinda B finishes ', el('strong', {}, ['1st','2nd','3rd'][finish-1] + ' in Pool G'),
+        ' \u2192 heading to ', el('strong', {}, cross.label), '.',
+      ),
+      el('div', { class: 'empty-state', style: { marginTop: '10px' } }, 'Finish Pool B and Pool J games to resolve the crossover opponents.'),
+    );
+  }
+  const cross = getSatCrossover();
+  const finish = getLamPoolFinish();
+  const teamBySlot = {};
+  for (const slot of Object.keys(cross.slots)) teamBySlot[slot] = resolveSlot(slot);
+
+  const container = el('div', {});
+  container.appendChild(el('div', { class: 'path-callout' },
+    'Lamorinda B finishes ', el('strong', {}, ['1st','2nd','3rd'][finish-1] + ' in Pool G'),
+    ' \u2192 enters ', el('strong', {}, cross.label), '. All games at Tierrasanta.',
+  ));
+  container.appendChild(el('h3', {}, cross.poolCode + ' games \u00b7 ' + Object.values(teamBySlot).join(' \u00b7 ')));
+
+  const grid = el('div', { class: 'games-grid' });
+  cross.games.forEach(g => {
+    const home = teamBySlot[g.a];
+    const away = teamBySlot[g.b];
+    grid.appendChild(renderMatchupCard({
+      num: g.num,
+      time: g.time,
+      loc: 'Tierrasanta',
+      home, away,
+      winner: state.satResults[g.num],
+      onClick: (team) => {
+        state.satResults[g.num] = team;
+        delete state.tiebreakers['SAT_' + cross.poolCode];
+        clearDownstreamFromSat();
+        render();
+      },
+    }));
+  });
+  container.appendChild(grid);
+
+  const satStanding = getSatStanding();
+  if (satStanding.needsTiebreaker) {
+    container.appendChild(renderTiebreaker(satStanding.tbKey, Object.values(teamBySlot)));
+  } else if (satStanding.ready) {
+    container.appendChild(renderStandingsBox(satStanding));
+  }
+  return container;
+}
+
+function renderSundaySection() {
+  const satStanding = getSatStanding();
+  if (!satStanding.ready) {
+    return el('div', { class: 'empty-state' }, 'Complete Saturday crossover games to see the Sunday bracket path.');
+  }
+  const satFinish = getLamSatFinish();
+  const cross = getSatCrossover();
+  const path = getSundayPath();
+  const trace = getSundayPathTrace().trace;
+
+  const container = el('div', {});
+  container.appendChild(el('div', { class: 'path-callout' },
+    'Lamorinda B finishes ', el('strong', {}, ['1st','2nd','3rd'][satFinish-1] + ' in Pool ' + cross.poolCode),
+    ' \u2192 heading to ', el('strong', {}, path.bracket), '.',
+  ));
+  container.appendChild(el('h3', {}, 'Sunday bracket games'));
+
+  const grid = el('div', { class: 'games-grid' });
+  trace.forEach(g => {
+    const result = state.sunResults[g.num];
+    const winCls = 'team-btn is-lam' + (result === 'w' ? ' winner' : '') + (result === 'l' ? ' loser' : '');
+    const loseCls = 'team-btn' + (result === 'l' ? ' winner' : '') + (result === 'w' ? ' loser' : '');
+    let loseLabel = 'Lamorinda LOSES';
+    let winLabel = 'Lamorinda WINS';
+    if (g.terminal && !g.noPlacement) {
+      const ord = (n) => n === 1 ? 'st' : n === 2 ? 'nd' : n === 3 ? 'rd' : 'th';
+      winLabel = 'WIN \u2192 ' + g.winPlace + ord(g.winPlace);
+      loseLabel = 'LOSE \u2192 ' + g.losePlace + ord(g.losePlace);
+    }
+    const extra = el('div', { class: 'next-hint' }, g.role + ' \u00b7 opponent: ' + g.opp);
+    const advance = (res) => {
+      state.sunResults[g.num] = res;
+      const newTrace = [g];
+      let cur = g;
+      while (!cur.terminal) {
+        const r = state.sunResults[cur.num];
+        if (!r) break;
+        const nn = r === 'w' ? cur.winTo : cur.loseTo;
+        const next = path.games.find(x => x.num === nn);
+        if (!next) break;
+        newTrace.push(next);
+        cur = next;
+      }
+      const keepNums = new Set(newTrace.map(x => x.num));
+      Object.keys(state.sunResults).forEach(k => { if (!keepNums.has(parseInt(k))) delete state.sunResults[k]; });
+      render();
+    };
+    grid.appendChild(el('div', { class: 'game-card is-lam' + (result ? ' is-complete' : '') },
+      el('div', { class: 'game-meta' },
+        el('span', { class: 'game-id' }, '#' + g.num),
+        el('span', {}, g.time + ' \u00b7 ' + g.loc),
+      ),
+      el('div', { class: 'team-row' },
+        el('button', { class: winCls, onClick: () => advance('w') }, winLabel),
+        el('span', { class: 'vs-label' }, 'vs'),
+        el('button', { class: loseCls, onClick: () => advance('l') }, loseLabel),
+      ),
+      extra,
+    ));
+  });
+  container.appendChild(grid);
+  return container;
+}
+
+function renderFinalPlacement() {
+  const fp = getFinalPlacement();
+  if (!fp || fp.pending) return null;
+  if (fp.noPlacement) {
+    return el('div', { class: 'placement-hero low' },
+      el('div', { class: 'hero-label' }, 'Final result'),
+      el('div', { class: 'hero-place' }, 'Consolation'),
+      el('div', { class: 'hero-desc' }, 'This path ends in a single Sunday crossover with no posted final place on the schedule. Lamorinda finishes outside the top 16.'),
+    );
+  }
+  const place = fp.place;
+  const ord = ['th','st','nd','rd'];
+  const suffix = (place % 100 >= 11 && place % 100 <= 13) ? 'th' : (ord[place % 10] || 'th');
+  let cls = 'placement-hero';
+  if (place > 4 && place <= 8) cls += ' silver';
+  else if (place > 8 && place <= 12) cls += ' mid';
+  else if (place > 12) cls += ' low';
+  return el('div', { class: cls },
+    el('div', { class: 'hero-label' }, 'Final placement'),
+    el('div', { class: 'hero-place' }, place + suffix),
+    el('div', { class: 'hero-desc' }, 'of 36 teams \u00b7 14U Boys A \u00b7 San Diego County Cup'),
+  );
+}
+
+// ==================== MAIN RENDER ====================
+function render() {
+  updateURL();
+  const app = document.getElementById('app');
+  app.innerHTML = '';
+  app.appendChild(el('div', { class: 'hdr' },
+    el('div', {},
+      el('h1', {}, 'Lamorinda B \u00b7 Scenario Explorer'),
+      el('p', { class: 'subtitle' }, 'San Diego County Cup \u00b7 14U Boys A \u00b7 May 1\u20133, 2026'),
+    ),
+    el('div', { class: 'hdr-actions' },
+      el('a', { class: 'btn', href: SCHEDULE_URL, target: '_blank', rel: 'noopener' }, 'View full schedule \u2197'),
+      el('button', { class: 'btn primary', onClick: (e) => copyShareLink(e.currentTarget) }, 'Copy share link'),
+      el('button', { class: 'btn', onClick: resetAll }, 'Reset all'),
+    ),
+  ));
+
+  app.appendChild(el('h2', {}, 'Pool Play \u00b7 Friday + Saturday AM'));
+  app.appendChild(el('p', { class: 'subtitle', style: { margin: '0 0 12px' } }, 'Click the winner of each pool game. Lamorinda\'s finish in Pool G decides the Saturday track.'));
+  app.appendChild(renderPoolPlaySection());
+
+  app.appendChild(el('h2', {}, 'Saturday Crossover'));
+  app.appendChild(renderSaturdaySection());
+
+  app.appendChild(el('h2', {}, 'Sunday Bracket'));
+  app.appendChild(renderSundaySection());
+
+  const fp = renderFinalPlacement();
+  if (fp) app.appendChild(fp);
+}
+
+// Decode any state from URL hash, then render
+decodeStateFromHash();
+render();
+
+// Re-render if user navigates back/forward through hash history
+window.addEventListener('hashchange', () => {
+  const ok = decodeStateFromHash();
+  if (ok) render();
+});
+</script>
+</body>
+</html>
