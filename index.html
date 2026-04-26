@@ -299,6 +299,8 @@ footer {
 // ==================== CONSTANTS ====================
 const LAM = 'Lamorinda B';
 const SCHEDULE_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT9gy5sbeJYRi2PfYvCmgieSjGeOCVhbAkaU0qedF5YItn4Nyrqf670DpcfbhlLsDJ5nu-iaKGqp1Md/pubhtml?urp=gmail_link#gid=549792273';
+const GROUPME_URL = 'https://groupme.com/join_group/114533343/pE9IBbmZ';
+const VOLUNTEER_URL = 'https://docs.google.com/spreadsheets/d/1KpHOSHRQuR-SdPispcpR424-IykquIK4/edit?usp=drivesdk&ouid=110924530808975199642&rtpof=true&sd=true';
 
 const POOLS = {
   G: { label: 'Pool G', teams: ['Lamorinda B', 'Tsunami Black', 'OCWPC B'], games: [11, 14, 58] },
@@ -925,6 +927,8 @@ function render() {
     ),
     el('div', { class: 'hdr-actions' },
       el('a', { class: 'btn', href: SCHEDULE_URL, target: '_blank', rel: 'noopener' }, 'View full schedule \u2197'),
+      el('a', { class: 'btn', href: GROUPME_URL, target: '_blank', rel: 'noopener' }, 'GroupMe \u2197'),
+      el('a', { class: 'btn', href: VOLUNTEER_URL, target: '_blank', rel: 'noopener' }, 'Volunteer sheet \u2197'),
       el('button', { class: 'btn primary', onClick: (e) => copyShareLink(e.currentTarget) }, 'Copy share link'),
       el('button', { class: 'btn', onClick: resetAll }, 'Reset all'),
     ),
