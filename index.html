@@ -299,6 +299,8 @@ footer {
 // ==================== CONSTANTS ====================
 const LAM = 'Lamorinda B';
 const SCHEDULE_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT9gy5sbeJYRi2PfYvCmgieSjGeOCVhbAkaU0qedF5YItn4Nyrqf670DpcfbhlLsDJ5nu-iaKGqp1Md/pubhtml?urp=gmail_link#gid=549792273';
+const GROUPME_URL = 'https://groupme.com/join_group/114533343/pE9IBbmZ';
+const VOLUNTEER_URL = 'https://docs.google.com/spreadsheets/d/1KpHOSHRQuR-SdPispcpR424-IykquIK4/edit?usp=drivesdk&ouid=110924530808975199642&rtpof=true&sd=true';
 
 const POOLS = {
   G: { label: 'Pool G', teams: ['Lamorinda B', 'Tsunami Black', 'OCWPC B'], games: [11, 14, 58] },
@@ -350,24 +352,40 @@ const SAT_CROSSOVER = {
 
 const VENUES = [
   {
+    kind: 'venue',
     name: 'Tierrasanta Community Pool',
     aliases: 'Tierrasanta',
     address: '11238 Clairemont Mesa Blvd, San Diego, CA 92124',
   },
   {
+    kind: 'venue',
     name: 'San Diego Mesa College',
     aliases: 'Mesa · Mesa College',
     address: '7250 Mesa College Dr, San Diego, CA 92111',
   },
   {
+    kind: 'venue',
     name: 'West Hills High School',
     aliases: 'West Hills · West Hills HS',
     address: '8756 Mast Blvd, Santee, CA 92071',
   },
   {
+    kind: 'venue',
     name: 'Southwestern College (JAWS)',
     aliases: 'Southwestern College 1 & 2',
     address: '900 Otay Lakes Rd, Chula Vista, CA 91910',
+  },
+  {
+    kind: 'travel',
+    name: 'Rancho Bernardo Inn',
+    aliases: 'Team hotel',
+    address: '17550 Bernardo Oaks Dr, San Diego, CA 92128',
+  },
+  {
+    kind: 'travel',
+    name: 'San Diego International Airport (SAN)',
+    aliases: 'Airport',
+    address: '3225 N Harbor Dr, San Diego, CA 92101',
   },
 ];
 
@@ -909,6 +927,8 @@ function render() {
     ),
     el('div', { class: 'hdr-actions' },
       el('a', { class: 'btn', href: SCHEDULE_URL, target: '_blank', rel: 'noopener' }, 'View full schedule \u2197'),
+      el('a', { class: 'btn', href: GROUPME_URL, target: '_blank', rel: 'noopener' }, 'GroupMe \u2197'),
+      el('a', { class: 'btn', href: VOLUNTEER_URL, target: '_blank', rel: 'noopener' }, 'Volunteer sheet \u2197'),
       el('button', { class: 'btn primary', onClick: (e) => copyShareLink(e.currentTarget) }, 'Copy share link'),
       el('button', { class: 'btn', onClick: resetAll }, 'Reset all'),
     ),
@@ -932,19 +952,28 @@ function renderVenues() {
   const root = document.getElementById('venues');
   if (!root) return;
   root.innerHTML = '';
-  root.appendChild(el('h2', {}, 'Venues'));
-  const list = el('div', { class: 'venue-list' });
-  VENUES.forEach(v => {
-    const q = encodeURIComponent(v.name + ', ' + v.address);
-    const url = 'https://www.google.com/maps/search/?api=1&query=' + q;
-    list.appendChild(el('a', { class: 'venue-item', href: url, target: '_blank', rel: 'noopener' },
-      el('div', { class: 'venue-name' }, v.name),
-      el('div', { class: 'venue-aliases' }, v.aliases),
-      el('div', { class: 'venue-addr' }, v.address),
-      el('div', { class: 'venue-maps' }, 'Open in Google Maps ↗'),
-    ));
+  root.appendChild(el('h2', {}, 'Locations'));
+  const groups = [
+    { kind: 'venue', label: 'Tournament venues' },
+    { kind: 'travel', label: 'Travel' },
+  ];
+  groups.forEach(g => {
+    const items = VENUES.filter(v => v.kind === g.kind);
+    if (!items.length) return;
+    root.appendChild(el('h3', { class: 'venue-group' }, g.label));
+    const list = el('div', { class: 'venue-list' });
+    items.forEach(v => {
+      const q = encodeURIComponent(v.name + ', ' + v.address);
+      const url = 'https://www.google.com/maps/search/?api=1&query=' + q;
+      list.appendChild(el('a', { class: 'venue-item', href: url, target: '_blank', rel: 'noopener' },
+        el('div', { class: 'venue-name' }, v.name),
+        el('div', { class: 'venue-aliases' }, v.aliases),
+        el('div', { class: 'venue-addr' }, v.address),
+        el('div', { class: 'venue-maps' }, 'Open in Google Maps ↗'),
+      ));
+    });
+    root.appendChild(list);
   });
-  root.appendChild(list);
 }
 
 // Decode any state from URL hash, then render
