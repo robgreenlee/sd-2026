@@ -222,6 +222,58 @@ a:hover { text-decoration: underline; }
   border-radius: 8px;
 }
 
+.layout-shell {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 280px;
+  gap: 24px;
+  align-items: start;
+}
+.venue-rail {
+  position: sticky;
+  top: 16px;
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 14px 16px 16px;
+}
+.venue-rail h2 {
+  margin: 0 0 12px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid #e2e8f0;
+}
+.venue-list { display: flex; flex-direction: column; gap: 10px; }
+.venue-item {
+  display: block;
+  padding: 10px 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  background: #f8fafc;
+  color: inherit;
+  text-decoration: none;
+  transition: border-color 0.12s, background 0.12s, transform 0.12s;
+}
+.venue-item:hover {
+  border-color: #10b981;
+  background: #f0fdf4;
+  text-decoration: none;
+  transform: translateY(-1px);
+}
+.venue-name { font-weight: 700; font-size: 13px; color: #0f172a; }
+.venue-aliases { font-size: 11px; color: #64748b; margin-top: 2px; }
+.venue-addr { font-size: 12px; color: #475569; margin-top: 6px; line-height: 1.4; }
+.venue-maps {
+  font-size: 11px;
+  color: #047857;
+  margin-top: 6px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+@media (max-width: 960px) {
+  .layout-shell { grid-template-columns: 1fr; }
+  .venue-rail { position: static; }
+}
+
 footer {
   margin-top: 32px;
   padding-top: 16px;
@@ -233,10 +285,15 @@ footer {
 </style>
 </head>
 <body>
-<div id="app"></div>
-<footer>
-  Built for the 2026 San Diego County Cup · 14U Boys A · Lamorinda B
-</footer>
+<div class="layout-shell">
+  <div>
+    <div id="app"></div>
+    <footer>
+      Built for the 2026 San Diego County Cup · 14U Boys A · Lamorinda B
+    </footer>
+  </div>
+  <aside class="venue-rail" id="venues" aria-label="Tournament venues"></aside>
+</div>
 
 <script>
 // ==================== CONSTANTS ====================
@@ -290,6 +347,29 @@ const SAT_CROSSOVER = {
     ],
   },
 };
+
+const VENUES = [
+  {
+    name: 'Tierrasanta Community Pool',
+    aliases: 'Tierrasanta',
+    address: '11238 Clairemont Mesa Blvd, San Diego, CA 92124',
+  },
+  {
+    name: 'San Diego Mesa College',
+    aliases: 'Mesa · Mesa College',
+    address: '7250 Mesa College Dr, San Diego, CA 92111',
+  },
+  {
+    name: 'West Hills High School',
+    aliases: 'West Hills · West Hills HS',
+    address: '8756 Mast Blvd, Santee, CA 92071',
+  },
+  {
+    name: 'Southwestern College (JAWS)',
+    aliases: 'Southwestern College 1 & 2',
+    address: '900 Otay Lakes Rd, Chula Vista, CA 91910',
+  },
+];
 
 const SUNDAY_PATHS = {
   'O-1': {
@@ -848,9 +928,29 @@ function render() {
   if (fp) app.appendChild(fp);
 }
 
+function renderVenues() {
+  const root = document.getElementById('venues');
+  if (!root) return;
+  root.innerHTML = '';
+  root.appendChild(el('h2', {}, 'Venues'));
+  const list = el('div', { class: 'venue-list' });
+  VENUES.forEach(v => {
+    const q = encodeURIComponent(v.name + ', ' + v.address);
+    const url = 'https://www.google.com/maps/search/?api=1&query=' + q;
+    list.appendChild(el('a', { class: 'venue-item', href: url, target: '_blank', rel: 'noopener' },
+      el('div', { class: 'venue-name' }, v.name),
+      el('div', { class: 'venue-aliases' }, v.aliases),
+      el('div', { class: 'venue-addr' }, v.address),
+      el('div', { class: 'venue-maps' }, 'Open in Google Maps ↗'),
+    ));
+  });
+  root.appendChild(list);
+}
+
 // Decode any state from URL hash, then render
 decodeStateFromHash();
 render();
+renderVenues();
 
 // Re-render if user navigates back/forward through hash history
 window.addEventListener('hashchange', () => {
