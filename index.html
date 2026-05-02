@@ -437,8 +437,22 @@ const state = {
   tiebreakers: {},
 };
 
+// Games already played — pre-filled so the explorer reflects current standings.
+// Set to {} once the tournament is over or to start fresh.
+const PLAYED_POOL_RESULTS = {
+  // Friday
+  2:  'ECA A',           // Pool B · Fri 3:45 PM · Mesa
+  6:  'Santa Cruz',      // Pool B · Fri 6:45 PM · Mesa
+  11: 'Tsunami Black',   // Pool G · Fri 6:00 PM · West Hills
+  14: 'Lamorinda B',     // Pool G · Fri 8:15 PM · West Hills
+  15: 'Pasadena',        // Pool J · Fri 3:00 PM · Tierrasanta
+  19: 'SD Shores Gold',  // Pool J · Fri 6:00 PM · Tierrasanta
+  // Saturday AM
+  57: 'ECA A',           // Pool B · Sat 8:00 AM · Tierrasanta
+};
+
 function resetAll() {
-  state.poolResults = {};
+  state.poolResults = { ...PLAYED_POOL_RESULTS };
   state.satResults = {};
   state.sunResults = {};
   state.tiebreakers = {};
@@ -976,8 +990,11 @@ function renderVenues() {
   });
 }
 
-// Decode any state from URL hash, then render
-decodeStateFromHash();
+// Decode any state from URL hash, then render. If no hash, pre-fill
+// played games so the explorer reflects the tournament's current state.
+if (!decodeStateFromHash()) {
+  state.poolResults = { ...PLAYED_POOL_RESULTS };
+}
 render();
 renderVenues();
 
