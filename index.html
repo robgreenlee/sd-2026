@@ -513,8 +513,14 @@ function clearDownstreamFromSat() {
 
 // ==================== URL STATE ====================
 function encodeState() {
+  // Played games are always loaded from PLAYED_POOL_RESULTS — strip them
+  // from the encoded URL so share links only carry hypothetical picks.
+  const filteredP = {};
+  for (const k in state.poolResults) {
+    if (!isGameFinal(Number(k))) filteredP[k] = state.poolResults[k];
+  }
   const minimal = {
-    p: state.poolResults,
+    p: filteredP,
     s: state.satResults,
     u: state.sunResults,
     t: state.tiebreakers,
@@ -536,7 +542,8 @@ function decodeStateFromHash() {
     let b64 = m[1].replace(/-/g, '+').replace(/_/g, '/');
     while (b64.length % 4) b64 += '=';
     const obj = JSON.parse(decodeURIComponent(escape(atob(b64))));
-    state.poolResults = obj.p || {};
+    // Overlay played games on top of any decoded picks — they're facts.
+    state.poolResults = { ...(obj.p || {}), ...PLAYED_POOL_RESULTS };
     state.satResults = obj.s || {};
     state.sunResults = obj.u || {};
     state.tiebreakers = obj.t || {};
