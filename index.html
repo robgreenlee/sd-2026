@@ -479,6 +479,11 @@ const PLAYED_POOL_RESULTS = {
   59: 'SD Shores Gold',  // Pool J · Sat 9:30 AM · Tierrasanta
 };
 
+// Saturday crossover games already played — same overlay logic as PLAYED_POOL_RESULTS.
+const PLAYED_SAT_RESULTS = {
+  63: 'Lamorinda B',     // Pool O · Sat 12:30 PM · Tierrasanta
+};
+
 // Final scores keyed by game number: { home: <home goals>, away: <away goals> }
 // Add scores as they become known. If a game is in PLAYED_POOL_RESULTS but not
 // here, the FINAL badge + winner color still show — just without the score.
@@ -492,22 +497,24 @@ const PLAYED_SCORES = {
   57: { home: 6,  away: 7 },  // Santa Cruz 6 - ECA A 7
   58: { home: 12, away: 2 },  // Lamorinda B 12 - OCWPC B 2
   59: { home: 17, away: 1 },  // SD Shores Gold 17 - Carmel WPC 1
+  63: { home: 8,  away: 10 }, // ECA A 8 - Lamorinda B 10
 };
 
 function isGameFinal(num) {
-  return Object.prototype.hasOwnProperty.call(PLAYED_POOL_RESULTS, num);
+  return Object.prototype.hasOwnProperty.call(PLAYED_POOL_RESULTS, num)
+      || Object.prototype.hasOwnProperty.call(PLAYED_SAT_RESULTS, num);
 }
 
 function resetAll() {
   state.poolResults = { ...PLAYED_POOL_RESULTS };
-  state.satResults = {};
+  state.satResults = { ...PLAYED_SAT_RESULTS };
   state.sunResults = {};
   state.tiebreakers = {};
   render();
 }
 
 function clearDownstreamFromPool() {
-  state.satResults = {};
+  state.satResults = { ...PLAYED_SAT_RESULTS };
   state.sunResults = {};
   Object.keys(state.tiebreakers).forEach(k => { if (k.startsWith('SAT_')) delete state.tiebreakers[k]; });
 }
@@ -517,15 +524,19 @@ function clearDownstreamFromSat() {
 
 // ==================== URL STATE ====================
 function encodeState() {
-  // Played games are always loaded from PLAYED_POOL_RESULTS — strip them
+  // Played games are always loaded from PLAYED_*_RESULTS — strip them
   // from the encoded URL so share links only carry hypothetical picks.
   const filteredP = {};
   for (const k in state.poolResults) {
     if (!isGameFinal(Number(k))) filteredP[k] = state.poolResults[k];
   }
+  const filteredS = {};
+  for (const k in state.satResults) {
+    if (!isGameFinal(Number(k))) filteredS[k] = state.satResults[k];
+  }
   const minimal = {
     p: filteredP,
-    s: state.satResults,
+    s: filteredS,
     u: state.sunResults,
     t: state.tiebreakers,
   };
@@ -548,7 +559,7 @@ function decodeStateFromHash() {
     const obj = JSON.parse(decodeURIComponent(escape(atob(b64))));
     // Overlay played games on top of any decoded picks — they're facts.
     state.poolResults = { ...(obj.p || {}), ...PLAYED_POOL_RESULTS };
-    state.satResults = obj.s || {};
+    state.satResults = { ...(obj.s || {}), ...PLAYED_SAT_RESULTS };
     state.sunResults = obj.u || {};
     state.tiebreakers = obj.t || {};
     return true;
@@ -1064,6 +1075,7 @@ function renderVenues() {
 // played games so the explorer reflects the tournament's current state.
 if (!decodeStateFromHash()) {
   state.poolResults = { ...PLAYED_POOL_RESULTS };
+  state.satResults = { ...PLAYED_SAT_RESULTS };
 }
 render();
 renderVenues();
