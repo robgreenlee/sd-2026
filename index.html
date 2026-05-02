@@ -122,6 +122,32 @@ a:hover { text-decoration: underline; }
 .team-btn.loser { background: #f8fafc; color: #94a3b8; border-color: #e2e8f0; }
 .team-btn.is-lam { color: #047857; font-weight: 600; }
 .team-btn.winner.is-lam { color: white; background: #047857; border-color: #047857; }
+.team-btn.is-final { cursor: default; }
+.team-btn:disabled { opacity: 1; }
+.team-btn.winner.is-final,
+.team-btn.winner.is-final.is-lam { background: #1d4ed8; color: white; border-color: #1d4ed8; }
+.team-btn.loser.is-final { background: #f1f5f9; color: #64748b; border-color: #e2e8f0; }
+.team-score {
+  display: block;
+  font-size: 18px;
+  font-weight: 800;
+  margin-top: 3px;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+}
+.final-badge {
+  display: inline-block;
+  background: #1d4ed8;
+  color: white;
+  font-size: 9px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 2px 6px;
+  border-radius: 3px;
+  margin-left: 6px;
+  vertical-align: 1px;
+}
 .vs-label { font-size: 10px; color: #94a3b8; font-weight: 700; text-transform: uppercase; align-self: center; }
 
 .next-hint {
@@ -451,6 +477,17 @@ const PLAYED_POOL_RESULTS = {
   57: 'ECA A',           // Pool B · Sat 8:00 AM · Tierrasanta
 };
 
+// Final scores keyed by game number: { home: <home goals>, away: <away goals> }
+// Add scores as they become known. If a game is in PLAYED_POOL_RESULTS but not
+// here, the FINAL badge + winner color still show — just without the score.
+const PLAYED_SCORES = {
+  // 11: { home: 8, away: 5 },
+};
+
+function isGameFinal(num) {
+  return Object.prototype.hasOwnProperty.call(PLAYED_POOL_RESULTS, num);
+}
+
 function resetAll() {
   state.poolResults = { ...PLAYED_POOL_RESULTS };
   state.satResults = {};
@@ -674,27 +711,43 @@ function el(tag, props, ...children) {
 }
 
 // ==================== RENDER PIECES ====================
-function renderTeamButton(team, winner, onClick) {
+function renderTeamButton(team, winner, onClick, opts) {
+  opts = opts || {};
   const isLam = team === LAM;
+  const isFinal = !!opts.isFinal;
   const cls = 'team-btn'
     + (isLam ? ' is-lam' : '')
     + (winner === team ? ' winner' : '')
-    + (winner && winner !== team ? ' loser' : '');
-  return el('button', { class: cls, onClick: () => onClick(team) }, team);
+    + (winner && winner !== team ? ' loser' : '')
+    + (isFinal ? ' is-final' : '');
+  const children = [team];
+  if (opts.score != null) children.push(el('span', { class: 'team-score' }, String(opts.score)));
+  return el('button', {
+    class: cls,
+    disabled: isFinal,
+    onClick: isFinal ? null : () => onClick(team),
+  }, ...children);
 }
 
 function renderMatchupCard(opts) {
   const isLam = opts.home === LAM || opts.away === LAM;
   const complete = !!opts.winner;
+  const isFinal = isGameFinal(opts.num);
+  const score = PLAYED_SCORES[opts.num];
+  const homeScore = score ? score.home : null;
+  const awayScore = score ? score.away : null;
   return el('div', { class: 'game-card' + (isLam ? ' is-lam' : '') + (complete ? ' is-complete' : '') },
     el('div', { class: 'game-meta' },
-      el('span', { class: 'game-id' }, '#' + opts.num),
+      el('span', {},
+        el('span', { class: 'game-id' }, '#' + opts.num),
+        isFinal ? el('span', { class: 'final-badge' }, 'FINAL') : null,
+      ),
       el('span', {}, opts.time + ' \u00b7 ' + opts.loc),
     ),
     el('div', { class: 'team-row' },
-      renderTeamButton(opts.home, opts.winner, opts.onClick),
+      renderTeamButton(opts.home, opts.winner, opts.onClick, { isFinal, score: homeScore }),
       el('span', { class: 'vs-label' }, 'vs'),
-      renderTeamButton(opts.away, opts.winner, opts.onClick),
+      renderTeamButton(opts.away, opts.winner, opts.onClick, { isFinal, score: awayScore }),
     ),
     opts.extra || null,
   );
