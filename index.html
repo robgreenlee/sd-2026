@@ -481,6 +481,8 @@ const PLAYED_POOL_RESULTS = {
 
 // Saturday crossover games already played — same overlay logic as PLAYED_POOL_RESULTS.
 const PLAYED_SAT_RESULTS = {
+  61: 'Shore Aquatics',  // Pool W · Sat 11:00 AM · Tierrasanta
+  62: 'OCWPC B',         // Pool S · Sat 11:45 AM · Tierrasanta
   63: 'Lamorinda B',     // Pool O · Sat 12:30 PM · Tierrasanta
 };
 
@@ -497,6 +499,8 @@ const PLAYED_SCORES = {
   57: { home: 6,  away: 7 },  // Santa Cruz 6 - ECA A 7
   58: { home: 12, away: 2 },  // Lamorinda B 12 - OCWPC B 2
   59: { home: 17, away: 1 },  // SD Shores Gold 17 - Carmel WPC 1
+  61: { home: 8,  away: 5 },  // Shore Aquatics 8 - Tsunami Black 5
+  62: { home: 8,  away: 10 }, // Santa Cruz 8 - OCWPC B 10
   63: { home: 8,  away: 10 }, // ECA A 8 - Lamorinda B 10
 };
 
@@ -712,6 +716,95 @@ function getFinalPlacement() {
   if (!last.terminal) return { pending: true };
   if (last.noPlacement) return { done: true, noPlacement: true };
   return { done: true, place: result === 'w' ? last.winPlace : last.losePlace };
+}
+
+// Possible final places for Lamorinda given the current state. Enumerates all
+// remaining Saturday outcomes (and reachable Sunday branches) to derive the
+// min/max range.
+function getPlayingForRange() {
+  const cross = getSatCrossover();
+  if (!cross) return null;
+  const teamBySlot = {};
+  for (const slot of Object.keys(cross.slots)) {
+    const t = resolveSlot(slot);
+    if (!t) return null;
+    teamBySlot[slot] = t;
+  }
+  const teams = Object.values(teamBySlot);
+  const games = cross.games;
+  const undecided = games.filter(g => !state.satResults[g.num]);
+
+  const finishes = new Set();
+  const combos = 1 << undecided.length;
+  for (let mask = 0; mask < combos; mask++) {
+    const wins = {};
+    teams.forEach(t => wins[t] = 0);
+    for (const g of games) {
+      let w = state.satResults[g.num];
+      if (!w) {
+        const idx = undecided.indexOf(g);
+        w = (mask >> idx) & 1 ? teamBySlot[g.a] : teamBySlot[g.b];
+      }
+      wins[w]++;
+    }
+    const sorted = [...teams].sort((a, b) => wins[b] - wins[a]);
+    if (sorted.every(t => wins[t] === 1)) {
+      finishes.add(1); finishes.add(2); finishes.add(3);
+    } else {
+      finishes.add(sorted.indexOf(LAM) + 1);
+    }
+  }
+
+  const currentSatFinish = getLamSatFinish();
+  const trace = getSundayPathTrace();
+  const places = new Set();
+  let hasConsolation = false;
+
+  for (const finish of finishes) {
+    const path = SUNDAY_PATHS[cross.poolCode + '-' + finish];
+    if (!path) continue;
+    let reachable;
+    if (finish === currentSatFinish && trace && trace.trace.length) {
+      reachable = [];
+      const visit = (g, locked) => {
+        if (g.terminal) { reachable.push(g); return; }
+        if (locked === 'w' || locked == null) {
+          const n = path.games.find(x => x.num === g.winTo);
+          if (n) visit(n, null);
+        }
+        if (locked === 'l' || locked == null) {
+          const n = path.games.find(x => x.num === g.loseTo);
+          if (n) visit(n, null);
+        }
+      };
+      const last = trace.trace[trace.trace.length - 1];
+      visit(last, state.sunResults[last.num] || null);
+    } else {
+      reachable = path.games.filter(g => g.terminal);
+    }
+    for (const g of reachable) {
+      if (g.noPlacement) hasConsolation = true;
+      if (g.winPlace) places.add(g.winPlace);
+      if (g.losePlace) places.add(g.losePlace);
+    }
+  }
+
+  if (!places.size && !hasConsolation) return null;
+  const arr = [...places].sort((a, b) => a - b);
+  return {
+    min: arr.length ? arr[0] : null,
+    max: arr.length ? arr[arr.length - 1] : null,
+    places: arr,
+    hasConsolation,
+    decided: arr.length === 1 && !hasConsolation,
+  };
+}
+
+function ordinal(n) {
+  const v = n % 100;
+  if (v >= 11 && v <= 13) return n + 'th';
+  const s = ['th', 'st', 'nd', 'rd'];
+  return n + (s[n % 10] || 'th');
 }
 
 // ==================== DOM HELPERS ====================
@@ -986,6 +1079,27 @@ function renderSundaySection() {
   return container;
 }
 
+function renderPlayingForCallout() {
+  const fp = getFinalPlacement();
+  if (fp && fp.done) return null;
+  const range = getPlayingForRange();
+  if (!range) return null;
+
+  let label;
+  if (range.places.length === 0) {
+    label = 'consolation crossover (no posted final place)';
+  } else if (range.min === range.max) {
+    label = ordinal(range.min) + ' place';
+  } else {
+    label = ordinal(range.min) + '–' + ordinal(range.max) + ' place';
+  }
+  if (range.hasConsolation && range.places.length) label += ' (or consolation)';
+
+  return el('div', { class: 'path-callout' },
+    el('strong', {}, 'Lamorinda B is playing for: '), label,
+  );
+}
+
 function renderFinalPlacement() {
   const fp = getFinalPlacement();
   if (!fp || fp.pending) return null;
@@ -1028,6 +1142,9 @@ function render() {
       el('button', { class: 'btn', onClick: resetAll }, 'Reset all'),
     ),
   ));
+
+  const pfCallout = renderPlayingForCallout();
+  if (pfCallout) app.appendChild(pfCallout);
 
   app.appendChild(el('h2', {}, 'Pool Play \u00b7 Friday + Saturday AM'));
   app.appendChild(el('p', { class: 'subtitle', style: { margin: '0 0 12px' } }, 'Click the winner of each pool game. Lamorinda\'s finish in Pool G decides the Saturday track.'));
