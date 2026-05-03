@@ -157,6 +157,35 @@ a:hover { text-decoration: underline; }
   font-style: italic;
 }
 
+.stakes-banner {
+  display: block;
+  margin: 4px 0 10px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  text-align: center;
+  color: white;
+  line-height: 1.35;
+}
+.stakes-banner .stakes-sub {
+  display: block;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: none;
+  margin-top: 2px;
+  opacity: 0.92;
+}
+.stakes-banner.gold   { background: linear-gradient(135deg, #b45309 0%, #f59e0b 100%); }
+.stakes-banner.silver { background: linear-gradient(135deg, #1d4ed8 0%, #60a5fa 100%); }
+.stakes-banner.bronze { background: linear-gradient(135deg, #7c2d12 0%, #c2410c 100%); }
+.stakes-banner.purple { background: linear-gradient(135deg, #6b21a8 0%, #a855f7 100%); }
+.stakes-banner.slate  { background: linear-gradient(135deg, #475569 0%, #94a3b8 100%); }
+.stakes-banner.teal   { background: linear-gradient(135deg, #0f766e 0%, #2dd4bf 100%); }
+
 .standings-box {
   background: white;
   border: 1px solid #e2e8f0;
@@ -487,6 +516,9 @@ const PLAYED_SAT_RESULTS = {
   65: 'Shore Aquatics',  // Pool W · Sat 2:00 PM  · Tierrasanta
   66: 'Pasadena',        // Pool S · Sat 2:45 PM  · Tierrasanta
   67: 'ECA A',           // Pool O · Sat 3:30 PM  · Tierrasanta
+  69: 'Tsunami Black',   // Pool W · Sat 5:00 PM  · Tierrasanta
+  70: 'Pasadena',        // Pool S · Sat 5:45 PM  · Tierrasanta
+  71: 'Lamorinda B',     // Pool O · Sat 6:30 PM  · Tierrasanta — Lamo clinches 1st
 };
 
 // Final scores keyed by game number: { home: <home goals>, away: <away goals> }
@@ -508,6 +540,9 @@ const PLAYED_SCORES = {
   65: { home: 9,  away: 7 },  // Shore Aquatics 9 - Carmel WPC 7
   66: { home: 1,  away: 5 },  // Santa Cruz 1 - Pasadena 5
   67: { home: 11, away: 8 },  // ECA A 11 - SD Shores Gold 8
+  69: { home: 6,  away: 2 },  // Tsunami Black 6 - Carmel WPC 2
+  70: { home: 4,  away: 6 },  // OCWPC B 4 - Pasadena 6
+  71: { home: 13, away: 8 },  // Lamorinda B 13 - SD Shores Gold 8
 };
 
 function isGameFinal(num) {
@@ -813,6 +848,59 @@ function ordinal(n) {
   return n + (s[n % 10] || 'th');
 }
 
+function reachablePlacesFrom(games, num) {
+  const g = games.find(x => x.num === num);
+  if (!g) return [];
+  if (g.terminal) {
+    if (g.noPlacement) return [];
+    const out = [];
+    if (g.winPlace) out.push(g.winPlace);
+    if (g.losePlace) out.push(g.losePlace);
+    return out;
+  }
+  return [...reachablePlacesFrom(games, g.winTo), ...reachablePlacesFrom(games, g.loseTo)];
+}
+
+// Tone for the stakes banner based on the best place reachable from this game.
+function stakesTone(bestPlace) {
+  if (bestPlace == null) return 'slate';
+  if (bestPlace === 1) return 'gold';
+  if (bestPlace === 3) return 'bronze';
+  if (bestPlace <= 4) return 'silver';
+  if (bestPlace <= 8) return 'silver';
+  if (bestPlace <= 12) return 'purple';
+  if (bestPlace <= 16) return 'teal';
+  return 'slate';
+}
+
+function describeStakes(game, path) {
+  if (game.noPlacement) {
+    return { tone: 'slate', label: 'Crossover game', sub: 'No posted final place' };
+  }
+  if (game.terminal) {
+    const wp = game.winPlace, lp = game.losePlace;
+    return {
+      tone: stakesTone(wp),
+      label: ordinal(wp) + '-place game',
+      sub: 'Win → ' + ordinal(wp) + ' · Lose → ' + ordinal(lp),
+    };
+  }
+  const wPlaces = [...new Set(reachablePlacesFrom(path.games, game.winTo))].sort((a, b) => a - b);
+  const lPlaces = [...new Set(reachablePlacesFrom(path.games, game.loseTo))].sort((a, b) => a - b);
+  const fmt = (arr) => {
+    if (!arr.length) return 'consolation';
+    if (arr.length === 1) return ordinal(arr[0]);
+    return ordinal(arr[0]) + '/' + ordinal(arr[arr.length - 1]);
+  };
+  const allPlaces = [...wPlaces, ...lPlaces];
+  const best = allPlaces.length ? Math.min(...allPlaces) : null;
+  return {
+    tone: stakesTone(best),
+    label: game.role,
+    sub: 'Win → plays for ' + fmt(wPlaces) + ' · Lose → plays for ' + fmt(lPlaces),
+  };
+}
+
 // ==================== DOM HELPERS ====================
 function el(tag, props, ...children) {
   const e = document.createElement(tag);
@@ -1050,7 +1138,12 @@ function renderSundaySection() {
       winLabel = 'WIN \u2192 ' + g.winPlace + ord(g.winPlace);
       loseLabel = 'LOSE \u2192 ' + g.losePlace + ord(g.losePlace);
     }
-    const extra = el('div', { class: 'next-hint' }, g.role + ' \u00b7 opponent: ' + g.opp);
+    const stakes = describeStakes(g, path);
+    const stakesEl = el('div', { class: 'stakes-banner ' + stakes.tone },
+      stakes.label,
+      el('span', { class: 'stakes-sub' }, stakes.sub),
+    );
+    const extra = el('div', { class: 'next-hint' }, 'Opponent: ' + g.opp);
     const advance = (res) => {
       state.sunResults[g.num] = res;
       const newTrace = [g];
@@ -1073,6 +1166,7 @@ function renderSundaySection() {
         el('span', { class: 'game-id' }, '#' + g.num),
         el('span', {}, g.time + ' \u00b7 ' + g.loc),
       ),
+      stakesEl,
       el('div', { class: 'team-row' },
         el('button', { class: winCls, onClick: () => advance('w') }, winLabel),
         el('span', { class: 'vs-label' }, 'vs'),
