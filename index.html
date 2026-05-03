@@ -545,6 +545,24 @@ const PLAYED_SCORES = {
   71: { home: 13, away: 8 },  // Lamorinda B 13 - SD Shores Gold 8
 };
 
+// Sunday games already played, keyed by game num. Result is 'w' or 'l' from
+// Lamorinda's perspective. Score is { lam, opp } in goals.
+const PLAYED_SUN_RESULTS = {
+  96: 'l',  // Sun 8:45 AM · Championship semifinal — lost
+};
+const PLAYED_SUN_SCORES = {
+  96: { lam: 3, opp: 9 },
+};
+// Override the schedule's placeholder opponent text for games where we know
+// the actual matchup (or have already played it).
+const PLAYED_SUN_OPPS = {
+  98: 'Mission',  // 3rd-place game opponent
+};
+
+function isSunGameFinal(num) {
+  return Object.prototype.hasOwnProperty.call(PLAYED_SUN_RESULTS, num);
+}
+
 function isGameFinal(num) {
   return Object.prototype.hasOwnProperty.call(PLAYED_POOL_RESULTS, num)
       || Object.prototype.hasOwnProperty.call(PLAYED_SAT_RESULTS, num);
@@ -553,18 +571,18 @@ function isGameFinal(num) {
 function resetAll() {
   state.poolResults = { ...PLAYED_POOL_RESULTS };
   state.satResults = { ...PLAYED_SAT_RESULTS };
-  state.sunResults = {};
+  state.sunResults = { ...PLAYED_SUN_RESULTS };
   state.tiebreakers = {};
   render();
 }
 
 function clearDownstreamFromPool() {
   state.satResults = { ...PLAYED_SAT_RESULTS };
-  state.sunResults = {};
+  state.sunResults = { ...PLAYED_SUN_RESULTS };
   Object.keys(state.tiebreakers).forEach(k => { if (k.startsWith('SAT_')) delete state.tiebreakers[k]; });
 }
 function clearDownstreamFromSat() {
-  state.sunResults = {};
+  state.sunResults = { ...PLAYED_SUN_RESULTS };
 }
 
 // ==================== URL STATE ====================
@@ -579,10 +597,14 @@ function encodeState() {
   for (const k in state.satResults) {
     if (!isGameFinal(Number(k))) filteredS[k] = state.satResults[k];
   }
+  const filteredU = {};
+  for (const k in state.sunResults) {
+    if (!isSunGameFinal(Number(k))) filteredU[k] = state.sunResults[k];
+  }
   const minimal = {
     p: filteredP,
     s: filteredS,
-    u: state.sunResults,
+    u: filteredU,
     t: state.tiebreakers,
   };
   const empty = !Object.keys(minimal.p).length && !Object.keys(minimal.s).length
@@ -605,7 +627,7 @@ function decodeStateFromHash() {
     // Overlay played games on top of any decoded picks — they're facts.
     state.poolResults = { ...(obj.p || {}), ...PLAYED_POOL_RESULTS };
     state.satResults = { ...(obj.s || {}), ...PLAYED_SAT_RESULTS };
-    state.sunResults = obj.u || {};
+    state.sunResults = { ...(obj.u || {}), ...PLAYED_SUN_RESULTS };
     state.tiebreakers = obj.t || {};
     return true;
   } catch (e) { return false; }
@@ -1129,8 +1151,16 @@ function renderSundaySection() {
   const grid = el('div', { class: 'games-grid' });
   trace.forEach(g => {
     const result = state.sunResults[g.num];
-    const winCls = 'team-btn is-lam' + (result === 'w' ? ' winner' : '') + (result === 'l' ? ' loser' : '');
-    const loseCls = 'team-btn' + (result === 'l' ? ' winner' : '') + (result === 'w' ? ' loser' : '');
+    const isFinal = isSunGameFinal(g.num);
+    const sunScore = PLAYED_SUN_SCORES[g.num];
+    const winCls = 'team-btn is-lam'
+      + (result === 'w' ? ' winner' : '')
+      + (result === 'l' ? ' loser' : '')
+      + (isFinal ? ' is-final' : '');
+    const loseCls = 'team-btn'
+      + (result === 'l' ? ' winner' : '')
+      + (result === 'w' ? ' loser' : '')
+      + (isFinal ? ' is-final' : '');
     let loseLabel = 'Lamorinda LOSES';
     let winLabel = 'Lamorinda WINS';
     if (g.terminal && !g.noPlacement) {
@@ -1143,8 +1173,10 @@ function renderSundaySection() {
       stakes.label,
       el('span', { class: 'stakes-sub' }, stakes.sub),
     );
-    const extra = el('div', { class: 'next-hint' }, 'Opponent: ' + g.opp);
+    const oppName = PLAYED_SUN_OPPS[g.num] || g.opp;
+    const extra = el('div', { class: 'next-hint' }, 'Opponent: ' + oppName);
     const advance = (res) => {
+      if (isFinal) return;
       state.sunResults[g.num] = res;
       const newTrace = [g];
       let cur = g;
@@ -1158,19 +1190,31 @@ function renderSundaySection() {
         cur = next;
       }
       const keepNums = new Set(newTrace.map(x => x.num));
-      Object.keys(state.sunResults).forEach(k => { if (!keepNums.has(parseInt(k))) delete state.sunResults[k]; });
+      Object.keys(state.sunResults).forEach(k => {
+        const n = parseInt(k);
+        if (!keepNums.has(n) && !isSunGameFinal(n)) delete state.sunResults[k];
+      });
       render();
     };
+    const winChildren = [winLabel];
+    const loseChildren = [loseLabel];
+    if (sunScore) {
+      winChildren.push(el('span', { class: 'team-score' }, String(sunScore.lam)));
+      loseChildren.push(el('span', { class: 'team-score' }, String(sunScore.opp)));
+    }
     grid.appendChild(el('div', { class: 'game-card is-lam' + (result ? ' is-complete' : '') },
       el('div', { class: 'game-meta' },
-        el('span', { class: 'game-id' }, '#' + g.num),
+        el('span', {},
+          el('span', { class: 'game-id' }, '#' + g.num),
+          isFinal ? el('span', { class: 'final-badge' }, 'FINAL') : null,
+        ),
         el('span', {}, g.time + ' \u00b7 ' + g.loc),
       ),
       stakesEl,
       el('div', { class: 'team-row' },
-        el('button', { class: winCls, onClick: () => advance('w') }, winLabel),
+        el('button', { class: winCls, disabled: isFinal, onClick: isFinal ? null : () => advance('w') }, ...winChildren),
         el('span', { class: 'vs-label' }, 'vs'),
-        el('button', { class: loseCls, onClick: () => advance('l') }, loseLabel),
+        el('button', { class: loseCls, disabled: isFinal, onClick: isFinal ? null : () => advance('l') }, ...loseChildren),
       ),
       extra,
     ));
@@ -1293,6 +1337,7 @@ function renderVenues() {
 if (!decodeStateFromHash()) {
   state.poolResults = { ...PLAYED_POOL_RESULTS };
   state.satResults = { ...PLAYED_SAT_RESULTS };
+  state.sunResults = { ...PLAYED_SUN_RESULTS };
 }
 render();
 renderVenues();
