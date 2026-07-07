@@ -403,7 +403,7 @@ function defaultDB() {
   ];
   return {
     version: 1,
-    settings: { team: 'Alameda', season: 'Summer 2026' },
+    settings: { team: 'LAMO', season: 'Summer 2026' },
     players: seed.map(([cap, name]) => ({ id: uid(), cap, name, active: true })),
     games: [],
   };
@@ -417,7 +417,7 @@ function loadDB() {
     if (!raw) return defaultDB();
     const obj = JSON.parse(raw);
     if (!obj || !Array.isArray(obj.players) || !Array.isArray(obj.games)) return defaultDB();
-    obj.settings = obj.settings || { team: 'Alameda', season: '' };
+    obj.settings = obj.settings || { team: 'LAMO', season: '' };
     return obj;
   } catch (e) { return defaultDB(); }
 }
@@ -615,7 +615,7 @@ function importJSONFile(file) {
       const obj = JSON.parse(reader.result);
       if (!obj || !Array.isArray(obj.players) || !Array.isArray(obj.games)) throw new Error('bad shape');
       if (!confirm('Replace ALL current data with this file? (' + obj.players.length + ' players, ' + obj.games.length + ' games)')) return;
-      obj.settings = obj.settings || { team: 'Alameda', season: '' };
+      obj.settings = obj.settings || { team: 'LAMO', season: '' };
       db = obj;
       saveDB();
       location.hash = '#/games';
@@ -631,7 +631,7 @@ function handleImportLink(encoded) {
     if (!obj || !Array.isArray(obj.players) || !Array.isArray(obj.games)) throw new Error('bad shape');
     const ok = confirm('This link contains a full stats database (' + obj.players.length + ' players, ' + obj.games.length + ' games).\n\nImport it and REPLACE the data on this device?');
     if (ok) {
-      obj.settings = obj.settings || { team: 'Alameda', season: '' };
+      obj.settings = obj.settings || { team: 'LAMO', season: '' };
       db = obj;
       saveDB();
     }
@@ -743,7 +743,7 @@ function renderGameView(app, gameId) {
   details.appendChild(el('div', { class: 'form-row' },
     el('label', {}, 'Opponent'),
     el('input', {
-      type: 'text', value: g.opponent, placeholder: 'e.g. LAMO',
+      type: 'text', value: g.opponent, placeholder: 'e.g. Alameda',
       onInput: (e) => {
         g.opponent = e.target.value; saveDB();
         const h = document.getElementById('game-title');
