@@ -12,9 +12,19 @@ A companion app for tracking per-player stats game by game — a digital version
 - **Per-game rosters** — players can be added to or removed from any single game (guests included) without touching their history.
 - **Players tab** — add/edit players; *removing* a player only deactivates them: they disappear from new-game rosters but every stat they recorded stays in the database and they can be re-activated any time.
 - **Player pages** — season filter, headline tiles (goals, assists, shooting %, save rate), per-game chart, totals / per-game / rolling last-5 averages, full game log, and a **Share** button (native share sheet on mobile, clipboard fallback) that sends a text summary of the player's stats.
-- **Data & backup tab** — team name + current season settings, JSON export/import, and a "sync link" that carries the whole database in the URL for moving data between devices.
+- **Data & backup tab** — team name + current season settings, cloud sync, JSON export/import, and a "sync link" that carries the whole database in the URL for moving data between devices.
 
-Storage is `localStorage` (no backend): stats live in the browser that recorded them. Export a backup or use the sync link to move data across devices.
+Storage is local-first: stats live in `localStorage` so tallying works instantly (and offline, poolside). With cloud sync connected, every change is also pushed to the cloud a moment later and pulled on startup, so one stats database follows you across devices.
+
+### Cloud sync setup (one time, ~2 minutes)
+
+The sync backend is a single serverless function (`api/sync.js`) that stores each team's stats as one JSON record in Redis. To activate it:
+
+1. In the [Vercel dashboard](https://vercel.com), open the **sd-2026** project → **Storage** tab → **Create Database** → choose **Upstash for Redis** (free tier is plenty) → connect it to the project. This injects the `KV_REST_API_URL` / `KV_REST_API_TOKEN` env vars the function looks for (Upstash's own `UPSTASH_REDIS_REST_*` names work too).
+2. Redeploy the project (Deployments → ⋯ → Redeploy) so the function picks up the env vars.
+3. In the app: **Data & backup → Cloud sync** — pick a team code (e.g. `lamo`) and a passcode, hit **Connect**. The first device to connect claims the code and sets the passcode; every other device connects with the same pair.
+
+Notes: the passcode is set on first save and verified (SHA-256 hash) on every request; sync is last-write-wins per whole database (fine for one scorekeeper at a time — simultaneous editing on two devices can overwrite each other); the JSON export/sync-link remain as an offline fallback and never contain the passcode.
 
 ## Features
 

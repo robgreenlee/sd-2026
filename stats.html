@@ -328,6 +328,25 @@ body.correcting .tally-cell:not(.gk-off):hover { border-color: #ef4444; }
   margin-left: 6px;
 }
 
+.cloud-pill {
+  display: inline-flex;
+  align-items: center;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 5px 11px;
+  border-radius: 999px;
+  border: 1px solid #cbd5e1;
+  color: #475569;
+  background: white;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.cloud-pill:hover { text-decoration: none; }
+.cloud-pill.synced { color: #047857; border-color: #a7f3d0; background: #f0fdf4; }
+.cloud-pill.syncing { color: #475569; }
+.cloud-pill.offline { color: #92400e; border-color: #fde68a; background: #fffbeb; }
+.cloud-pill.error { color: #b91c1c; border-color: #fecaca; background: #fef2f2; }
+
 .path-callout {
   background: #ecfdf5;
   border-left: 4px solid #10b981;
@@ -422,12 +441,167 @@ function loadDB() {
   } catch (e) { return defaultDB(); }
 }
 
-function saveDB() {
+function persistLocal() {
   try { localStorage.setItem(DB_KEY, JSON.stringify(db)); }
   catch (e) { console.error('Failed to save', e); }
 }
 
+function saveDB() {
+  db.modifiedAt = Date.now();
+  persistLocal();
+  scheduleCloudPush();
+}
+
 function mutate(fn) { fn(); saveDB(); render(); }
+
+// ==================== CLOUD SYNC ====================
+// Local-first: localStorage is the working copy so tallying works offline;
+// the whole database is pushed (debounced) to /api/sync after every change
+// and pulled on startup. Credentials live in their own localStorage key so
+// exports and sync links never carry the passcode.
+const CLOUD_KEY = 'polo-stat-cloud-v1';
+let cloudStatus = 'off'; // off | syncing | synced | offline | error
+let cloudStatusMsg = '';
+let cloudPushTimer = null;
+
+function cloudCfg() {
+  try {
+    const c = JSON.parse(localStorage.getItem(CLOUD_KEY));
+    return c && c.team && c.secret ? c : null;
+  } catch (e) { return null; }
+}
+
+async function cloudRequest(action, cfg, data) {
+  const r = await fetch('api/sync', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ action, team: cfg.team, secret: cfg.secret, data }),
+  });
+  let out = {};
+  try { out = await r.json(); } catch (e) {}
+  if (!r.ok) throw new Error(out.error || 'Sync failed (' + r.status + ')');
+  return out;
+}
+
+function cloudPillLabel() {
+  return { syncing: '☁ Syncing…', synced: '☁ Synced', offline: '☁ Offline', error: '☁ Sync error' }[cloudStatus] || '☁';
+}
+
+// Imperative update only — a full render() here would destroy form focus
+// if the user is mid-typing when a debounced push completes.
+function setCloudStatus(status, msg) {
+  cloudStatus = status;
+  cloudStatusMsg = msg || '';
+  const pill = document.getElementById('cloud-pill');
+  if (pill) {
+    pill.className = 'cloud-pill ' + status;
+    pill.textContent = cloudPillLabel();
+    pill.title = cloudStatusMsg;
+  }
+  const line = document.getElementById('cloud-status-line');
+  if (line) line.textContent = cloudStatusLine();
+}
+
+function cloudStatusLine() {
+  const label = { syncing: 'Syncing…', synced: 'Synced', offline: 'Offline — will sync when back online', error: 'Sync error' }[cloudStatus] || '';
+  return 'Status: ' + label + (cloudStatusMsg ? ' — ' + cloudStatusMsg : '');
+}
+
+function scheduleCloudPush() {
+  if (!cloudCfg()) return;
+  setCloudStatus('syncing'); // reflect the pending change immediately
+  if (cloudPushTimer) clearTimeout(cloudPushTimer);
+  cloudPushTimer = setTimeout(cloudSave, 1500);
+}
+
+async function cloudSave() {
+  const cfg = cloudCfg();
+  if (!cfg) return;
+  cloudPushTimer = null;
+  setCloudStatus('syncing');
+  try {
+    await cloudRequest('save', cfg, db);
+    setCloudStatus('synced');
+  } catch (e) {
+    setCloudStatus(navigator.onLine === false ? 'offline' : 'error', e.message);
+  }
+}
+
+// Two-way sync: newer side wins (each save stamps db.modifiedAt).
+async function cloudSyncNow() {
+  const cfg = cloudCfg();
+  if (!cfg) return;
+  setCloudStatus('syncing');
+  try {
+    const out = await cloudRequest('load', cfg);
+    const cloudTime = out.data ? (out.data.modifiedAt || 0) : -1;
+    const localTime = db.modifiedAt || 0;
+    if (out.data && cloudTime > localTime) {
+      db = out.data;
+      persistLocal();
+      render();
+    } else if (cloudTime < localTime || !out.data) {
+      await cloudRequest('save', cfg, db);
+    }
+    setCloudStatus('synced');
+  } catch (e) {
+    setCloudStatus(navigator.onLine === false ? 'offline' : 'error', e.message);
+  }
+}
+
+async function cloudConnect(team, secret) {
+  const cfg = { team: team.trim().toLowerCase(), secret: secret };
+  if (!/^[a-z0-9][a-z0-9_-]{2,39}$/.test(cfg.team)) { alert('Team code must be 3–40 letters, numbers, dashes or underscores.'); return; }
+  if (cfg.secret.length < 4) { alert('Passcode must be at least 4 characters.'); return; }
+  setCloudStatus('syncing');
+  try {
+    const out = await cloudRequest('load', cfg); // also verifies the passcode
+    localStorage.setItem(CLOUD_KEY, JSON.stringify(cfg));
+    if (out.data) {
+      const p = (out.data.players || []).length, g = (out.data.games || []).length;
+      const useCloud = confirm('Found existing cloud data for "' + cfg.team + '" (' + p + ' players, ' + g + ' games).\n\nOK = load the cloud data onto this device (replaces what\'s here)\nCancel = keep this device\'s data and upload it to the cloud');
+      if (useCloud) {
+        db = out.data;
+        persistLocal();
+      } else {
+        db.modifiedAt = Date.now();
+        persistLocal();
+        await cloudRequest('save', cfg, db);
+      }
+    } else {
+      await cloudRequest('save', cfg, db);
+    }
+    setCloudStatus('synced');
+    render();
+  } catch (e) {
+    setCloudStatus('error', e.message);
+    alert('Could not connect cloud sync: ' + e.message);
+    render();
+  }
+}
+
+function cloudDisconnect() {
+  if (!confirm('Disconnect cloud sync on this device? Your stats stay here and in the cloud — this only stops syncing from this device.')) return;
+  localStorage.removeItem(CLOUD_KEY);
+  cloudStatus = 'off';
+  cloudStatusMsg = '';
+  render();
+}
+
+window.addEventListener('online', scheduleCloudPush);
+// Flush a pending push if the user leaves mid-debounce (e.g. locks the iPad
+// right after the last tally).
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState !== 'hidden' || !cloudPushTimer) return;
+  clearTimeout(cloudPushTimer);
+  cloudPushTimer = null;
+  const cfg = cloudCfg();
+  if (cfg && navigator.sendBeacon) {
+    navigator.sendBeacon('api/sync', new Blob(
+      [JSON.stringify({ action: 'save', team: cfg.team, secret: cfg.secret, data: db })],
+      { type: 'application/json' }));
+  }
+});
 
 // ==================== DATA HELPERS ====================
 function playerById(id) { return db.players.find(p => p.id === id); }
@@ -1229,10 +1403,39 @@ function renderDataView(app) {
   settings.appendChild(el('p', { class: 'subtitle' }, 'New games are tagged with the current season, so you can filter each player\'s stats by season later.'));
   app.appendChild(settings);
 
-  app.appendChild(el('h2', {}, 'Backup & sync'));
+  app.appendChild(el('h2', {}, 'Cloud sync'));
+  const cloudCard = el('div', { class: 'card' });
+  const cfg = cloudCfg();
+  if (cfg) {
+    cloudCard.appendChild(el('p', { style: { margin: '0 0 4px' } },
+      el('b', {}, 'Team code: '), cfg.team));
+    cloudCard.appendChild(el('p', { id: 'cloud-status-line', class: 'subtitle', style: { margin: '0 0 10px' } }, cloudStatusLine()));
+    cloudCard.appendChild(el('div', { class: 'hdr-actions' },
+      el('button', { class: 'btn primary', onClick: () => cloudSyncNow() }, 'Sync now'),
+      el('button', { class: 'btn', onClick: cloudDisconnect }, 'Disconnect this device'),
+    ));
+    cloudCard.appendChild(el('p', { class: 'subtitle', style: { marginTop: '10px' } },
+      'Stats auto-sync a moment after every change. To use another device, open this page there and connect with the same team code and passcode.'));
+  } else {
+    cloudCard.appendChild(el('p', { class: 'subtitle', style: { margin: '0 0 10px' } },
+      'Back up every change to the cloud automatically and share one stats database across devices. Pick a team code and passcode — use the same pair on each device. The first device to connect claims the code and sets the passcode.'));
+    const teamIn = el('input', { type: 'text', placeholder: 'Team code (e.g. lamo)', style: { width: '180px' } });
+    const passIn = el('input', { type: 'text', placeholder: 'Passcode', style: { width: '140px' } });
+    cloudCard.appendChild(el('div', { class: 'inline-form' },
+      teamIn, passIn,
+      el('button', { class: 'btn primary', onClick: () => cloudConnect(teamIn.value, passIn.value) }, 'Connect'),
+    ));
+    cloudCard.appendChild(el('p', { class: 'subtitle', style: { marginTop: '10px' } },
+      'Needs a one-time server setup: connect an Upstash Redis store to the Vercel project (Storage → Create Database) — details in the README.'));
+  }
+  app.appendChild(cloudCard);
+
+  app.appendChild(el('h2', {}, 'Backup & sync link'));
   app.appendChild(el('div', { class: 'path-callout' },
-    el('strong', {}, 'Your stats database lives in this browser. '),
-    'It survives closing the tab, but export a backup after big stat days — and use the sync link to copy everything to another device (e.g. iPad → phone).'));
+    el('strong', {}, 'Your stats database lives in this browser' + (cfg ? ' and syncs to the cloud.' : '.') + ' '),
+    cfg
+      ? 'Exports below are an extra safety net and a way to move data without cloud credentials.'
+      : 'It survives closing the tab, but export a backup after big stat days — and use the sync link to copy everything to another device (e.g. iPad → phone).'));
 
   const dataCard = el('div', { class: 'card' });
   const fileIn = el('input', { type: 'file', accept: '.json,application/json', style: { display: 'none' } });
@@ -1287,6 +1490,7 @@ function render() {
       el('p', { class: 'subtitle' }, 'Per-player water polo stats · every game, every season'),
     ),
     el('div', { class: 'hdr-actions' },
+      cloudCfg() ? el('a', { class: 'cloud-pill ' + cloudStatus, id: 'cloud-pill', href: '#/data', title: cloudStatusMsg }, cloudPillLabel()) : null,
       el('a', { class: 'btn', href: 'index.html' }, '← Scenario explorer'),
     ),
   ));
@@ -1320,7 +1524,11 @@ window.addEventListener('hashchange', () => {
 (function init() {
   const route = currentRoute();
   if (route.view === 'import') { handleImportLink(route.arg); }
-  saveDB(); // persist seeded roster on first run
+  persistLocal(); // persist seeded roster on first run (no modifiedAt stamp — cloud may be newer)
+  if (cloudCfg()) {
+    cloudStatus = 'syncing';
+    cloudSyncNow(); // pull newer cloud data / push newer local data
+  }
   render();
 })();
 </script>
