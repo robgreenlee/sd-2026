@@ -1,0 +1,1328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Player Stat Tracker · Water Polo</title>
+<meta name="description" content="Track water polo player stats per game — shots, goals, assists, blocks, steals, exclusions, turnovers, goalie saves — with season totals, rolling averages, and shareable player summaries.">
+<meta property="og:title" content="Player Stat Tracker">
+<meta property="og:description" content="Per-game water polo stat tracking with season totals and rolling averages per player.">
+<meta property="og:type" content="website">
+<style>
+:root { color-scheme: light; }
+*, *::before, *::after { box-sizing: border-box; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  background: #f8fafc;
+  color: #0f172a;
+  margin: 0;
+  padding: 20px;
+  font-size: 14px;
+  line-height: 1.5;
+  max-width: 1100px;
+  margin-left: auto;
+  margin-right: auto;
+}
+h1 { font-size: 24px; margin: 0; font-weight: 700; letter-spacing: -0.01em; }
+h2 {
+  font-size: 14px;
+  margin: 28px 0 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding-bottom: 8px;
+  border-bottom: 2px solid #e2e8f0;
+}
+h3 { font-size: 12px; margin: 18px 0 8px; color: #64748b; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; }
+a { color: #047857; text-decoration: none; }
+a:hover { text-decoration: underline; }
+.subtitle { color: #64748b; font-size: 13px; margin: 4px 0 0; }
+.hdr { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; gap: 16px; flex-wrap: wrap; }
+.hdr-actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+
+.btn {
+  background: white;
+  border: 1px solid #cbd5e1;
+  color: #475569;
+  padding: 7px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+  font-family: inherit;
+  white-space: nowrap;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.12s;
+}
+.btn:hover { background: #f1f5f9; border-color: #94a3b8; text-decoration: none; }
+.btn.primary { background: #047857; color: white; border-color: #047857; }
+.btn.primary:hover { background: #065f46; border-color: #065f46; }
+.btn.copied { background: #10b981; color: white; border-color: #10b981; }
+.btn.danger { color: #b91c1c; border-color: #fecaca; }
+.btn.danger:hover { background: #fef2f2; border-color: #f87171; }
+.btn.small { padding: 4px 10px; font-size: 11px; }
+
+.tabs { display: flex; gap: 6px; margin: 16px 0 4px; border-bottom: 2px solid #e2e8f0; }
+.tab {
+  padding: 8px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #64748b;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-family: inherit;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  text-decoration: none;
+}
+.tab:hover { color: #0f172a; text-decoration: none; }
+.tab.active { color: #047857; border-bottom-color: #047857; }
+
+.card {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 14px 16px;
+  margin: 10px 0;
+}
+.empty-state {
+  color: #94a3b8;
+  padding: 20px;
+  text-align: center;
+  font-size: 13px;
+  background: white;
+  border: 1px dashed #cbd5e1;
+  border-radius: 8px;
+  margin: 10px 0;
+}
+
+.game-list { display: flex; flex-direction: column; gap: 8px; }
+.game-item {
+  display: grid;
+  grid-template-columns: 44px 1fr auto;
+  gap: 12px;
+  align-items: center;
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 10px 14px;
+  color: inherit;
+  text-decoration: none;
+  transition: border-color 0.12s, transform 0.12s;
+}
+.game-item:hover { border-color: #10b981; text-decoration: none; transform: translateY(-1px); }
+.wl-badge {
+  font-weight: 800;
+  font-size: 13px;
+  text-align: center;
+  padding: 6px 0;
+  border-radius: 6px;
+  letter-spacing: 0.02em;
+}
+.wl-badge.w { color: #059669; background: #d1fae5; }
+.wl-badge.l { color: #b91c1c; background: #fee2e2; }
+.wl-badge.t { color: #1d4ed8; background: #dbeafe; }
+.wl-badge.na { color: #94a3b8; background: #f1f5f9; }
+.game-opp { font-weight: 700; font-size: 14px; }
+.game-sub { font-size: 12px; color: #64748b; }
+.game-score { font-size: 18px; font-weight: 800; font-variant-numeric: tabular-nums; color: #0f172a; }
+.season-chip {
+  display: inline-block;
+  background: #f0fdf4;
+  color: #047857;
+  border: 1px solid #a7f3d0;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 1px 7px;
+  border-radius: 999px;
+  margin-left: 6px;
+  vertical-align: 1px;
+}
+
+.tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 10px; margin: 12px 0; }
+.tile { background: white; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 12px; }
+.tile-label { font-size: 11px; color: #64748b; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
+.tile-value { font-size: 24px; font-weight: 700; margin-top: 2px; line-height: 1.1; }
+.tile-sub { font-size: 11px; color: #94a3b8; margin-top: 2px; }
+
+.form-row { display: grid; grid-template-columns: 110px 1fr; gap: 10px; align-items: center; margin: 8px 0; }
+.form-row label { font-size: 12px; font-weight: 600; color: #475569; }
+input[type="text"], input[type="date"], input[type="number"], select, textarea {
+  padding: 7px 10px;
+  font-size: 14px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  background: white;
+  font-family: inherit;
+  color: #0f172a;
+  width: 100%;
+}
+input:focus, select:focus, textarea:focus { outline: 2px solid #10b981; outline-offset: -1px; border-color: #10b981; }
+textarea { resize: vertical; min-height: 56px; }
+.score-inputs { display: flex; gap: 8px; align-items: center; }
+.score-inputs input { width: 70px; text-align: center; font-weight: 700; font-size: 16px; }
+.inline-form { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.inline-form input { width: auto; }
+
+.table-wrap { overflow-x: auto; margin: 10px 0; border: 1px solid #e2e8f0; border-radius: 8px; background: white; }
+table { border-collapse: collapse; width: 100%; font-size: 13px; }
+th {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #64748b;
+  font-weight: 700;
+  padding: 8px 8px;
+  border-bottom: 2px solid #e2e8f0;
+  text-align: center;
+  white-space: nowrap;
+  background: #f8fafc;
+}
+th.left, td.left { text-align: left; }
+td { padding: 6px 8px; border-bottom: 1px solid #f1f5f9; text-align: center; font-variant-numeric: tabular-nums; }
+tr:last-child td { border-bottom: none; }
+td.name-cell, th.name-cell {
+  position: sticky;
+  left: 0;
+  background: white;
+  text-align: left;
+  min-width: 150px;
+  font-weight: 600;
+  z-index: 1;
+  box-shadow: inset -1px 0 #e2e8f0;
+}
+th.name-cell { background: #f8fafc; z-index: 2; }
+.cap-badge {
+  display: inline-block;
+  min-width: 24px;
+  text-align: center;
+  background: #f1f5f9;
+  color: #334155;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 800;
+  padding: 2px 4px;
+  margin-right: 7px;
+  font-variant-numeric: tabular-nums;
+}
+tr.totals-row td { border-top: 2px solid #e2e8f0; font-weight: 700; background: #f8fafc; }
+tr.totals-row td.name-cell { background: #f8fafc; }
+tr.inactive td { color: #94a3b8; }
+tr.inactive td.name-cell { color: #94a3b8; }
+
+.tally-cell {
+  width: 46px;
+  height: 40px;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 6px;
+  background: white;
+  font-size: 15px;
+  font-weight: 700;
+  color: #0f172a;
+  cursor: pointer;
+  font-family: inherit;
+  font-variant-numeric: tabular-nums;
+  transition: background 0.1s, border-color 0.1s, transform 0.05s;
+}
+.tally-cell:hover { border-color: #10b981; background: #f0fdf4; }
+.tally-cell:active { transform: scale(0.94); }
+.tally-cell.zero { color: #cbd5e1; font-weight: 500; }
+.tally-cell.gk-off { background: #f8fafc; border-color: #f1f5f9; color: #e2e8f0; cursor: not-allowed; }
+body.correcting .tally-cell:not(.gk-off) { border-color: #fca5a5; background: #fef2f2; }
+body.correcting .tally-cell:not(.gk-off):hover { border-color: #ef4444; }
+.gk-toggle {
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  padding: 3px 6px;
+  border-radius: 4px;
+  border: 1px solid #cbd5e1;
+  background: white;
+  color: #94a3b8;
+  cursor: pointer;
+  font-family: inherit;
+  margin-left: 6px;
+}
+.gk-toggle.on { background: #1d4ed8; border-color: #1d4ed8; color: white; }
+.correction-note { font-size: 12px; color: #b91c1c; font-weight: 600; }
+
+.roster-chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0; }
+.roster-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 10px;
+  border-radius: 999px;
+  border: 1.5px solid #cbd5e1;
+  background: white;
+  font-size: 12px;
+  font-weight: 600;
+  color: #475569;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.1s;
+}
+.roster-chip.in { background: #f0fdf4; border-color: #10b981; color: #047857; }
+.roster-chip:hover { border-color: #10b981; }
+
+.legend { font-size: 11px; color: #94a3b8; margin: 6px 2px; line-height: 1.6; }
+.legend b { color: #64748b; font-weight: 700; }
+
+.chip-row { display: flex; gap: 6px; flex-wrap: wrap; margin: 8px 0; }
+.chip {
+  padding: 4px 11px;
+  border-radius: 999px;
+  border: 1.5px solid #cbd5e1;
+  background: white;
+  font-size: 12px;
+  font-weight: 600;
+  color: #475569;
+  cursor: pointer;
+  font-family: inherit;
+}
+.chip.active { background: #047857; border-color: #047857; color: white; }
+
+.chart-wrap { position: relative; overflow-x: auto; padding: 4px 0; }
+.chart-tip {
+  position: absolute;
+  pointer-events: none;
+  background: #0f172a;
+  color: white;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 8px;
+  border-radius: 5px;
+  white-space: nowrap;
+  transform: translate(-50%, -100%);
+  display: none;
+  z-index: 5;
+}
+
+.player-item {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 10px;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid #f1f5f9;
+}
+.player-item:last-child { border-bottom: none; }
+.player-actions { display: flex; gap: 6px; }
+.muted { color: #94a3b8; }
+.inactive-badge {
+  display: inline-block;
+  background: #f1f5f9;
+  color: #64748b;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 1px 7px;
+  border-radius: 999px;
+  margin-left: 6px;
+}
+
+.path-callout {
+  background: #ecfdf5;
+  border-left: 4px solid #10b981;
+  padding: 10px 14px;
+  border-radius: 0 8px 8px 0;
+  margin: 10px 0;
+  font-size: 13px;
+  color: #064e3b;
+}
+
+footer {
+  margin-top: 32px;
+  padding-top: 16px;
+  border-top: 1px solid #e2e8f0;
+  font-size: 12px;
+  color: #94a3b8;
+  text-align: center;
+}
+@media (max-width: 640px) {
+  body { padding: 12px; }
+  .form-row { grid-template-columns: 1fr; gap: 4px; }
+}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<footer>
+  Stats live in this browser · use <a href="#/data">Data &amp; backup</a> to export or move to another device
+</footer>
+
+<script>
+// ==================== STAT DEFINITIONS ====================
+// Columns mirror the paper stat sheet: Shots, Goals, Assists, Blocks,
+// Earned (exclusions drawn), Penalty (exclusions committed), Steals, TO,
+// plus goalie Saves / Goals Against.
+const STATS = [
+  { key: 'sh', short: 'SH',  label: 'Shots' },
+  { key: 'gl', short: 'GL',  label: 'Goals' },
+  { key: 'as', short: 'AS',  label: 'Assists' },
+  { key: 'bk', short: 'BK',  label: 'Blocks' },
+  { key: 'st', short: 'ST',  label: 'Steals' },
+  { key: 'ed', short: 'EX+', label: 'Exclusions drawn' },
+  { key: 'ex', short: 'EX-', label: 'Exclusions committed' },
+  { key: 'to', short: 'TO',  label: 'Turnovers' },
+];
+const GK_STATS = [
+  { key: 'sv', short: 'SV', label: 'Saves' },
+  { key: 'ga', short: 'GA', label: 'Goals against' },
+];
+const ALL_STATS = STATS.concat(GK_STATS);
+
+// ==================== STORAGE ====================
+const DB_KEY = 'polo-stat-tracker-v1';
+
+function uid() {
+  if (window.crypto && crypto.randomUUID) return crypto.randomUUID().slice(0, 8);
+  return Math.random().toString(36).slice(2, 10);
+}
+
+function todayStr() {
+  const d = new Date();
+  const p = (n) => String(n).padStart(2, '0');
+  return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate());
+}
+
+function defaultDB() {
+  // Roster seeded from the June 2026 paper stat sheet — edit freely on the Players tab.
+  const seed = [
+    ['2', 'Beckett Bravo'], ['3', 'Owen DeShazer'], ['4', 'Ben Eastep'],
+    ['6', 'Jackson Greenlee'], ['7', 'Brayden Hayes'], ['8', 'Jai Merlo'],
+    ['9', 'Coulter Isenburg'], ['10', 'Evan Nguyen'], ['11', 'Jackson Pangilinan'],
+    ['12', 'Xavier Portet'], ['14', 'Bryce Jaeger'], ['15', 'John Endemann'],
+  ];
+  return {
+    version: 1,
+    settings: { team: 'Alameda', season: 'Summer 2026' },
+    players: seed.map(([cap, name]) => ({ id: uid(), cap, name, active: true })),
+    games: [],
+  };
+}
+
+let db = loadDB();
+
+function loadDB() {
+  try {
+    const raw = localStorage.getItem(DB_KEY);
+    if (!raw) return defaultDB();
+    const obj = JSON.parse(raw);
+    if (!obj || !Array.isArray(obj.players) || !Array.isArray(obj.games)) return defaultDB();
+    obj.settings = obj.settings || { team: 'Alameda', season: '' };
+    return obj;
+  } catch (e) { return defaultDB(); }
+}
+
+function saveDB() {
+  try { localStorage.setItem(DB_KEY, JSON.stringify(db)); }
+  catch (e) { console.error('Failed to save', e); }
+}
+
+function mutate(fn) { fn(); saveDB(); render(); }
+
+// ==================== DATA HELPERS ====================
+function playerById(id) { return db.players.find(p => p.id === id); }
+function gameById(id) { return db.games.find(g => g.id === id); }
+
+function capSort(a, b) {
+  const na = parseInt(a.cap, 10), nb = parseInt(b.cap, 10);
+  const va = isNaN(na) ? 999 : na, vb = isNaN(nb) ? 999 : nb;
+  return va - vb || a.name.localeCompare(b.name);
+}
+
+function sortedPlayers(includeInactive) {
+  return db.players.filter(p => includeInactive || p.active).slice().sort(capSort);
+}
+
+function sortedGames() {
+  return db.games.slice().sort((a, b) => (a.date || '').localeCompare(b.date || '') || (a.created || 0) - (b.created || 0));
+}
+
+function emptyLine() {
+  const o = { gk: false };
+  ALL_STATS.forEach(s => o[s.key] = 0);
+  return o;
+}
+
+function gameLine(game, pid) {
+  if (!game.stats[pid]) game.stats[pid] = emptyLine();
+  return game.stats[pid];
+}
+
+function seasons() {
+  const set = new Set();
+  db.games.forEach(g => { if (g.season) set.add(g.season); });
+  if (db.settings.season) set.add(db.settings.season);
+  return [...set].sort();
+}
+
+// Games (chronological) a player appeared in, optionally filtered to one season.
+function playerGames(pid, season) {
+  return sortedGames().filter(g =>
+    g.roster.indexOf(pid) >= 0 && (!season || g.season === season));
+}
+
+function sumLines(lines) {
+  const t = {};
+  ALL_STATS.forEach(s => t[s.key] = 0);
+  lines.forEach(l => ALL_STATS.forEach(s => t[s.key] += (l && l[s.key]) || 0));
+  return t;
+}
+
+function playerSeasonStats(pid, season) {
+  const games = playerGames(pid, season);
+  const lines = games.map(g => g.stats[pid] || emptyLine());
+  const totals = sumLines(lines);
+  const last5 = sumLines(lines.slice(-5));
+  const gkGames = lines.filter(l => l && l.gk).length;
+  return { games, gp: games.length, totals, last5, last5n: Math.min(5, games.length), gkGames };
+}
+
+function pct(num, den) { return den > 0 ? Math.round(100 * num / den) : null; }
+function avg(total, n) { return n > 0 ? (total / n).toFixed(1) : '–'; }
+
+function gameResult(g) {
+  if (g.scoreUs == null || g.scoreThem == null || g.scoreUs === '' || g.scoreThem === '') return null;
+  const us = Number(g.scoreUs), them = Number(g.scoreThem);
+  if (us > them) return 'w';
+  if (us < them) return 'l';
+  return 't';
+}
+
+function fmtDate(iso) {
+  if (!iso) return 'No date';
+  const [y, m, d] = iso.split('-').map(Number);
+  const dt = new Date(y, m - 1, d);
+  return dt.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+}
+function fmtDateShort(iso) {
+  if (!iso) return '';
+  const [y, m, d] = iso.split('-').map(Number);
+  return new Date(y, m - 1, d).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+}
+
+// ==================== DOM HELPER ====================
+function el(tag, props, ...children) {
+  const e = document.createElement(tag);
+  if (props) {
+    for (const k in props) {
+      if (props[k] == null || props[k] === false) continue;
+      if (k === 'style' && typeof props[k] === 'object') Object.assign(e.style, props[k]);
+      else if (k.startsWith('on')) e.addEventListener(k.slice(2).toLowerCase(), props[k]);
+      else if (k === 'class' || k === 'className') e.className = props[k];
+      else if (k === 'value') e.value = props[k];
+      else if (k === 'checked') e.checked = props[k];
+      else if (k === 'selected') e.selected = props[k];
+      else e.setAttribute(k, props[k]);
+    }
+  }
+  for (const c of children) {
+    if (c == null || c === false) continue;
+    if (Array.isArray(c)) c.forEach(cc => cc != null && cc !== false && e.appendChild(typeof cc === 'string' || typeof cc === 'number' ? document.createTextNode(String(cc)) : cc));
+    else if (typeof c === 'string' || typeof c === 'number') e.appendChild(document.createTextNode(String(c)));
+    else e.appendChild(c);
+  }
+  return e;
+}
+
+// ==================== SHARE / EXPORT ====================
+function copyToClipboard(text, btn, doneLabel) {
+  const fallback = () => {
+    const ta = document.createElement('textarea');
+    ta.value = text; document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); } catch (e) {}
+    document.body.removeChild(ta);
+  };
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).catch(fallback);
+  } else { fallback(); }
+  if (btn) {
+    const orig = btn.textContent;
+    btn.classList.add('copied');
+    btn.textContent = doneLabel || 'Copied!';
+    setTimeout(() => { btn.classList.remove('copied'); btn.textContent = orig; }, 1500);
+  }
+}
+
+function playerShareText(p, season) {
+  const s = playerSeasonStats(p.id, season);
+  const t = s.totals;
+  const lines = [];
+  lines.push(db.settings.team + ' · ' + p.name + (p.cap ? ' #' + p.cap : ''));
+  lines.push((season || 'All seasons') + ' · ' + s.gp + ' game' + (s.gp === 1 ? '' : 's'));
+  if (s.gp) {
+    const shootPct = pct(t.gl, t.sh);
+    lines.push('Goals ' + t.gl + ' · Assists ' + t.as + ' · Shots ' + t.sh + (shootPct != null ? ' (' + shootPct + '% shooting)' : ''));
+    lines.push('Steals ' + t.st + ' · Blocks ' + t.bk + ' · Excl drawn ' + t.ed + ' · Excl ' + t.ex + ' · TO ' + t.to);
+    lines.push('Per game: ' + avg(t.gl, s.gp) + ' G · ' + avg(t.as, s.gp) + ' A · ' + avg(t.st, s.gp) + ' ST');
+    if (s.last5n > 1 && s.gp > s.last5n) {
+      lines.push('Last ' + s.last5n + ': ' + avg(s.last5.gl, s.last5n) + ' G/gm · ' + avg(s.last5.as, s.last5n) + ' A/gm');
+    }
+    if (t.sv || t.ga) {
+      const savePct = pct(t.sv, t.sv + t.ga);
+      lines.push('In goal: ' + t.sv + ' saves · ' + t.ga + ' GA' + (savePct != null ? ' (' + savePct + '% save rate)' : ''));
+    }
+  }
+  return lines.join('\n');
+}
+
+function sharePlayer(p, season, btn) {
+  const text = playerShareText(p, season);
+  if (navigator.share) {
+    navigator.share({ title: p.name + ' · ' + db.settings.team + ' stats', text })
+      .catch(() => copyToClipboard(text, btn));
+  } else {
+    copyToClipboard(text, btn);
+  }
+}
+
+function b64encode(obj) {
+  const json = JSON.stringify(obj);
+  return btoa(unescape(encodeURIComponent(json))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
+}
+function b64decode(str) {
+  let b64 = str.replace(/-/g, '+').replace(/_/g, '/');
+  while (b64.length % 4) b64 += '=';
+  return JSON.parse(decodeURIComponent(escape(atob(b64))));
+}
+
+function exportJSON() {
+  const blob = new Blob([JSON.stringify(db, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const slug = (db.settings.team || 'team').toLowerCase().replace(/[^a-z0-9]+/g, '-');
+  a.href = url;
+  a.download = slug + '-stats-' + todayStr() + '.json';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+function importJSONFile(file) {
+  const reader = new FileReader();
+  reader.onload = () => {
+    try {
+      const obj = JSON.parse(reader.result);
+      if (!obj || !Array.isArray(obj.players) || !Array.isArray(obj.games)) throw new Error('bad shape');
+      if (!confirm('Replace ALL current data with this file? (' + obj.players.length + ' players, ' + obj.games.length + ' games)')) return;
+      obj.settings = obj.settings || { team: 'Alameda', season: '' };
+      db = obj;
+      saveDB();
+      location.hash = '#/games';
+      render();
+    } catch (e) { alert('Could not read that file — it does not look like a stats export.'); }
+  };
+  reader.readAsText(file);
+}
+
+function handleImportLink(encoded) {
+  try {
+    const obj = b64decode(encoded);
+    if (!obj || !Array.isArray(obj.players) || !Array.isArray(obj.games)) throw new Error('bad shape');
+    const ok = confirm('This link contains a full stats database (' + obj.players.length + ' players, ' + obj.games.length + ' games).\n\nImport it and REPLACE the data on this device?');
+    if (ok) {
+      obj.settings = obj.settings || { team: 'Alameda', season: '' };
+      db = obj;
+      saveDB();
+    }
+  } catch (e) { alert('That sync link could not be read.'); }
+  location.hash = '#/games';
+}
+
+// ==================== VIEWS: GAMES ====================
+function newGame() {
+  const g = {
+    id: uid(),
+    date: todayStr(),
+    opponent: '',
+    location: '',
+    season: db.settings.season || '',
+    scoreUs: '',
+    scoreThem: '',
+    notes: '',
+    roster: sortedPlayers(false).map(p => p.id),
+    stats: {},
+    created: Date.now(),
+  };
+  mutate(() => db.games.push(g));
+  location.hash = '#/game/' + g.id;
+}
+
+function renderGamesView(app) {
+  const games = sortedGames().slice().reverse();
+  let w = 0, l = 0, t = 0, gf = 0, ga = 0;
+  games.forEach(g => {
+    const r = gameResult(g);
+    if (r === 'w') w++; else if (r === 'l') l++; else if (r === 't') t++;
+    if (r) { gf += Number(g.scoreUs); ga += Number(g.scoreThem); }
+  });
+
+  app.appendChild(el('div', { class: 'hdr', style: { marginTop: '16px' } },
+    el('div', {},
+      el('h2', { style: { margin: '0', border: 'none', padding: '0' } }, 'Games'),
+      games.length ? el('p', { class: 'subtitle' },
+        'Record ' + w + '–' + l + (t ? '–' + t : '') + ' · GF ' + gf + ' · GA ' + ga) : null,
+    ),
+    el('button', { class: 'btn primary', onClick: newGame }, '+ New game'),
+  ));
+
+  if (!games.length) {
+    app.appendChild(el('div', { class: 'empty-state' },
+      'No games yet. Tap ', el('b', {}, '+ New game'), ' to set up a roster and start tallying stats.'));
+    return;
+  }
+
+  const list = el('div', { class: 'game-list' });
+  games.forEach(g => {
+    const r = gameResult(g);
+    const badge = r
+      ? el('span', { class: 'wl-badge ' + r }, r.toUpperCase())
+      : el('span', { class: 'wl-badge na' }, '·');
+    const score = r != null || (g.scoreUs !== '' && g.scoreThem !== '')
+      ? g.scoreUs + '–' + g.scoreThem : '';
+    list.appendChild(el('a', { class: 'game-item', href: '#/game/' + g.id },
+      badge,
+      el('div', {},
+        el('div', { class: 'game-opp' },
+          'vs ' + (g.opponent || 'TBD'),
+          g.season ? el('span', { class: 'season-chip' }, g.season) : null,
+        ),
+        el('div', { class: 'game-sub' }, fmtDate(g.date) + (g.location ? ' · ' + g.location : '') + ' · ' + g.roster.length + ' players'),
+      ),
+      el('div', { class: 'game-score' }, score),
+    ));
+  });
+  app.appendChild(list);
+}
+
+// ==================== VIEWS: SINGLE GAME ====================
+let correctionMode = false;
+
+function renderGameView(app, gameId) {
+  const g = gameById(gameId);
+  if (!g) {
+    app.appendChild(el('div', { class: 'empty-state' }, 'Game not found. ', el('a', { href: '#/games' }, 'Back to games')));
+    return;
+  }
+
+  app.appendChild(el('div', { class: 'hdr', style: { marginTop: '16px' } },
+    el('div', {},
+      el('h2', { id: 'game-title', style: { margin: '0', border: 'none', padding: '0' } },
+        db.settings.team + ' vs ' + (g.opponent || 'TBD')),
+      el('p', { class: 'subtitle' }, fmtDate(g.date) + (g.location ? ' · ' + g.location : '')),
+    ),
+    el('div', { class: 'hdr-actions' },
+      el('a', { class: 'btn', href: '#/games' }, '← All games'),
+      el('button', {
+        class: 'btn danger', onClick: () => {
+          if (confirm('Delete this game and all its stats? This cannot be undone.')) {
+            mutate(() => { db.games = db.games.filter(x => x.id !== g.id); });
+            location.hash = '#/games';
+          }
+        }
+      }, 'Delete game'),
+    ),
+  ));
+
+  // --- Game details ---
+  // Fields save on input WITHOUT re-rendering: a re-render here would destroy
+  // the next field the user just tapped into (blur fires change mid-interaction).
+  const details = el('div', { class: 'card' });
+  const bind = (field) => (e) => { g[field] = e.target.value; saveDB(); };
+  details.appendChild(el('h3', { style: { marginTop: '0' } }, 'Game details'));
+  details.appendChild(el('div', { class: 'form-row' },
+    el('label', {}, 'Opponent'),
+    el('input', {
+      type: 'text', value: g.opponent, placeholder: 'e.g. LAMO',
+      onInput: (e) => {
+        g.opponent = e.target.value; saveDB();
+        const h = document.getElementById('game-title');
+        if (h) h.textContent = db.settings.team + ' vs ' + (g.opponent || 'TBD');
+      },
+    }),
+  ));
+  details.appendChild(el('div', { class: 'form-row' },
+    el('label', {}, 'Date'),
+    el('input', { type: 'date', value: g.date, onInput: bind('date') }),
+  ));
+  details.appendChild(el('div', { class: 'form-row' },
+    el('label', {}, 'Location'),
+    el('input', { type: 'text', value: g.location, placeholder: 'e.g. Esmeralda HS', onInput: bind('location') }),
+  ));
+  details.appendChild(el('div', { class: 'form-row' },
+    el('label', {}, 'Season'),
+    el('input', { type: 'text', value: g.season, placeholder: 'e.g. Summer 2026', onInput: bind('season') }),
+  ));
+  const goalsTallied = g.roster.reduce((n, pid) => n + ((g.stats[pid] && g.stats[pid].gl) || 0), 0);
+  details.appendChild(el('div', { class: 'form-row' },
+    el('label', {}, 'Final score'),
+    el('div', { class: 'score-inputs' },
+      el('input', { type: 'number', min: '0', value: g.scoreUs, placeholder: 'Us', onInput: bind('scoreUs') }),
+      el('span', { class: 'muted' }, '–'),
+      el('input', { type: 'number', min: '0', value: g.scoreThem, placeholder: 'Them', onInput: bind('scoreThem') }),
+      el('span', { class: 'muted', style: { fontSize: '11px' } }, goalsTallied ? '(' + goalsTallied + ' goals tallied below)' : ''),
+    ),
+  ));
+  details.appendChild(el('div', { class: 'form-row' },
+    el('label', {}, 'Notes'),
+    el('textarea', { placeholder: 'Game notes — what worked, what to fix…', onInput: bind('notes') }, g.notes || ''),
+  ));
+  app.appendChild(details);
+
+  // --- Roster for this game ---
+  const rosterCard = el('div', { class: 'card' });
+  rosterCard.appendChild(el('h3', { style: { marginTop: '0' } }, 'Roster for this game (' + g.roster.length + ')'));
+  rosterCard.appendChild(el('p', { class: 'subtitle', style: { margin: '0 0 4px' } },
+    'Tap to add or remove players from this game. Players removed here keep their stats from other games.'));
+  const chips = el('div', { class: 'roster-chips' });
+  sortedPlayers(true).forEach(p => {
+    const inGame = g.roster.indexOf(p.id) >= 0;
+    if (!p.active && !inGame) return; // inactive players appear only if already in the game
+    chips.appendChild(el('button', {
+      class: 'roster-chip' + (inGame ? ' in' : ''),
+      onClick: () => {
+        if (inGame) {
+          const line = g.stats[p.id];
+          const hasStats = line && ALL_STATS.some(s => line[s.key] > 0);
+          if (hasStats && !confirm('Remove ' + p.name + ' from this game? Their tallies for THIS game will be deleted.')) return;
+          mutate(() => {
+            g.roster = g.roster.filter(id => id !== p.id);
+            delete g.stats[p.id];
+          });
+        } else {
+          mutate(() => g.roster.push(p.id));
+        }
+      }
+    }, (inGame ? '✓ ' : '+ ') + (p.cap ? '#' + p.cap + ' ' : '') + p.name));
+  });
+  rosterCard.appendChild(chips);
+
+  // Inline quick-add for a guest / new player
+  const nameIn = el('input', { type: 'text', placeholder: 'New player name', style: { width: '180px' } });
+  const capIn = el('input', { type: 'text', placeholder: '#', style: { width: '56px' } });
+  rosterCard.appendChild(el('div', { class: 'inline-form', style: { marginTop: '6px' } },
+    capIn, nameIn,
+    el('button', {
+      class: 'btn small', onClick: () => {
+        const name = nameIn.value.trim();
+        if (!name) return;
+        const p = { id: uid(), name, cap: capIn.value.trim(), active: true };
+        mutate(() => { db.players.push(p); g.roster.push(p.id); });
+      }
+    }, '+ Add to team & game'),
+  ));
+  app.appendChild(rosterCard);
+
+  // --- Tally table ---
+  app.appendChild(el('div', { class: 'hdr', style: { margin: '18px 0 0' } },
+    el('h3', { style: { margin: '0' } }, 'Stat tally — tap a cell to add 1'),
+    el('div', { class: 'hdr-actions' },
+      correctionMode ? el('span', { class: 'correction-note' }, 'Fix mode: taps subtract 1') : null,
+      el('button', {
+        class: 'btn small' + (correctionMode ? ' danger' : ''),
+        onClick: () => { correctionMode = !correctionMode; render(); }
+      }, correctionMode ? 'Done fixing' : '− Fix a mistake'),
+    ),
+  ));
+
+  const rosterPlayers = g.roster.map(playerById).filter(Boolean).sort(capSort);
+  if (!rosterPlayers.length) {
+    app.appendChild(el('div', { class: 'empty-state' }, 'Add players to the roster above to start tallying.'));
+  } else {
+    const wrap = el('div', { class: 'table-wrap' });
+    const table = el('table', {});
+    const headRow = el('tr', {},
+      el('th', { class: 'name-cell' }, 'Player'),
+      ...STATS.map(s => el('th', { title: s.label }, s.short)),
+      ...GK_STATS.map(s => el('th', { title: s.label + ' (goalie)' }, s.short)),
+    );
+    table.appendChild(el('thead', {}, headRow));
+    const tbody = el('tbody', {});
+
+    const tallyBtn = (p, statKey, enabled) => {
+      const line = gameLine(g, p.id);
+      const v = line[statKey] || 0;
+      if (!enabled) return el('td', {}, el('button', { class: 'tally-cell gk-off', disabled: true }, '·'));
+      return el('td', {}, el('button', {
+        class: 'tally-cell' + (v === 0 ? ' zero' : ''),
+        onClick: () => {
+          mutate(() => {
+            const ln = gameLine(g, p.id);
+            ln[statKey] = Math.max(0, (ln[statKey] || 0) + (correctionMode ? -1 : 1));
+          });
+        }
+      }, v === 0 ? '–' : v));
+    };
+
+    rosterPlayers.forEach(p => {
+      const line = gameLine(g, p.id);
+      const row = el('tr', {},
+        el('td', { class: 'name-cell' },
+          el('span', { class: 'cap-badge' }, p.cap || '·'),
+          el('a', { href: '#/player/' + p.id, style: { color: 'inherit' } }, p.name),
+          el('button', {
+            class: 'gk-toggle' + (line.gk ? ' on' : ''),
+            title: 'Toggle goalie for this game (enables Saves / Goals Against)',
+            onClick: () => mutate(() => { const ln = gameLine(g, p.id); ln.gk = !ln.gk; }),
+          }, 'GK'),
+        ),
+        ...STATS.map(s => tallyBtn(p, s.key, true)),
+        ...GK_STATS.map(s => tallyBtn(p, s.key, line.gk)),
+      );
+      tbody.appendChild(row);
+    });
+
+    // Team totals row
+    const totals = sumLines(rosterPlayers.map(p => g.stats[p.id]));
+    tbody.appendChild(el('tr', { class: 'totals-row' },
+      el('td', { class: 'name-cell' }, 'Team total'),
+      ...STATS.map(s => el('td', {}, totals[s.key] || 0)),
+      ...GK_STATS.map(s => el('td', {}, totals[s.key] || 0)),
+    ));
+
+    table.appendChild(tbody);
+    wrap.appendChild(table);
+    app.appendChild(wrap);
+    app.appendChild(el('div', { class: 'legend' },
+      el('b', {}, 'SH'), ' shots · ', el('b', {}, 'GL'), ' goals · ', el('b', {}, 'AS'), ' assists · ',
+      el('b', {}, 'BK'), ' blocks · ', el('b', {}, 'ST'), ' steals · ', el('b', {}, 'EX+'), ' exclusions drawn · ',
+      el('b', {}, 'EX-'), ' exclusions committed · ', el('b', {}, 'TO'), ' turnovers · ',
+      el('b', {}, 'SV'), '/', el('b', {}, 'GA'), ' goalie saves & goals against (tap ', el('b', {}, 'GK'), ' on a player to enable)',
+    ));
+  }
+}
+
+// ==================== VIEWS: PLAYERS ====================
+function renderPlayersView(app) {
+  app.appendChild(el('div', { class: 'hdr', style: { marginTop: '16px' } },
+    el('div', {},
+      el('h2', { style: { margin: '0', border: 'none', padding: '0' } }, 'Players'),
+      el('p', { class: 'subtitle' }, 'Removing a player hides them from new games but keeps every stat they ever recorded.'),
+    ),
+  ));
+
+  const addCard = el('div', { class: 'card' });
+  const capIn = el('input', { type: 'text', placeholder: '#', style: { width: '56px' } });
+  const nameIn = el('input', { type: 'text', placeholder: 'Player name', style: { width: '220px' } });
+  const add = () => {
+    const name = nameIn.value.trim();
+    if (!name) return;
+    mutate(() => db.players.push({ id: uid(), name, cap: capIn.value.trim(), active: true }));
+  };
+  nameIn.addEventListener('keydown', (e) => { if (e.key === 'Enter') add(); });
+  addCard.appendChild(el('div', { class: 'inline-form' },
+    capIn, nameIn, el('button', { class: 'btn primary small', onClick: add }, '+ Add player'),
+  ));
+  app.appendChild(addCard);
+
+  const renderGroup = (players, title) => {
+    if (!players.length) return;
+    app.appendChild(el('h3', {}, title + ' (' + players.length + ')'));
+    const card = el('div', { class: 'card' });
+    players.forEach(p => {
+      const s = playerSeasonStats(p.id, null);
+      card.appendChild(el('div', { class: 'player-item' + (p.active ? '' : ' inactive') },
+        el('div', {},
+          el('span', { class: 'cap-badge' }, p.cap || '·'),
+          el('a', { href: '#/player/' + p.id, style: { fontWeight: '700' } }, p.name),
+          !p.active ? el('span', { class: 'inactive-badge' }, 'inactive') : null,
+          el('div', { class: 'game-sub', style: { marginLeft: '31px' } },
+            s.gp + ' games · ' + s.totals.gl + ' G · ' + s.totals.as + ' A · ' + s.totals.st + ' ST'),
+        ),
+        el('div', { class: 'player-actions' },
+          el('a', { class: 'btn small', href: '#/player/' + p.id }, 'Stats'),
+          el('button', {
+            class: 'btn small', onClick: () => {
+              const cap = prompt('Cap number for ' + p.name + ':', p.cap || '');
+              if (cap === null) return;
+              const name = prompt('Name:', p.name);
+              if (name === null || !name.trim()) return;
+              mutate(() => { p.cap = cap.trim(); p.name = name.trim(); });
+            }
+          }, 'Edit'),
+          p.active
+            ? el('button', {
+                class: 'btn small danger', onClick: () => {
+                  if (confirm('Remove ' + p.name + ' from the active roster?\n\nAll their stats stay in the database and they can be re-activated any time.')) {
+                    mutate(() => { p.active = false; });
+                  }
+                }
+              }, 'Remove')
+            : el('button', { class: 'btn small', onClick: () => mutate(() => { p.active = true; }) }, 'Re-activate'),
+        ),
+      ));
+    });
+    app.appendChild(card);
+  };
+
+  const all = db.players.slice().sort(capSort);
+  renderGroup(all.filter(p => p.active), 'Active roster');
+  renderGroup(all.filter(p => !p.active), 'Inactive — stats retained');
+  if (!all.length) app.appendChild(el('div', { class: 'empty-state' }, 'No players yet — add your roster above.'));
+}
+
+// ==================== VIEWS: PLAYER DETAIL ====================
+let playerSeasonFilter = {}; // pid -> season ('' = all)
+let playerChartStat = {};    // pid -> stat key
+
+function renderPlayerView(app, pid) {
+  const p = playerById(pid);
+  if (!p) {
+    app.appendChild(el('div', { class: 'empty-state' }, 'Player not found. ', el('a', { href: '#/players' }, 'Back to players')));
+    return;
+  }
+  const season = playerSeasonFilter[pid] || '';
+  const s = playerSeasonStats(pid, season || null);
+  const t = s.totals;
+
+  app.appendChild(el('div', { class: 'hdr', style: { marginTop: '16px' } },
+    el('div', {},
+      el('h2', { style: { margin: '0', border: 'none', padding: '0' } },
+        (p.cap ? '#' + p.cap + ' ' : '') + p.name,
+        !p.active ? el('span', { class: 'inactive-badge' }, 'inactive') : null,
+      ),
+      el('p', { class: 'subtitle' }, db.settings.team + ' · ' + (season || 'All seasons') + ' · ' + s.gp + ' game' + (s.gp === 1 ? '' : 's')),
+    ),
+    el('div', { class: 'hdr-actions' },
+      el('a', { class: 'btn', href: '#/players' }, '← Players'),
+      el('button', {
+        class: 'btn primary',
+        onClick: (e) => sharePlayer(p, season || null, e.currentTarget),
+      }, 'Share stats'),
+    ),
+  ));
+
+  // Season filter
+  const seasonList = seasons();
+  if (seasonList.length > 1 || (seasonList.length === 1 && seasonList[0])) {
+    const chipRow = el('div', { class: 'chip-row' },
+      el('button', {
+        class: 'chip' + (season === '' ? ' active' : ''),
+        onClick: () => { playerSeasonFilter[pid] = ''; render(); },
+      }, 'All seasons'),
+      ...seasonList.map(sn => el('button', {
+        class: 'chip' + (season === sn ? ' active' : ''),
+        onClick: () => { playerSeasonFilter[pid] = sn; render(); },
+      }, sn)),
+    );
+    app.appendChild(chipRow);
+  }
+
+  if (!s.gp) {
+    app.appendChild(el('div', { class: 'empty-state' }, 'No games recorded' + (season ? ' in ' + season : '') + ' yet.'));
+    return;
+  }
+
+  // Headline tiles
+  const shootPct = pct(t.gl, t.sh);
+  const tiles = el('div', { class: 'tiles' },
+    el('div', { class: 'tile' }, el('div', { class: 'tile-label' }, 'Games'), el('div', { class: 'tile-value' }, s.gp)),
+    el('div', { class: 'tile' }, el('div', { class: 'tile-label' }, 'Goals'), el('div', { class: 'tile-value' }, t.gl), el('div', { class: 'tile-sub' }, avg(t.gl, s.gp) + ' per game')),
+    el('div', { class: 'tile' }, el('div', { class: 'tile-label' }, 'Assists'), el('div', { class: 'tile-value' }, t.as), el('div', { class: 'tile-sub' }, avg(t.as, s.gp) + ' per game')),
+    el('div', { class: 'tile' }, el('div', { class: 'tile-label' }, 'Shooting'), el('div', { class: 'tile-value' }, shootPct != null ? shootPct + '%' : '–'), el('div', { class: 'tile-sub' }, t.gl + ' of ' + t.sh + ' shots')),
+    el('div', { class: 'tile' }, el('div', { class: 'tile-label' }, 'Steals'), el('div', { class: 'tile-value' }, t.st), el('div', { class: 'tile-sub' }, avg(t.st, s.gp) + ' per game')),
+  );
+  if (t.sv || t.ga) {
+    const savePct = pct(t.sv, t.sv + t.ga);
+    tiles.appendChild(el('div', { class: 'tile' },
+      el('div', { class: 'tile-label' }, 'Save rate'),
+      el('div', { class: 'tile-value' }, savePct != null ? savePct + '%' : '–'),
+      el('div', { class: 'tile-sub' }, t.sv + ' SV · ' + t.ga + ' GA · ' + s.gkGames + ' in goal'),
+    ));
+  }
+  app.appendChild(tiles);
+
+  // Per-game chart
+  app.appendChild(renderPlayerChart(p, s, season));
+
+  // Totals / averages table
+  app.appendChild(el('h3', {}, 'Totals & averages'));
+  const showGk = t.sv > 0 || t.ga > 0;
+  const statRows = STATS.concat(showGk ? GK_STATS : []);
+  const twrap = el('div', { class: 'table-wrap' });
+  const table = el('table', {},
+    el('thead', {}, el('tr', {},
+      el('th', { class: 'left' }, 'Stat'),
+      el('th', {}, 'Total'),
+      el('th', {}, 'Per game'),
+      el('th', {}, 'Last ' + s.last5n + ' avg'),
+    )),
+    el('tbody', {}, statRows.map(st => el('tr', {},
+      el('td', { class: 'left' }, st.label + ' (' + st.short + ')'),
+      el('td', {}, t[st.key]),
+      el('td', {}, avg(t[st.key], s.gp)),
+      el('td', {}, avg(s.last5[st.key], s.last5n)),
+    ))),
+  );
+  twrap.appendChild(table);
+  app.appendChild(twrap);
+
+  // Game log
+  app.appendChild(el('h3', {}, 'Game log'));
+  const lwrap = el('div', { class: 'table-wrap' });
+  const ltable = el('table', {},
+    el('thead', {}, el('tr', {},
+      el('th', { class: 'name-cell' }, 'Game'),
+      el('th', {}, 'Result'),
+      ...statRows.map(st => el('th', { title: st.label }, st.short)),
+    )),
+    el('tbody', {}, s.games.slice().reverse().map(g => {
+      const line = g.stats[pid] || emptyLine();
+      const r = gameResult(g);
+      return el('tr', {},
+        el('td', { class: 'name-cell' },
+          el('a', { href: '#/game/' + g.id }, 'vs ' + (g.opponent || 'TBD')),
+          el('div', { class: 'game-sub', style: { fontWeight: '400' } }, fmtDate(g.date)),
+        ),
+        el('td', {}, r ? r.toUpperCase() + ' ' + g.scoreUs + '–' + g.scoreThem : '–'),
+        ...statRows.map(st => el('td', {}, line[st.key] ? line[st.key] : el('span', { class: 'muted' }, '·'))),
+      );
+    })),
+  );
+  lwrap.appendChild(ltable);
+  app.appendChild(lwrap);
+
+  // Share preview
+  app.appendChild(el('h3', {}, 'Share preview'));
+  const shareCard = el('div', { class: 'card', style: { whiteSpace: 'pre-line', fontSize: '13px' } }, playerShareText(p, season || null));
+  app.appendChild(shareCard);
+}
+
+// Per-game column chart for one stat. Single series (the app's emerald), thin
+// rounded-top bars from a hairline baseline, tooltip on hover/tap, sparing labels.
+function renderPlayerChart(p, s, season) {
+  const chartable = [
+    { key: 'gl', label: 'Goals' },
+    { key: 'pts', label: 'Points (G+A)' },
+    { key: 'sh', label: 'Shots' },
+    { key: 'st', label: 'Steals' },
+  ];
+  if (s.totals.sv > 0) chartable.push({ key: 'sv', label: 'Saves' });
+  const statKey = playerChartStat[p.id] || 'gl';
+  const active = chartable.find(c => c.key === statKey) || chartable[0];
+
+  const values = s.games.map(g => {
+    const line = g.stats[p.id] || emptyLine();
+    return active.key === 'pts' ? (line.gl || 0) + (line.as || 0) : (line[active.key] || 0);
+  });
+  const maxV = Math.max(1, ...values);
+
+  const container = el('div', { class: 'card' });
+  container.appendChild(el('div', { class: 'hdr', style: { marginBottom: '2px' } },
+    el('h3', { style: { margin: '0' } }, active.label + ' per game'),
+    el('div', { class: 'chip-row', style: { margin: '0' } },
+      chartable.map(c => el('button', {
+        class: 'chip' + (c.key === active.key ? ' active' : ''),
+        style: { padding: '3px 9px', fontSize: '11px' },
+        onClick: () => { playerChartStat[p.id] = c.key; render(); },
+      }, c.label)),
+    ),
+  ));
+
+  const slot = 30, barW = 18, chartH = 110, padTop = 18, padBottom = 20;
+  const width = Math.max(s.games.length * slot + 10, 120);
+  const height = chartH + padTop + padBottom;
+  const svgNS = 'http://www.w3.org/2000/svg';
+  const svg = document.createElementNS(svgNS, 'svg');
+  svg.setAttribute('width', width);
+  svg.setAttribute('height', height);
+  svg.style.display = 'block';
+
+  const baselineY = padTop + chartH;
+  const baseline = document.createElementNS(svgNS, 'line');
+  baseline.setAttribute('x1', 0); baseline.setAttribute('x2', width);
+  baseline.setAttribute('y1', baselineY); baseline.setAttribute('y2', baselineY);
+  baseline.setAttribute('stroke', '#cbd5e1'); baseline.setAttribute('stroke-width', '1');
+  svg.appendChild(baseline);
+
+  const wrap = el('div', { class: 'chart-wrap' });
+  const tip = el('div', { class: 'chart-tip' });
+  const maxIdx = values.indexOf(Math.max(...values));
+
+  values.forEach((v, i) => {
+    const x = 5 + i * slot + (slot - barW) / 2;
+    const h = Math.round((v / maxV) * chartH);
+    const y = baselineY - h;
+    const r = Math.min(4, h);
+    if (h > 0) {
+      const path = document.createElementNS(svgNS, 'path');
+      path.setAttribute('d',
+        'M' + x + ',' + baselineY +
+        ' L' + x + ',' + (y + r) +
+        ' Q' + x + ',' + y + ' ' + (x + r) + ',' + y +
+        ' L' + (x + barW - r) + ',' + y +
+        ' Q' + (x + barW) + ',' + y + ' ' + (x + barW) + ',' + (y + r) +
+        ' L' + (x + barW) + ',' + baselineY + ' Z');
+      path.setAttribute('fill', '#10b981');
+      svg.appendChild(path);
+    } else {
+      const dot = document.createElementNS(svgNS, 'circle');
+      dot.setAttribute('cx', x + barW / 2); dot.setAttribute('cy', baselineY);
+      dot.setAttribute('r', 2); dot.setAttribute('fill', '#e2e8f0');
+      svg.appendChild(dot);
+    }
+    // Label only the max bar — tooltip + game log carry the rest.
+    if (i === maxIdx && v > 0) {
+      const txt = document.createElementNS(svgNS, 'text');
+      txt.setAttribute('x', x + barW / 2); txt.setAttribute('y', y - 5);
+      txt.setAttribute('text-anchor', 'middle');
+      txt.setAttribute('font-size', '11'); txt.setAttribute('font-weight', '700');
+      txt.setAttribute('fill', '#334155');
+      txt.textContent = v;
+      svg.appendChild(txt);
+    }
+    // First/last date labels only
+    if (i === 0 || i === values.length - 1) {
+      const txt = document.createElementNS(svgNS, 'text');
+      txt.setAttribute('x', x + barW / 2); txt.setAttribute('y', baselineY + 14);
+      txt.setAttribute('text-anchor', i === 0 ? 'start' : 'end');
+      txt.setAttribute('font-size', '10'); txt.setAttribute('fill', '#94a3b8');
+      txt.textContent = fmtDateShort(s.games[i].date);
+      svg.appendChild(txt);
+    }
+    // Full-height invisible hit target for hover/tap tooltip
+    const hit = document.createElementNS(svgNS, 'rect');
+    hit.setAttribute('x', 5 + i * slot); hit.setAttribute('y', 0);
+    hit.setAttribute('width', slot); hit.setAttribute('height', height);
+    hit.setAttribute('fill', 'transparent');
+    const g = s.games[i];
+    const show = () => {
+      tip.textContent = fmtDateShort(g.date) + ' vs ' + (g.opponent || 'TBD') + ' — ' + v + ' ' + active.label.toLowerCase().replace(' (g+a)', '');
+      tip.style.left = (5 + i * slot + slot / 2) + 'px';
+      tip.style.top = (Math.min(baselineY - h, baselineY) - 6) + 'px';
+      tip.style.display = 'block';
+    };
+    hit.addEventListener('mouseenter', show);
+    hit.addEventListener('click', show);
+    hit.addEventListener('mouseleave', () => { tip.style.display = 'none'; });
+    svg.appendChild(hit);
+  });
+
+  wrap.appendChild(svg);
+  wrap.appendChild(tip);
+  container.appendChild(wrap);
+  return container;
+}
+
+// ==================== VIEWS: DATA ====================
+function renderDataView(app) {
+  app.appendChild(el('h2', { style: { marginTop: '16px' } }, 'Team settings'));
+  const settings = el('div', { class: 'card' });
+  settings.appendChild(el('div', { class: 'form-row' },
+    el('label', {}, 'Team name'),
+    el('input', { type: 'text', value: db.settings.team, onChange: (e) => mutate(() => { db.settings.team = e.target.value.trim() || 'Team'; }) }),
+  ));
+  settings.appendChild(el('div', { class: 'form-row' },
+    el('label', {}, 'Current season'),
+    el('input', { type: 'text', value: db.settings.season || '', placeholder: 'e.g. Summer 2026', onChange: (e) => mutate(() => { db.settings.season = e.target.value.trim(); }) }),
+  ));
+  settings.appendChild(el('p', { class: 'subtitle' }, 'New games are tagged with the current season, so you can filter each player\'s stats by season later.'));
+  app.appendChild(settings);
+
+  app.appendChild(el('h2', {}, 'Backup & sync'));
+  app.appendChild(el('div', { class: 'path-callout' },
+    el('strong', {}, 'Your stats database lives in this browser. '),
+    'It survives closing the tab, but export a backup after big stat days — and use the sync link to copy everything to another device (e.g. iPad → phone).'));
+
+  const dataCard = el('div', { class: 'card' });
+  const fileIn = el('input', { type: 'file', accept: '.json,application/json', style: { display: 'none' } });
+  fileIn.addEventListener('change', () => { if (fileIn.files[0]) importJSONFile(fileIn.files[0]); fileIn.value = ''; });
+  dataCard.appendChild(fileIn);
+  dataCard.appendChild(el('div', { class: 'hdr-actions' },
+    el('button', { class: 'btn primary', onClick: exportJSON }, '⬇ Export backup (JSON)'),
+    el('button', { class: 'btn', onClick: () => fileIn.click() }, '⬆ Import backup'),
+    el('button', {
+      class: 'btn', onClick: (e) => {
+        const url = location.origin + location.pathname + '#i=' + b64encode(db);
+        copyToClipboard(url, e.currentTarget, 'Link copied!');
+      }
+    }, '🔗 Copy sync link'),
+  ));
+  dataCard.appendChild(el('p', { class: 'subtitle', style: { marginTop: '10px' } },
+    'The sync link contains the entire database — open it on another device and confirm the import there. Import replaces that device\'s data.'));
+  app.appendChild(dataCard);
+
+  app.appendChild(el('h2', {}, 'Danger zone'));
+  const danger = el('div', { class: 'card' });
+  danger.appendChild(el('button', {
+    class: 'btn danger', onClick: () => {
+      if (!confirm('Delete ALL players, games and stats from this device?')) return;
+      if (!confirm('Really sure? Export a backup first if in doubt. This cannot be undone.')) return;
+      db = defaultDB();
+      db.players = [];
+      saveDB();
+      render();
+    }
+  }, 'Erase all data on this device'));
+  app.appendChild(danger);
+}
+
+// ==================== ROUTER / MAIN RENDER ====================
+function currentRoute() {
+  const h = location.hash || '#/games';
+  if (h.startsWith('#i=')) return { view: 'import', arg: h.slice(3) };
+  const parts = h.replace(/^#\//, '').split('/');
+  return { view: parts[0] || 'games', arg: parts[1] };
+}
+
+function render() {
+  const route = currentRoute();
+  document.body.classList.toggle('correcting', correctionMode && route.view === 'game');
+  const app = document.getElementById('app');
+  app.innerHTML = '';
+
+  app.appendChild(el('div', { class: 'hdr' },
+    el('div', {},
+      el('h1', {}, db.settings.team + ' · Stat Tracker'),
+      el('p', { class: 'subtitle' }, 'Per-player water polo stats · every game, every season'),
+    ),
+    el('div', { class: 'hdr-actions' },
+      el('a', { class: 'btn', href: 'index.html' }, '← Scenario explorer'),
+    ),
+  ));
+
+  const tab = (id, label, href) => el('a', {
+    class: 'tab' + (route.view === id || (id === 'games' && route.view === 'game') || (id === 'players' && route.view === 'player') ? ' active' : ''),
+    href,
+  }, label);
+  app.appendChild(el('div', { class: 'tabs' },
+    tab('games', 'Games', '#/games'),
+    tab('players', 'Players', '#/players'),
+    tab('data', 'Data & backup', '#/data'),
+  ));
+
+  if (route.view === 'games') renderGamesView(app);
+  else if (route.view === 'game') renderGameView(app, route.arg);
+  else if (route.view === 'players') renderPlayersView(app);
+  else if (route.view === 'player') renderPlayerView(app, route.arg);
+  else if (route.view === 'data') renderDataView(app);
+  else renderGamesView(app);
+}
+
+window.addEventListener('hashchange', () => {
+  const route = currentRoute();
+  if (route.view === 'import') { handleImportLink(route.arg); return; }
+  correctionMode = false;
+  render();
+});
+
+// Initial load: handle a sync link, otherwise render current route.
+(function init() {
+  const route = currentRoute();
+  if (route.view === 'import') { handleImportLink(route.arg); }
+  saveDB(); // persist seeded roster on first run
+  render();
+})();
+</script>
+</body>
+</html>

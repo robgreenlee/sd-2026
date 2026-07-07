@@ -4,6 +4,18 @@ An interactive what-if explorer for **Lamorinda B** at the 2026 San Diego County
 
 Click the winner of each game and the app computes Lamorinda's path through pool play, the Saturday crossover, and the Sunday bracket — all the way to a final placement.
 
+## Player Stat Tracker (`stats.html`)
+
+A companion app for tracking per-player stats game by game — a digital version of the paper stat sheet (shots, goals, assists, blocks, steals, exclusions drawn/committed, turnovers, plus goalie saves and goals against).
+
+- **Games tab** — create a game (opponent, date, location, season, final score, notes), pick the roster for that game, then tap cells in the tally table to count stats live. A "fix a mistake" mode subtracts instead.
+- **Per-game rosters** — players can be added to or removed from any single game (guests included) without touching their history.
+- **Players tab** — add/edit players; *removing* a player only deactivates them: they disappear from new-game rosters but every stat they recorded stays in the database and they can be re-activated any time.
+- **Player pages** — season filter, headline tiles (goals, assists, shooting %, save rate), per-game chart, totals / per-game / rolling last-5 averages, full game log, and a **Share** button (native share sheet on mobile, clipboard fallback) that sends a text summary of the player's stats.
+- **Data & backup tab** — team name + current season settings, JSON export/import, and a "sync link" that carries the whole database in the URL for moving data between devices.
+
+Storage is `localStorage` (no backend): stats live in the browser that recorded them. Export a backup or use the sync link to move data across devices.
+
 ## Features
 
 - **All 36 teams modeled** across the three pools that affect Lamorinda (G, B, J) and the routing into Saturday's O / S / W crossover pools.
