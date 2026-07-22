@@ -3,10 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Lamorinda B · SDCC 14U Boys A Scenario Explorer</title>
-<meta name="description" content="Interactive what-if explorer for Lamorinda B at the 2026 San Diego County Cup (14U Boys A). Click winners and see Lamorinda's path through the bracket and final placement.">
-<meta property="og:title" content="Lamorinda B · SDCC Scenario Explorer">
-<meta property="og:description" content="Click winners, see Lamorinda's path through the tournament. Share scenarios via link.">
+<title>LAMO JO's B-Team · 2026 Junior Olympics</title>
+<meta name="description" content="Interactive bracket explorer for Lamorinda B (18-LAMORINDA B) at the 2026 National Junior Olympics, Session 2, 14U Men Classic (14BX) division. Click winners and follow the path through Day 1 into the Day 2 groups.">
+<meta property="og:title" content="LAMO JO's B-Team · JO Bracket Explorer">
+<meta property="og:description" content="Click winners, see Lamorinda B's path through the 2026 Junior Olympics 14BX bracket. Share scenarios via link.">
 <meta property="og:type" content="website">
 <style>
 :root { color-scheme: light; }
@@ -70,10 +70,9 @@ a:hover { text-decoration: underline; }
 .btn.primary:hover { background: #065f46; border-color: #065f46; }
 .btn.copied { background: #10b981; color: white; border-color: #10b981; }
 
-.pool-section { margin-bottom: 8px; }
 .games-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   gap: 10px;
 }
 
@@ -94,6 +93,7 @@ a:hover { text-decoration: underline; }
   color: #64748b;
   margin-bottom: 8px;
   font-variant-numeric: tabular-nums;
+  gap: 8px;
 }
 .game-id { font-weight: 700; color: #334155; }
 
@@ -122,6 +122,7 @@ a:hover { text-decoration: underline; }
 .team-btn.loser { background: #f8fafc; color: #94a3b8; border-color: #e2e8f0; }
 .team-btn.is-lam { color: #047857; font-weight: 600; }
 .team-btn.winner.is-lam { color: white; background: #047857; border-color: #047857; }
+.team-btn.pending { color: #94a3b8; font-style: italic; cursor: not-allowed; background: #f8fafc; border-style: dashed; }
 .team-btn.is-final { cursor: default; }
 .team-btn:disabled { opacity: 1; }
 .team-btn.winner.is-final,
@@ -154,91 +155,6 @@ a:hover { text-decoration: underline; }
   margin-top: 6px;
   font-size: 11px;
   color: #64748b;
-  font-style: italic;
-}
-
-.stakes-banner {
-  display: block;
-  margin: 4px 0 10px;
-  padding: 6px 10px;
-  border-radius: 6px;
-  font-size: 11px;
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  text-align: center;
-  color: white;
-  line-height: 1.35;
-}
-.stakes-banner .stakes-sub {
-  display: block;
-  font-size: 10px;
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  text-transform: none;
-  margin-top: 2px;
-  opacity: 0.92;
-}
-.stakes-banner.gold   { background: linear-gradient(135deg, #b45309 0%, #f59e0b 100%); }
-.stakes-banner.silver { background: linear-gradient(135deg, #1d4ed8 0%, #60a5fa 100%); }
-.stakes-banner.bronze { background: linear-gradient(135deg, #7c2d12 0%, #c2410c 100%); }
-.stakes-banner.purple { background: linear-gradient(135deg, #6b21a8 0%, #a855f7 100%); }
-.stakes-banner.slate  { background: linear-gradient(135deg, #475569 0%, #94a3b8 100%); }
-.stakes-banner.teal   { background: linear-gradient(135deg, #0f766e 0%, #2dd4bf 100%); }
-
-.standings-box {
-  background: white;
-  border: 1px solid #e2e8f0;
-  border-radius: 8px;
-  padding: 6px 14px;
-  margin-top: 10px;
-}
-.standing-row {
-  display: grid;
-  grid-template-columns: 44px 1fr auto;
-  gap: 10px;
-  align-items: center;
-  padding: 6px 0;
-  border-bottom: 1px solid #f1f5f9;
-}
-.standing-row:last-child { border-bottom: none; }
-.standing-row.lam { background: #f0fdf4; padding: 6px 8px; border-radius: 4px; margin: 3px -8px; border-bottom: none; }
-.pos-badge {
-  font-weight: 700;
-  font-size: 11px;
-  text-align: center;
-  padding: 3px 0;
-  border-radius: 4px;
-  letter-spacing: 0.02em;
-}
-.pos-badge.p1 { color: #059669; background: #d1fae5; }
-.pos-badge.p2 { color: #1d4ed8; background: #dbeafe; }
-.pos-badge.p3 { color: #64748b; background: #f1f5f9; }
-.team-name { font-weight: 500; }
-.team-name.lam { color: #047857; font-weight: 700; }
-.record-text { font-variant-numeric: tabular-nums; color: #64748b; font-size: 12px; font-weight: 500; }
-.standings-note { font-size: 11px; color: #92400e; padding: 4px 0; font-style: italic; }
-
-.tiebreaker-box {
-  background: #fef9c3;
-  border: 1px solid #facc15;
-  border-radius: 8px;
-  padding: 10px 14px;
-  margin: 10px 0;
-}
-.tb-title { color: #713f12; font-weight: 700; font-size: 13px; }
-.tb-desc { margin: 4px 0 10px; color: #854d0e; font-size: 12px; }
-.tb-pickers { display: flex; flex-direction: column; gap: 6px; }
-.tb-row { display: grid; grid-template-columns: 80px 1fr; gap: 8px; align-items: center; }
-.tb-row label { font-size: 12px; font-weight: 600; color: #713f12; }
-.tb-row select {
-  padding: 5px 8px;
-  font-size: 13px;
-  border: 1px solid #ca8a04;
-  border-radius: 4px;
-  background: white;
-  font-family: inherit;
-  color: #1e293b;
 }
 
 .path-callout {
@@ -251,21 +167,46 @@ a:hover { text-decoration: underline; }
   color: #064e3b;
 }
 .path-callout strong { color: #047857; }
-
-.placement-hero {
-  background: linear-gradient(135deg, #059669 0%, #10b981 100%);
-  color: white;
-  padding: 20px 24px;
-  border-radius: 10px;
-  margin: 16px 0;
-  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);
+.warn-callout {
+  background: #fffbeb;
+  border-left: 4px solid #f59e0b;
+  padding: 10px 14px;
+  border-radius: 0 8px 8px 0;
+  margin: 10px 0;
+  font-size: 12px;
+  color: #78350f;
 }
-.placement-hero.silver { background: linear-gradient(135deg, #1d4ed8 0%, #3b82f6 100%); box-shadow: 0 4px 12px rgba(59,130,246,0.25); }
-.placement-hero.mid { background: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%); box-shadow: 0 4px 12px rgba(168,85,247,0.2); }
-.placement-hero.low { background: linear-gradient(135deg, #64748b 0%, #94a3b8 100%); box-shadow: none; }
-.placement-hero .hero-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; opacity: 0.9; font-weight: 600; }
-.placement-hero .hero-place { font-size: 40px; font-weight: 800; margin: 6px 0 2px; line-height: 1; letter-spacing: -0.02em; }
-.placement-hero .hero-desc { font-size: 13px; opacity: 0.95; }
+
+.day2-box {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 12px 16px;
+  margin: 10px 0;
+}
+.day2-slot {
+  display: grid;
+  grid-template-columns: 52px 1fr;
+  gap: 10px;
+  align-items: center;
+  padding: 6px 0;
+  border-bottom: 1px solid #f1f5f9;
+}
+.day2-slot:last-child { border-bottom: none; }
+.day2-slot.lam { background: #f0fdf4; padding: 6px 8px; border-radius: 4px; margin: 3px -8px; border-bottom: none; }
+.seed-badge {
+  font-weight: 700;
+  font-size: 11px;
+  text-align: center;
+  padding: 3px 0;
+  border-radius: 4px;
+  letter-spacing: 0.02em;
+  color: #1d4ed8;
+  background: #dbeafe;
+}
+.slot-name { font-weight: 500; }
+.slot-name.lam { color: #047857; font-weight: 700; }
+.slot-name.tbd { color: #94a3b8; font-style: italic; font-weight: 400; }
 
 .empty-state {
   color: #94a3b8;
@@ -291,11 +232,7 @@ a:hover { text-decoration: underline; }
   border-radius: 10px;
   padding: 14px 16px 16px;
 }
-.venue-rail h2 {
-  margin: 0 0 12px;
-  padding-bottom: 8px;
-  border-bottom: 2px solid #e2e8f0;
-}
+.venue-rail h2 { margin: 0 0 12px; padding-bottom: 8px; border-bottom: 2px solid #e2e8f0; }
 .venue-list { display: flex; flex-direction: column; gap: 10px; }
 .venue-item {
   display: block;
@@ -307,23 +244,11 @@ a:hover { text-decoration: underline; }
   text-decoration: none;
   transition: border-color 0.12s, background 0.12s, transform 0.12s;
 }
-.venue-item:hover {
-  border-color: #10b981;
-  background: #f0fdf4;
-  text-decoration: none;
-  transform: translateY(-1px);
-}
+.venue-item:hover { border-color: #10b981; background: #f0fdf4; text-decoration: none; transform: translateY(-1px); }
 .venue-name { font-weight: 700; font-size: 13px; color: #0f172a; }
 .venue-aliases { font-size: 11px; color: #64748b; margin-top: 2px; }
 .venue-addr { font-size: 12px; color: #475569; margin-top: 6px; line-height: 1.4; }
-.venue-maps {
-  font-size: 11px;
-  color: #047857;
-  margin-top: 6px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
+.venue-maps { font-size: 11px; color: #047857; margin-top: 6px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
 @media (max-width: 960px) {
   .layout-shell { grid-template-columns: 1fr; }
   .venue-rail { position: static; }
@@ -344,7 +269,7 @@ footer {
   <div>
     <div id="app"></div>
     <footer>
-      Built for the 2026 San Diego County Cup · 14U Boys A · Lamorinda B
+      LAMO JO's B-Team · 2026 National Junior Olympics · Session 2 · 14U Men Classic
     </footer>
   </div>
   <aside class="venue-rail" id="venues" aria-label="Tournament venues"></aside>
@@ -352,245 +277,246 @@ footer {
 
 <script>
 // ==================== CONSTANTS ====================
-const LAM = 'Lamorinda B';
-const SCHEDULE_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT9gy5sbeJYRi2PfYvCmgieSjGeOCVhbAkaU0qedF5YItn4Nyrqf670DpcfbhlLsDJ5nu-iaKGqp1Md/pubhtml?urp=gmail_link#gid=549792273';
+const LAM = '18-LAMORINDA B';
+const SCHEDULE_URL = 'https://docs.google.com/spreadsheets/d/1ycEOkayVwo_h37vL98PTXbzEnBpRU_-3S9l6NeiwCc4/edit?gid=727959574#gid=727959574';
 const GROUPME_URL = 'https://groupme.com/join_group/114533343/pE9IBbmZ';
-const VOLUNTEER_URL = 'https://docs.google.com/spreadsheets/d/1KpHOSHRQuR-SdPispcpR424-IykquIK4/edit?usp=drivesdk&ouid=110924530808975199642&rtpof=true&sd=true';
 
-const POOLS = {
-  G: { label: 'Pool G', teams: ['Lamorinda B', 'Tsunami Black', 'OCWPC B'], games: [11, 14, 58] },
-  B: { label: 'Pool B', teams: ['Santa Cruz', 'ECA A', 'Shore Aquatics'], games: [2, 6, 57] },
-  J: { label: 'Pool J', teams: ['SD Shores Gold', 'Carmel WPC', 'Pasadena'], games: [15, 19, 59] },
+// 48 teams, keyed by seed. Names as they appear on the NJO sheet.
+const TEAMS = {
+  1: 'OCWPC BLUE', 2: 'STANFORD BLACK', 3: 'TSUNAMI', 4: 'VANGUARD SILVER',
+  5: 'ECA', 6: 'ALAMEDA', 7: 'MISSION B', 8: 'LB SHORE RED',
+  9: 'PATRIOT RED', 10: 'ROUTE 66', 11: 'PRIDE BLACK', 12: 'SHARKS',
+  13: '680 BLUE', 14: 'KINGSBURG', 15: 'CT PREMIER', 16: 'LA JOLLA UNITED B',
+  17: 'ORWP BLACK', 18: 'LAMORINDA B', 19: 'SAN JOSE EXPRESS BLUE', 20: 'SD SHORES GOLD',
+  21: 'TEMPLE CITY', 22: 'TROJAN CARDINAL', 23: 'HIELAND', 24: 'FOOTHILL RED',
+  25: 'WCAC UNITED', 26: 'DIABLO ALLIANCE B', 27: 'VEGAS RENEGADES', 28: 'SAN JOSE FOUNDATION BLACK',
+  29: 'SD DONS BLACK', 30: 'ROSE BOWL RED', 31: 'CARLSBAD', 32: 'CENTRAL VALLEY UNITED',
+  33: '680 WHITE', 34: 'PRAETORIAN', 35: 'NEWPORT BEACH WHITE', 36: 'LOKAHI',
+  37: 'CLOVIS RED', 38: 'KERN PREMIER', 39: 'BROOKLYN HUSTLE', 40: 'TEAM VEGAS RED',
+  41: 'INNIS ARDEN', 42: 'THIRD COAST', 43: 'RAIN CITY', 44: 'T HILLS',
 };
 
+function teamLabel(seed) { return seed + '-' + TEAMS[seed]; }
+
+// Extra seeds 45-48
+TEAMS[45] = 'TITANS GOLD'; TEAMS[46] = 'HONOLULU'; TEAMS[47] = 'BAINBRIDGE'; TEAMS[48] = 'CAPITAL';
+
+// Day 1 groups of four (12 groups). Display only.
+const GROUPS = {
+  A: [1, 24, 25, 48], B: [2, 23, 26, 47], C: [3, 22, 27, 46], D: [4, 21, 28, 45],
+  E: [5, 20, 29, 44], F: [6, 19, 30, 43], G: [7, 18, 31, 42], H: [8, 17, 32, 41],
+  I: [9, 16, 33, 40], J: [10, 15, 34, 39], K: [11, 14, 35, 38], L: [12, 13, 36, 37],
+};
+
+// Day 1 game graph. white/dark: a seed number (team) or 'W<num>'/'L<num>' ref.
+// wTo/lTo: next game number, or a terminal string:
+//   'ag_M3'  → Day 2 upper-bracket group M, seed M3
+//   'ag_T'   → Day 2 upper group T, seat within group TBD
+//   'bz_MN'  → Day 2 lower group M or N, assignment TBD
+// Times are Thu, July 23. GMID = '14BX-' + zero-padded game number.
 const GAMES = {
-  11: { pool: 'G', time: 'Fri 6:00 PM', loc: 'West Hills', home: 'Tsunami Black', away: 'OCWPC B' },
-  14: { pool: 'G', time: 'Fri 8:15 PM', loc: 'West Hills', home: 'Lamorinda B', away: 'Tsunami Black' },
-  58: { pool: 'G', time: 'Sat 8:45 AM', loc: 'Tierrasanta', home: 'Lamorinda B', away: 'OCWPC B' },
-  2:  { pool: 'B', time: 'Fri 3:45 PM', loc: 'Mesa',        home: 'ECA A', away: 'Shore Aquatics' },
-  6:  { pool: 'B', time: 'Fri 6:45 PM', loc: 'Mesa',        home: 'Santa Cruz', away: 'Shore Aquatics' },
-  57: { pool: 'B', time: 'Sat 8:00 AM', loc: 'Tierrasanta', home: 'Santa Cruz', away: 'ECA A' },
-  15: { pool: 'J', time: 'Fri 3:00 PM', loc: 'Tierrasanta', home: 'Carmel WPC', away: 'Pasadena' },
-  19: { pool: 'J', time: 'Fri 6:00 PM', loc: 'Tierrasanta', home: 'SD Shores Gold', away: 'Pasadena' },
-  59: { pool: 'J', time: 'Sat 9:30 AM', loc: 'Tierrasanta', home: 'SD Shores Gold', away: 'Carmel WPC' },
+  // Beckman HS 1 — Groups G (Lamorinda), H, I. Pairings/times inferred from
+  // the bracket routing on the published sheet; verify once visible.
+  3:  { time: '7:00 AM',  venue: 'Beckman HS 1', white: 7,     dark: 42,    wTo: 27, lTo: 31 },
+  7:  { time: '7:50 AM',  venue: 'Beckman HS 1', white: 18,    dark: 31,    wTo: 27, lTo: 31 },
+  11: { time: '8:40 AM',  venue: 'Beckman HS 1', white: 8,     dark: 41,    wTo: 35, lTo: 39 },
+  15: { time: '9:30 AM',  venue: 'Beckman HS 1', white: 17,    dark: 32,    wTo: 35, lTo: 39 },
+  19: { time: '10:20 AM', venue: 'Beckman HS 1', white: 9,     dark: 40,    wTo: 43, lTo: 47 },
+  23: { time: '11:10 AM', venue: 'Beckman HS 1', white: 16,    dark: 33,    wTo: 43, lTo: 47 },
+  27: { time: '12:00 PM', venue: 'Beckman HS 1', white: 'W3',  dark: 'W7',  wTo: 'ag_M3', lTo: 52 },
+  31: { time: '12:50 PM', venue: 'Beckman HS 1', white: 'L3',  dark: 'L7',  wTo: 51, lTo: 'bz_U1' },
+  35: { time: '1:40 PM',  venue: 'Beckman HS 1', white: 'W11', dark: 'W15', wTo: 'ag_N2', lTo: 59 },
+  39: { time: '2:30 PM',  venue: 'Beckman HS 1', white: 'L11', dark: 'L15', wTo: 55, lTo: 'bz_T2' },
+  43: { time: '3:20 PM',  venue: 'Beckman HS 1', white: 'W19', dark: 'W23', wTo: 'ag_M2', lTo: 55 },
+  47: { time: '4:10 PM',  venue: 'Beckman HS 1', white: 'L19', dark: 'L23', wTo: 59, lTo: 'bz_U2' },
+  51: { time: '5:50 PM',  venue: 'Beckman HS 1', white: 'L28', dark: 'W31', wTo: 'ag_T', lTo: 'bz_MN' },
+  55: { time: '6:40 PM',  venue: 'Beckman HS 1', white: 'L43', dark: 'W39', wTo: 'ag_U2', lTo: 'bz_MN' },
+  59: { time: '7:30 PM',  venue: 'Beckman HS 1', white: 'L35', dark: 'W47', wTo: 'ag_T', lTo: 'bz_MN' },
+
+  // Ocean View HS 1 — Groups C, A, B
+  1:  { time: '7:00 AM',  venue: 'Ocean View HS 1', white: 3,     dark: 46,    wTo: 25, lTo: 29 },
+  5:  { time: '7:50 AM',  venue: 'Ocean View HS 1', white: 22,    dark: 27,    wTo: 25, lTo: 29 },
+  9:  { time: '8:40 AM',  venue: 'Ocean View HS 1', white: 1,     dark: 48,    wTo: 33, lTo: 37 },
+  13: { time: '9:30 AM',  venue: 'Ocean View HS 1', white: 24,    dark: 25,    wTo: 33, lTo: 37 },
+  17: { time: '10:20 AM', venue: 'Ocean View HS 1', white: 2,     dark: 47,    wTo: 41, lTo: 45 },
+  21: { time: '11:10 AM', venue: 'Ocean View HS 1', white: 23,    dark: 26,    wTo: 41, lTo: 45 },
+  25: { time: '12:00 PM', venue: 'Ocean View HS 1', white: 'W1',  dark: 'W5',  wTo: 'ag_O1', lTo: 50 },
+  29: { time: '12:50 PM', venue: 'Ocean View HS 1', white: 'L1',  dark: 'L5',  wTo: 49, lTo: 'bz_S3' },
+  33: { time: '1:40 PM',  venue: 'Ocean View HS 1', white: 'W9',  dark: 'W13', wTo: 'ag_M1', lTo: 57 },
+  37: { time: '2:30 PM',  venue: 'Ocean View HS 1', white: 'L9',  dark: 'L13', wTo: 53, lTo: 'bz_U3' },
+  41: { time: '3:20 PM',  venue: 'Ocean View HS 1', white: 'W17', dark: 'W21', wTo: 'ag_N1', lTo: 53 },
+
+  // Newport Harbor HS
+  45: { time: '4:10 PM', venue: 'Newport Harbor HS', white: 'L17', dark: 'L21', wTo: 57, lTo: 'bz_T3' },
+  49: { time: '5:50 PM', venue: 'Newport Harbor HS', white: 'L26', dark: 'W29', wTo: 'ag_R3', lTo: 'bz_O1' },
+  53: { time: '6:40 PM', venue: 'Newport Harbor HS', white: 'L41', dark: 'W37', wTo: 'ag_T3', lTo: 'bz_M1' },
+  57: { time: '7:30 PM', venue: 'Newport Harbor HS', white: 'L33', dark: 'W45', wTo: 'ag_U3', lTo: 'bz_N1' },
+
+  // Esperanza HS — Groups D, E, F
+  2:  { time: '7:00 AM',  venue: 'Esperanza HS', white: 4,     dark: 45,    wTo: 26, lTo: 30 },
+  6:  { time: '7:50 AM',  venue: 'Esperanza HS', white: 21,    dark: 28,    wTo: 26, lTo: 30 },
+  10: { time: '8:40 AM',  venue: 'Esperanza HS', white: 5,     dark: 44,    wTo: 34, lTo: 38 },
+  14: { time: '9:30 AM',  venue: 'Esperanza HS', white: 20,    dark: 29,    wTo: 34, lTo: 38 },
+  18: { time: '10:20 AM', venue: 'Esperanza HS', white: 6,     dark: 43,    wTo: 42, lTo: 46 },
+  22: { time: '11:10 AM', venue: 'Esperanza HS', white: 19,    dark: 30,    wTo: 42, lTo: 46 },
+  26: { time: '12:00 PM', venue: 'Esperanza HS', white: 'W2',  dark: 'W6',  wTo: 'ag_P1', lTo: 49 },
+  30: { time: '12:50 PM', venue: 'Esperanza HS', white: 'L2',  dark: 'L6',  wTo: 50, lTo: 'bz_R3' },
+  34: { time: '1:40 PM',  venue: 'Esperanza HS', white: 'W10', dark: 'W14', wTo: 'ag_P2', lTo: 58 },
+  38: { time: '2:30 PM',  venue: 'Esperanza HS', white: 'L10', dark: 'L14', wTo: 54, lTo: 'bz_R2' },
+  42: { time: '3:20 PM',  venue: 'Esperanza HS', white: 'W18', dark: 'W22', wTo: 'ag_O2', lTo: 54 },
+
+  // Yorba Linda HS
+  46: { time: '4:10 PM', venue: 'Yorba Linda HS', white: 'L18', dark: 'L22', wTo: 58, lTo: 'bz_S2' },
+  50: { time: '5:50 PM', venue: 'Yorba Linda HS', white: 'L25', dark: 'W30', wTo: 'ag_S3', lTo: 'bz_P1' },
+  54: { time: '6:40 PM', venue: 'Yorba Linda HS', white: 'L42', dark: 'W38', wTo: 'ag_S2', lTo: 'bz_P2' },
+  58: { time: '7:30 PM', venue: 'Yorba Linda HS', white: 'L34', dark: 'W46', wTo: 'ag_R2', lTo: 'bz_O2' },
+
+  // Brea Olinda HS — Groups J, K, L
+  4:  { time: '7:00 AM',  venue: 'Brea Olinda HS', white: 10,    dark: 39,    wTo: 28, lTo: 32 },
+  8:  { time: '7:50 AM',  venue: 'Brea Olinda HS', white: 15,    dark: 34,    wTo: 28, lTo: 32 },
+  12: { time: '8:40 AM',  venue: 'Brea Olinda HS', white: 11,    dark: 38,    wTo: 36, lTo: 40 },
+  16: { time: '9:30 AM',  venue: 'Brea Olinda HS', white: 14,    dark: 35,    wTo: 36, lTo: 40 },
+  20: { time: '10:20 AM', venue: 'Brea Olinda HS', white: 12,    dark: 37,    wTo: 44, lTo: 48 },
+  24: { time: '11:10 AM', venue: 'Brea Olinda HS', white: 13,    dark: 36,    wTo: 44, lTo: 48 },
+  28: { time: '12:00 PM', venue: 'Brea Olinda HS', white: 'W4',  dark: 'W8',  wTo: 'ag_N3', lTo: 51 },
+  32: { time: '12:50 PM', venue: 'Brea Olinda HS', white: 'L4',  dark: 'L8',  wTo: 52, lTo: 'bz_T1' },
+  36: { time: '1:40 PM',  venue: 'Brea Olinda HS', white: 'W12', dark: 'W16', wTo: 'ag_O3', lTo: 60 },
+  40: { time: '2:30 PM',  venue: 'Brea Olinda HS', white: 'L12', dark: 'L16', wTo: 56, lTo: 'bz_S1' },
+  44: { time: '3:20 PM',  venue: 'Brea Olinda HS', white: 'W20', dark: 'W24', wTo: 'ag_P3', lTo: 56 },
+  48: { time: '4:10 PM',  venue: 'Brea Olinda HS', white: 'L20', dark: 'L24', wTo: 60, lTo: 'bz_R1' },
+  52: { time: '5:50 PM',  venue: 'Brea Olinda HS', white: 'L27', dark: 'W32', wTo: 'ag_U1', lTo: 'bz_N3' },
+  56: { time: '6:40 PM',  venue: 'Brea Olinda HS', white: 'L44', dark: 'W40', wTo: 'ag_R1', lTo: 'bz_O3' },
+  60: { time: '7:30 PM',  venue: 'Brea Olinda HS', white: 'L36', dark: 'W48', wTo: 'ag_S1', lTo: 'bz_P3' },
 };
 
-const SAT_CROSSOVER = {
-  1: {
-    poolCode: 'O', label: 'Pool O - Championship Track',
-    slots: { O1: ['B', 0], O2: ['G', 0], O3: ['J', 0] },
-    games: [
-      { num: 63, time: 'Sat 12:30 PM', a: 'O1', b: 'O2' },
-      { num: 67, time: 'Sat 3:30 PM',  a: 'O1', b: 'O3' },
-      { num: 71, time: 'Sat 6:30 PM',  a: 'O2', b: 'O3' },
-    ],
-  },
-  2: {
-    poolCode: 'S', label: 'Pool S - 5\u20138 Track',
-    slots: { S1: ['B', 1], S2: ['G', 1], S3: ['J', 1] },
-    games: [
-      { num: 62, time: 'Sat 11:45 AM', a: 'S1', b: 'S2' },
-      { num: 66, time: 'Sat 2:45 PM',  a: 'S1', b: 'S3' },
-      { num: 70, time: 'Sat 5:45 PM',  a: 'S2', b: 'S3' },
-    ],
-  },
-  3: {
-    poolCode: 'W', label: 'Pool W - 9\u201312 Track',
-    slots: { W1: ['B', 2], W2: ['G', 2], W3: ['J', 2] },
-    games: [
-      { num: 61, time: 'Sat 11:00 AM', a: 'W1', b: 'W2' },
-      { num: 65, time: 'Sat 2:00 PM',  a: 'W1', b: 'W3' },
-      { num: 69, time: 'Sat 5:00 PM',  a: 'W2', b: 'W3' },
-    ],
-  },
-};
-
-const VENUES = [
-  {
-    kind: 'venue',
-    name: 'Tierrasanta Community Pool',
-    aliases: 'Tierrasanta',
-    address: '11238 Clairemont Mesa Blvd, San Diego, CA 92124',
-  },
-  {
-    kind: 'venue',
-    name: 'San Diego Mesa College',
-    aliases: 'Mesa · Mesa College',
-    address: '7250 Mesa College Dr, San Diego, CA 92111',
-  },
-  {
-    kind: 'venue',
-    name: 'West Hills High School',
-    aliases: 'West Hills · West Hills HS',
-    address: '8756 Mast Blvd, Santee, CA 92071',
-  },
-  {
-    kind: 'venue',
-    name: 'Southwestern College (JAWS)',
-    aliases: 'Southwestern College 1 & 2',
-    address: '900 Otay Lakes Rd, Chula Vista, CA 91910',
-  },
-  {
-    kind: 'travel',
-    name: 'Rancho Bernardo Inn',
-    aliases: 'Team hotel',
-    address: '17550 Bernardo Oaks Dr, San Diego, CA 92128',
-  },
-  {
-    kind: 'travel',
-    name: 'San Diego International Airport (SAN)',
-    aliases: 'Airport',
-    address: '3225 N Harbor Dr, San Diego, CA 92101',
-  },
+const VENUE_SECTIONS = [
+  { name: 'Beckman HS 1', sub: 'Groups G (Lamorinda) · H · I', lam: true,
+    games: [3, 7, 11, 15, 19, 23, 27, 31, 35, 39, 43, 47, 51, 55, 59] },
+  { name: 'Ocean View HS 1 + Newport Harbor HS', sub: 'Groups C · A · B (evening games at Newport Harbor)',
+    games: [1, 5, 9, 13, 17, 21, 25, 29, 33, 37, 41, 45, 49, 53, 57] },
+  { name: 'Esperanza HS + Yorba Linda HS', sub: 'Groups D · E · F (evening games at Yorba Linda)',
+    games: [2, 6, 10, 14, 18, 22, 26, 30, 34, 38, 42, 46, 50, 54, 58] },
+  { name: 'Brea Olinda HS', sub: 'Groups J · K · L',
+    games: [4, 8, 12, 16, 20, 24, 28, 32, 36, 40, 44, 48, 52, 56, 60] },
 ];
 
-const SUNDAY_PATHS = {
-  'O-1': {
-    bracket: 'Championship bracket (places 1\u20134)',
-    games: [
-      { num: 96, time: 'Sun 8:45 AM', loc: 'Southwestern College 2', opp: '1st of Pool P', role: 'Semifinal', winTo: 97, loseTo: 98 },
-      { num: 97, time: 'Sun 1:20 PM', loc: 'Southwestern College 1', opp: 'Winner of game 95', role: 'Championship final', terminal: true, winPlace: 1, losePlace: 2 },
-      { num: 98, time: 'Sun 1:35 PM', loc: 'Southwestern College 2', opp: 'Loser of game 95', role: '3rd-place game', terminal: true, winPlace: 3, losePlace: 4 },
-    ],
-  },
-  'O-2': {
-    bracket: '5\u20138 place bracket',
-    games: [
-      { num: 89, time: 'Sun 8:45 AM', loc: 'Tierrasanta', opp: '2nd of Pool P', role: '5\u20138 semi', winTo: 93, loseTo: 94 },
-      { num: 93, time: 'Sun 11:45 AM', loc: 'Tierrasanta', opp: 'Winner of game 88', role: '5th-place game', terminal: true, winPlace: 5, losePlace: 6 },
-      { num: 94, time: 'Sun 12:30 PM', loc: 'Tierrasanta', opp: 'Loser of game 88', role: '7th-place game', terminal: true, winPlace: 7, losePlace: 8 },
-    ],
-  },
-  'O-3': {
-    bracket: '9\u201312 place bracket',
-    games: [
-      { num: 74, time: 'Sun 8:45 AM', loc: 'Mesa College', opp: '3rd of Pool P', role: '9\u201312 semi', winTo: 79, loseTo: 80 },
-      { num: 79, time: 'Sun 12:30 PM', loc: 'Mesa College', opp: 'Winner of game 73', role: '9th-place game', terminal: true, winPlace: 9, losePlace: 10 },
-      { num: 80, time: 'Sun 1:15 PM', loc: 'Mesa College', opp: 'Loser of game 73', role: '11th-place game', terminal: true, winPlace: 11, losePlace: 12 },
-    ],
-  },
-  'S-1': {
-    bracket: '13\u201316 place bracket',
-    games: [
-      { num: 82, time: 'Sun 8:45 AM', loc: 'West Hills HS', opp: '1st of Pool T', role: '13\u201316 semi', winTo: 86, loseTo: 87 },
-      { num: 86, time: 'Sun 11:45 AM', loc: 'West Hills HS', opp: 'Winner of game 81', role: '13th-place game', terminal: true, winPlace: 13, losePlace: 14 },
-      { num: 87, time: 'Sun 12:30 PM', loc: 'West Hills HS', opp: 'Loser of game 81', role: '15th-place game', terminal: true, winPlace: 15, losePlace: 16 },
-    ],
-  },
-  'S-2': { bracket: 'Consolation crossover', games: [{ num: 84, time: 'Sun 10:15 AM', loc: 'West Hills HS', opp: '2nd of Pool T', role: 'Crossover', terminal: true, noPlacement: true }] },
-  'S-3': { bracket: 'Consolation crossover', games: [{ num: 92, time: 'Sun 11:00 AM', loc: 'Tierrasanta', opp: '3rd of Pool T', role: 'Crossover', terminal: true, noPlacement: true }] },
-  'W-1': { bracket: 'Consolation crossover', games: [{ num: 78, time: 'Sun 11:45 AM', loc: 'Mesa College', opp: '1st of Pool X', role: 'Crossover', terminal: true, noPlacement: true }] },
-  'W-2': { bracket: 'Consolation crossover', games: [{ num: 76, time: 'Sun 10:15 AM', loc: 'Mesa College', opp: '2nd of Pool X', role: 'Crossover', terminal: true, noPlacement: true }] },
-  'W-3': { bracket: 'Consolation crossover', games: [{ num: 91, time: 'Sun 10:15 AM', loc: 'Tierrasanta', opp: '3rd of Pool X', role: 'Crossover', terminal: true, noPlacement: true }] },
+// Day 2 groups reachable by Lamorinda: slot label → source ref (null = unknown).
+const DAY2_GROUPS = {
+  ag_M: { label: 'Day 2 upper bracket · Group M', slots: [['M1', 'W33'], ['M2', 'W43'], ['M3', 'W27']] },
+  ag_T: { label: 'Day 2 upper bracket · Group T', slots: [['T?', 'W51'], ['T?', 'W59'], ['T3', 'W53']] },
+  ag_U: { label: 'Day 2 upper bracket · Group U', slots: [['U1', 'W52'], ['U2', 'W55'], ['U3', 'W57']] },
+  bz_N: { label: 'Day 2 lower bracket · Group N', slots: [['N1', 'L57'], ['N2', null], ['N3', 'L52']] },
+  bz_U: { label: 'Day 2 lower bracket · Group U', slots: [['U1', 'L31'], ['U2', 'L47'], ['U3', 'L37']] },
 };
 
-// ==================== STATE ====================
-const state = {
-  poolResults: {},
-  satResults: {},
-  sunResults: {},
-  tiebreakers: {},
-};
-
-// Games already played — pre-filled so the explorer reflects current standings.
-// Set to {} once the tournament is over or to start fresh.
-const PLAYED_POOL_RESULTS = {
-  // Friday
-  2:  'ECA A',           // Pool B · Fri 3:45 PM · Mesa
-  6:  'Santa Cruz',      // Pool B · Fri 6:45 PM · Mesa
-  11: 'OCWPC B',         // Pool G · Fri 6:00 PM · West Hills
-  14: 'Lamorinda B',     // Pool G · Fri 8:15 PM · West Hills
-  15: 'Pasadena',        // Pool J · Fri 3:00 PM · Tierrasanta
-  19: 'SD Shores Gold',  // Pool J · Fri 6:00 PM · Tierrasanta
-  // Saturday AM
-  57: 'ECA A',           // Pool B · Sat 8:00 AM · Tierrasanta
-  58: 'Lamorinda B',     // Pool G · Sat 8:45 AM · Tierrasanta
-  59: 'SD Shores Gold',  // Pool J · Sat 9:30 AM · Tierrasanta
-};
-
-// Saturday crossover games already played — same overlay logic as PLAYED_POOL_RESULTS.
-const PLAYED_SAT_RESULTS = {
-  61: 'Shore Aquatics',  // Pool W · Sat 11:00 AM · Tierrasanta
-  62: 'OCWPC B',         // Pool S · Sat 11:45 AM · Tierrasanta
-  63: 'Lamorinda B',     // Pool O · Sat 12:30 PM · Tierrasanta
-  65: 'Shore Aquatics',  // Pool W · Sat 2:00 PM  · Tierrasanta
-  66: 'Pasadena',        // Pool S · Sat 2:45 PM  · Tierrasanta
-  67: 'ECA A',           // Pool O · Sat 3:30 PM  · Tierrasanta
-  69: 'Tsunami Black',   // Pool W · Sat 5:00 PM  · Tierrasanta
-  70: 'Pasadena',        // Pool S · Sat 5:45 PM  · Tierrasanta
-  71: 'Lamorinda B',     // Pool O · Sat 6:30 PM  · Tierrasanta — Lamo clinches 1st
-};
-
-// Final scores keyed by game number: { home: <home goals>, away: <away goals> }
-// Add scores as they become known. If a game is in PLAYED_POOL_RESULTS but not
-// here, the FINAL badge + winner color still show — just without the score.
-const PLAYED_SCORES = {
-  2:  { home: 13, away: 3 },  // ECA A 13 - Shore Aquatics 3
-  6:  { home: 11, away: 5 },  // Santa Cruz 11 - Shore Aquatics 5
-  11: { home: 4,  away: 6 },  // Tsunami Black 4 - OCWPC B 6
-  14: { home: 13, away: 3 },  // Lamorinda B 13 - Tsunami Black 3
-  15: { home: 1,  away: 16 }, // Carmel WPC 1 - Pasadena 16
-  19: { home: 9,  away: 5 },  // SD Shores Gold 9 - Pasadena 5
-  57: { home: 6,  away: 7 },  // Santa Cruz 6 - ECA A 7
-  58: { home: 12, away: 2 },  // Lamorinda B 12 - OCWPC B 2
-  59: { home: 17, away: 1 },  // SD Shores Gold 17 - Carmel WPC 1
-  61: { home: 8,  away: 5 },  // Shore Aquatics 8 - Tsunami Black 5
-  62: { home: 8,  away: 10 }, // Santa Cruz 8 - OCWPC B 10
-  63: { home: 8,  away: 10 }, // ECA A 8 - Lamorinda B 10
-  65: { home: 9,  away: 7 },  // Shore Aquatics 9 - Carmel WPC 7
-  66: { home: 1,  away: 5 },  // Santa Cruz 1 - Pasadena 5
-  67: { home: 11, away: 8 },  // ECA A 11 - SD Shores Gold 8
-  69: { home: 6,  away: 2 },  // Tsunami Black 6 - Carmel WPC 2
-  70: { home: 4,  away: 6 },  // OCWPC B 4 - Pasadena 6
-  71: { home: 13, away: 8 },  // Lamorinda B 13 - SD Shores Gold 8
-};
-
-function isGameFinal(num) {
-  return Object.prototype.hasOwnProperty.call(PLAYED_POOL_RESULTS, num)
-      || Object.prototype.hasOwnProperty.call(PLAYED_SAT_RESULTS, num);
+// Terminal ref → { group key (if known), text }
+function terminalInfo(t) {
+  if (t === 'bz_MN') return { group: null, text: 'Day 2 lower bracket · Group M or N (seat TBD on the sheet)' };
+  const m = t.match(/^(ag|bz)_([A-Z])(\d?)$/);
+  if (!m) return { group: null, text: t };
+  const key = m[1] + '_' + m[2];
+  const bracket = m[1] === 'ag' ? 'upper' : 'lower';
+  return {
+    group: DAY2_GROUPS[key] ? key : null,
+    text: 'Day 2 ' + bracket + ' bracket · Group ' + m[2] + (m[3] ? ' (seed ' + m[2] + m[3] + ')' : ''),
+  };
 }
 
-function resetAll() {
-  state.poolResults = { ...PLAYED_POOL_RESULTS };
-  state.satResults = { ...PLAYED_SAT_RESULTS };
-  state.sunResults = {};
-  state.tiebreakers = {};
+const VENUES = [
+  { kind: 'venue', name: 'Beckman High School', aliases: 'Beckman HS 1 · Lamorinda games', address: '3588 Bryan Ave, Irvine, CA 92602' },
+  { kind: 'venue', name: 'Brea Olinda High School', aliases: 'Brea Olinda HS', address: '789 Wildcat Way, Brea, CA 92821' },
+  { kind: 'venue', name: 'Esperanza High School', aliases: 'Esperanza HS', address: '1830 N Kellogg Dr, Anaheim, CA 92807' },
+  { kind: 'venue', name: 'Yorba Linda High School', aliases: 'Yorba Linda HS', address: '19900 Bastanchury Rd, Yorba Linda, CA 92886' },
+  { kind: 'venue', name: 'Ocean View High School', aliases: 'Ocean View HS 1', address: '17071 Gothard St, Huntington Beach, CA 92647' },
+  { kind: 'venue', name: 'Newport Harbor High School', aliases: 'Newport Harbor HS', address: '600 Irvine Ave, Newport Beach, CA 92663' },
+];
+
+// ==================== STATE ====================
+// results[num] = 'w' | 'd' — which side won game num.
+const state = { results: {} };
+
+// Games already played — fill in as the tournament runs (side that won + score).
+const PLAYED_RESULTS = {};
+// Final scores keyed by game number: { w: <white goals>, d: <dark goals> }
+const PLAYED_SCORES = {};
+
+function isGameFinal(num) { return Object.prototype.hasOwnProperty.call(PLAYED_RESULTS, num); }
+
+// ==================== LOGIC ====================
+function resolveSlot(slot) {
+  if (typeof slot === 'number') return teamLabel(slot);
+  const m = String(slot).match(/^([WL])(\d+)$/);
+  if (!m) return null;
+  const num = Number(m[2]);
+  const r = state.results[num];
+  if (!r) return null;
+  const g = GAMES[num];
+  const winSide = r === 'w' ? g.white : g.dark;
+  const loseSide = r === 'w' ? g.dark : g.white;
+  return resolveSlot(m[1] === 'W' ? winSide : loseSide);
+}
+
+function slotHint(slot) {
+  if (typeof slot === 'number') return teamLabel(slot);
+  const m = String(slot).match(/^([WL])(\d+)$/);
+  return m ? (m[1] === 'W' ? 'Winner' : 'Loser') + ' of #' + m[2] : String(slot);
+}
+
+// Games whose slots reference game num — used to clear downstream picks.
+const DEPENDENTS = {};
+for (const numStr in GAMES) {
+  const num = Number(numStr);
+  [GAMES[num].white, GAMES[num].dark].forEach(slot => {
+    const m = String(slot).match(/^[WL](\d+)$/);
+    if (m) (DEPENDENTS[Number(m[1])] = DEPENDENTS[Number(m[1])] || []).push(num);
+  });
+}
+
+function clearDownstream(num) {
+  (DEPENDENTS[num] || []).forEach(dep => {
+    if (state.results[dep] != null && !isGameFinal(dep)) {
+      delete state.results[dep];
+      clearDownstream(dep);
+    }
+  });
+}
+
+function pickWinner(num, side) {
+  if (isGameFinal(num)) return;
+  if (state.results[num] === side) return;
+  state.results[num] = side;
+  clearDownstream(num);
   render();
 }
 
-function clearDownstreamFromPool() {
-  state.satResults = { ...PLAYED_SAT_RESULTS };
-  state.sunResults = {};
-  Object.keys(state.tiebreakers).forEach(k => { if (k.startsWith('SAT_')) delete state.tiebreakers[k]; });
+// Trace Lamorinda's Day-1 path from game 7.
+function lamTrace() {
+  const path = [];
+  let cur = 7;
+  let terminal = null;
+  for (;;) {
+    path.push(cur);
+    const r = state.results[cur];
+    if (!r) break;
+    const g = GAMES[cur];
+    const winner = resolveSlot(r === 'w' ? g.white : g.dark);
+    const next = winner === LAM ? g.wTo : g.lTo;
+    if (typeof next === 'number') { cur = next; continue; }
+    terminal = next;
+    break;
+  }
+  return { path, terminal };
 }
-function clearDownstreamFromSat() {
-  state.sunResults = {};
-}
+
+function ref(el) { return el; }
 
 // ==================== URL STATE ====================
 function encodeState() {
-  // Played games are always loaded from PLAYED_*_RESULTS — strip them
-  // from the encoded URL so share links only carry hypothetical picks.
-  const filteredP = {};
-  for (const k in state.poolResults) {
-    if (!isGameFinal(Number(k))) filteredP[k] = state.poolResults[k];
-  }
-  const filteredS = {};
-  for (const k in state.satResults) {
-    if (!isGameFinal(Number(k))) filteredS[k] = state.satResults[k];
-  }
-  const minimal = {
-    p: filteredP,
-    s: filteredS,
-    u: state.sunResults,
-    t: state.tiebreakers,
-  };
-  const empty = !Object.keys(minimal.p).length && !Object.keys(minimal.s).length
-    && !Object.keys(minimal.u).length && !Object.keys(minimal.t).length;
-  if (empty) return '';
+  const filtered = {};
+  for (const k in state.results) if (!isGameFinal(Number(k))) filtered[k] = state.results[k];
+  if (!Object.keys(filtered).length) return '';
   try {
-    const json = JSON.stringify(minimal);
-    return btoa(unescape(encodeURIComponent(json)))
+    return btoa(unescape(encodeURIComponent(JSON.stringify(filtered))))
       .replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
   } catch (e) { return ''; }
 }
@@ -602,11 +528,7 @@ function decodeStateFromHash() {
     let b64 = m[1].replace(/-/g, '+').replace(/_/g, '/');
     while (b64.length % 4) b64 += '=';
     const obj = JSON.parse(decodeURIComponent(escape(atob(b64))));
-    // Overlay played games on top of any decoded picks — they're facts.
-    state.poolResults = { ...(obj.p || {}), ...PLAYED_POOL_RESULTS };
-    state.satResults = { ...(obj.s || {}), ...PLAYED_SAT_RESULTS };
-    state.sunResults = obj.u || {};
-    state.tiebreakers = obj.t || {};
+    state.results = { ...obj, ...PLAYED_RESULTS };
     return true;
   } catch (e) { return false; }
 }
@@ -616,289 +538,29 @@ function updateURL() {
   if (_urlUpdateTimer) clearTimeout(_urlUpdateTimer);
   _urlUpdateTimer = setTimeout(() => {
     const enc = encodeState();
-    const newHash = enc ? '#s=' + enc : '';
-    const newUrl = location.pathname + location.search + newHash;
-    history.replaceState(null, '', newUrl);
+    history.replaceState(null, '', location.pathname + location.search + (enc ? '#s=' + enc : ''));
   }, 100);
 }
 
 function copyShareLink(btn) {
-  const url = location.origin + location.pathname + location.search + (encodeState() ? '#s=' + encodeState() : '');
+  const enc = encodeState();
+  const url = location.origin + location.pathname + location.search + (enc ? '#s=' + enc : '');
   const fallback = () => {
     const ta = document.createElement('textarea');
     ta.value = url; document.body.appendChild(ta); ta.select();
     try { document.execCommand('copy'); } catch (e) {}
     document.body.removeChild(ta);
   };
-  if (navigator.clipboard && navigator.clipboard.writeText) {
-    navigator.clipboard.writeText(url).catch(fallback);
-  } else { fallback(); }
+  if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(url).catch(fallback);
+  else fallback();
   btn.classList.add('copied');
   btn.textContent = 'Copied!';
   setTimeout(() => { btn.classList.remove('copied'); btn.textContent = 'Copy share link'; }, 1500);
 }
 
-// ==================== LOGIC ====================
-function getPoolStanding(poolCode) {
-  const pool = POOLS[poolCode];
-  const wins = {};
-  pool.teams.forEach(t => wins[t] = 0);
-  let complete = true;
-  pool.games.forEach(g => {
-    const w = state.poolResults[g];
-    if (!w) complete = false;
-    else wins[w]++;
-  });
-  if (!complete) return { ready: false, wins };
-  const sorted = [...pool.teams].sort((a, b) => wins[b] - wins[a]);
-  const allTied = sorted.every(t => wins[t] === 1);
-  if (allTied) {
-    const tb = state.tiebreakers[poolCode];
-    if (!tb || tb.length !== 3 || tb.some(x => !x) || new Set(tb).size !== 3) {
-      return { ready: false, needsTiebreaker: true, tbKey: poolCode, wins, teams: pool.teams };
-    }
-    return { ready: true, order: tb, wins, tied: true };
-  }
-  return { ready: true, order: sorted, wins, tied: false };
-}
-
-function getLamPoolFinish() {
-  const s = getPoolStanding('G');
-  if (!s.ready) return null;
-  return s.order.indexOf(LAM) + 1;
-}
-
-function getSatCrossover() {
-  const finish = getLamPoolFinish();
-  return finish ? SAT_CROSSOVER[finish] : null;
-}
-
-function resolveSlot(slot) {
-  const cross = getSatCrossover();
-  if (!cross) return null;
-  const spec = cross.slots[slot];
-  if (!spec) return null;
-  const [poolCode, seedIdx] = spec;
-  const s = getPoolStanding(poolCode);
-  if (!s.ready) return null;
-  return s.order[seedIdx];
-}
-
-function getSatStanding() {
-  const cross = getSatCrossover();
-  if (!cross) return { ready: false };
-  const teamBySlot = {};
-  for (const slot of Object.keys(cross.slots)) {
-    const t = resolveSlot(slot);
-    if (!t) return { ready: false };
-    teamBySlot[slot] = t;
-  }
-  const teams = Object.values(teamBySlot);
-  const wins = {};
-  teams.forEach(t => wins[t] = 0);
-  let complete = true;
-  for (const g of cross.games) {
-    const w = state.satResults[g.num];
-    if (!w) complete = false;
-    else wins[w]++;
-  }
-  if (!complete) return { ready: false, wins, teamBySlot };
-  const sorted = [...teams].sort((a, b) => wins[b] - wins[a]);
-  const allTied = sorted.every(t => wins[t] === 1);
-  if (allTied) {
-    const tbKey = 'SAT_' + cross.poolCode;
-    const tb = state.tiebreakers[tbKey];
-    if (!tb || tb.length !== 3 || tb.some(x => !x) || new Set(tb).size !== 3) {
-      return { ready: false, needsTiebreaker: true, tbKey, teams, wins, teamBySlot };
-    }
-    return { ready: true, order: tb, wins, tied: true, teamBySlot };
-  }
-  return { ready: true, order: sorted, wins, tied: false, teamBySlot };
-}
-
-function getLamSatFinish() {
-  const s = getSatStanding();
-  if (!s.ready) return null;
-  return s.order.indexOf(LAM) + 1;
-}
-
-function getSundayPath() {
-  const cross = getSatCrossover();
-  const finish = getLamSatFinish();
-  if (!cross || !finish) return null;
-  return SUNDAY_PATHS[cross.poolCode + '-' + finish];
-}
-
-function getSundayPathTrace() {
-  const path = getSundayPath();
-  if (!path) return null;
-  const trace = [];
-  let currentIdx = 0;
-  while (currentIdx < path.games.length) {
-    const g = path.games[currentIdx];
-    trace.push(g);
-    const result = state.sunResults[g.num];
-    if (!result) break;
-    if (g.terminal) break;
-    const nextNum = result === 'w' ? g.winTo : g.loseTo;
-    const nextIdx = path.games.findIndex(x => x.num === nextNum);
-    if (nextIdx < 0) break;
-    currentIdx = nextIdx;
-  }
-  return { path, trace };
-}
-
-function getFinalPlacement() {
-  const t = getSundayPathTrace();
-  if (!t) return null;
-  const last = t.trace[t.trace.length - 1];
-  const result = state.sunResults[last.num];
-  if (!result) return { pending: true };
-  if (!last.terminal) return { pending: true };
-  if (last.noPlacement) return { done: true, noPlacement: true };
-  return { done: true, place: result === 'w' ? last.winPlace : last.losePlace };
-}
-
-// Possible final places for Lamorinda given the current state. Enumerates all
-// remaining Saturday outcomes (and reachable Sunday branches) to derive the
-// min/max range.
-function getPlayingForRange() {
-  const cross = getSatCrossover();
-  if (!cross) return null;
-  const teamBySlot = {};
-  for (const slot of Object.keys(cross.slots)) {
-    const t = resolveSlot(slot);
-    if (!t) return null;
-    teamBySlot[slot] = t;
-  }
-  const teams = Object.values(teamBySlot);
-  const games = cross.games;
-  const undecided = games.filter(g => !state.satResults[g.num]);
-
-  const finishes = new Set();
-  const combos = 1 << undecided.length;
-  for (let mask = 0; mask < combos; mask++) {
-    const wins = {};
-    teams.forEach(t => wins[t] = 0);
-    for (const g of games) {
-      let w = state.satResults[g.num];
-      if (!w) {
-        const idx = undecided.indexOf(g);
-        w = (mask >> idx) & 1 ? teamBySlot[g.a] : teamBySlot[g.b];
-      }
-      wins[w]++;
-    }
-    const sorted = [...teams].sort((a, b) => wins[b] - wins[a]);
-    if (sorted.every(t => wins[t] === 1)) {
-      finishes.add(1); finishes.add(2); finishes.add(3);
-    } else {
-      finishes.add(sorted.indexOf(LAM) + 1);
-    }
-  }
-
-  const currentSatFinish = getLamSatFinish();
-  const trace = getSundayPathTrace();
-  const places = new Set();
-  let hasConsolation = false;
-
-  for (const finish of finishes) {
-    const path = SUNDAY_PATHS[cross.poolCode + '-' + finish];
-    if (!path) continue;
-    let reachable;
-    if (finish === currentSatFinish && trace && trace.trace.length) {
-      reachable = [];
-      const visit = (g, locked) => {
-        if (g.terminal) { reachable.push(g); return; }
-        if (locked === 'w' || locked == null) {
-          const n = path.games.find(x => x.num === g.winTo);
-          if (n) visit(n, null);
-        }
-        if (locked === 'l' || locked == null) {
-          const n = path.games.find(x => x.num === g.loseTo);
-          if (n) visit(n, null);
-        }
-      };
-      const last = trace.trace[trace.trace.length - 1];
-      visit(last, state.sunResults[last.num] || null);
-    } else {
-      reachable = path.games.filter(g => g.terminal);
-    }
-    for (const g of reachable) {
-      if (g.noPlacement) hasConsolation = true;
-      if (g.winPlace) places.add(g.winPlace);
-      if (g.losePlace) places.add(g.losePlace);
-    }
-  }
-
-  if (!places.size && !hasConsolation) return null;
-  const arr = [...places].sort((a, b) => a - b);
-  return {
-    min: arr.length ? arr[0] : null,
-    max: arr.length ? arr[arr.length - 1] : null,
-    places: arr,
-    hasConsolation,
-    decided: arr.length === 1 && !hasConsolation,
-  };
-}
-
-function ordinal(n) {
-  const v = n % 100;
-  if (v >= 11 && v <= 13) return n + 'th';
-  const s = ['th', 'st', 'nd', 'rd'];
-  return n + (s[n % 10] || 'th');
-}
-
-function reachablePlacesFrom(games, num) {
-  const g = games.find(x => x.num === num);
-  if (!g) return [];
-  if (g.terminal) {
-    if (g.noPlacement) return [];
-    const out = [];
-    if (g.winPlace) out.push(g.winPlace);
-    if (g.losePlace) out.push(g.losePlace);
-    return out;
-  }
-  return [...reachablePlacesFrom(games, g.winTo), ...reachablePlacesFrom(games, g.loseTo)];
-}
-
-// Tone for the stakes banner based on the best place reachable from this game.
-function stakesTone(bestPlace) {
-  if (bestPlace == null) return 'slate';
-  if (bestPlace === 1) return 'gold';
-  if (bestPlace === 3) return 'bronze';
-  if (bestPlace <= 4) return 'silver';
-  if (bestPlace <= 8) return 'silver';
-  if (bestPlace <= 12) return 'purple';
-  if (bestPlace <= 16) return 'teal';
-  return 'slate';
-}
-
-function describeStakes(game, path) {
-  if (game.noPlacement) {
-    return { tone: 'slate', label: 'Crossover game', sub: 'No posted final place' };
-  }
-  if (game.terminal) {
-    const wp = game.winPlace, lp = game.losePlace;
-    return {
-      tone: stakesTone(wp),
-      label: ordinal(wp) + '-place game',
-      sub: 'Win → ' + ordinal(wp) + ' · Lose → ' + ordinal(lp),
-    };
-  }
-  const wPlaces = [...new Set(reachablePlacesFrom(path.games, game.winTo))].sort((a, b) => a - b);
-  const lPlaces = [...new Set(reachablePlacesFrom(path.games, game.loseTo))].sort((a, b) => a - b);
-  const fmt = (arr) => {
-    if (!arr.length) return 'consolation';
-    if (arr.length === 1) return ordinal(arr[0]);
-    return ordinal(arr[0]) + '/' + ordinal(arr[arr.length - 1]);
-  };
-  const allPlaces = [...wPlaces, ...lPlaces];
-  const best = allPlaces.length ? Math.min(...allPlaces) : null;
-  return {
-    tone: stakesTone(best),
-    label: game.role,
-    sub: 'Win → plays for ' + fmt(wPlaces) + ' · Lose → plays for ' + fmt(lPlaces),
-  };
+function resetAll() {
+  state.results = { ...PLAYED_RESULTS };
+  render();
 }
 
 // ==================== DOM HELPERS ====================
@@ -910,9 +572,6 @@ function el(tag, props, ...children) {
       if (k === 'style' && typeof props[k] === 'object') Object.assign(e.style, props[k]);
       else if (k.startsWith('on')) e.addEventListener(k.slice(2).toLowerCase(), props[k]);
       else if (k === 'class' || k === 'className') e.className = props[k];
-      else if (k === 'html') e.innerHTML = props[k];
-      else if (k === 'value') e.value = props[k];
-      else if (k === 'selected') e.selected = props[k];
       else e.setAttribute(k, props[k]);
     }
   }
@@ -925,383 +584,170 @@ function el(tag, props, ...children) {
   return e;
 }
 
-// ==================== RENDER PIECES ====================
-function renderTeamButton(team, winner, onClick, opts) {
-  opts = opts || {};
-  const isLam = team === LAM;
-  const isFinal = !!opts.isFinal;
-  const cls = 'team-btn'
-    + (isLam ? ' is-lam' : '')
-    + (winner === team ? ' winner' : '')
-    + (winner && winner !== team ? ' loser' : '')
-    + (isFinal ? ' is-final' : '');
-  const children = [team];
-  if (opts.score != null) children.push(el('span', { class: 'team-score' }, String(opts.score)));
-  return el('button', {
-    class: cls,
-    disabled: isFinal,
-    onClick: isFinal ? null : () => onClick(team),
-  }, ...children);
+// ==================== RENDER ====================
+function nextLabel(dest) {
+  if (typeof dest === 'number') return '#' + dest;
+  return terminalInfo(dest).text.replace('Day 2 ', '').replace(' bracket', '');
 }
 
-function renderMatchupCard(opts) {
-  const isLam = opts.home === LAM || opts.away === LAM;
-  const complete = !!opts.winner;
-  const isFinal = isGameFinal(opts.num);
-  const score = PLAYED_SCORES[opts.num];
-  const homeScore = score ? score.home : null;
-  const awayScore = score ? score.away : null;
-  return el('div', { class: 'game-card' + (isLam ? ' is-lam' : '') + (complete ? ' is-complete' : '') },
+function renderGameCard(num) {
+  const g = GAMES[num];
+  const whiteName = resolveSlot(g.white);
+  const darkName = resolveSlot(g.dark);
+  const isLam = whiteName === LAM || darkName === LAM;
+  const r = state.results[num];
+  const winnerName = r ? (r === 'w' ? whiteName : darkName) : null;
+  const isFinal = isGameFinal(num);
+  const score = PLAYED_SCORES[num];
+  const gmid = '14BX-' + String(num).padStart(3, '0');
+
+  const sideBtn = (side, name, slot) => {
+    const cls = 'team-btn'
+      + (name === LAM ? ' is-lam' : '')
+      + (!name ? ' pending' : '')
+      + (r === side ? ' winner' : '')
+      + (r && r !== side ? ' loser' : '')
+      + (isFinal ? ' is-final' : '');
+    const children = [name || slotHint(slot)];
+    if (score) children.push(el('span', { class: 'team-score' }, String(side === 'w' ? score.w : score.d)));
+    return el('button', {
+      class: cls,
+      disabled: isFinal || !name || !whiteName || !darkName,
+      onClick: () => pickWinner(num, side),
+    }, ...children);
+  };
+
+  return el('div', { class: 'game-card' + (isLam ? ' is-lam' : '') + (r ? ' is-complete' : '') },
     el('div', { class: 'game-meta' },
       el('span', {},
-        el('span', { class: 'game-id' }, '#' + opts.num),
+        el('span', { class: 'game-id' }, '#' + num),
         isFinal ? el('span', { class: 'final-badge' }, 'FINAL') : null,
       ),
-      el('span', {}, opts.time + ' \u00b7 ' + opts.loc),
+      el('span', {}, g.time + ' · ' + gmid),
     ),
     el('div', { class: 'team-row' },
-      renderTeamButton(opts.home, opts.winner, opts.onClick, { isFinal, score: homeScore }),
+      sideBtn('w', whiteName, g.white),
       el('span', { class: 'vs-label' }, 'vs'),
-      renderTeamButton(opts.away, opts.winner, opts.onClick, { isFinal, score: awayScore }),
+      sideBtn('d', darkName, g.dark),
     ),
-    opts.extra || null,
+    el('div', { class: 'next-hint' }, 'Win → ' + nextLabel(g.wTo) + ' · Lose → ' + nextLabel(g.lTo)),
   );
 }
 
-function renderStandingsBox(standing) {
-  const rows = standing.order.map((team, i) => {
-    const pos = i + 1;
-    const wins = standing.wins[team] != null ? standing.wins[team] : 0;
-    const losses = 2 - wins;
-    return el('div', { class: 'standing-row' + (team === LAM ? ' lam' : '') },
-      el('span', { class: 'pos-badge p' + pos }, ['1st','2nd','3rd'][pos-1]),
-      el('span', { class: 'team-name' + (team === LAM ? ' lam' : '') }, team),
-      el('span', { class: 'record-text' }, wins + '\u2013' + losses),
-    );
-  });
-  const note = standing.tied ? el('div', { class: 'standings-note' }, 'Three-way tie at 1\u20131 \u00b7 seeding set manually above') : null;
-  return el('div', { class: 'standings-box' }, ...rows, note);
+function renderLamPath() {
+  const { path, terminal } = lamTrace();
+  const box = el('div', {});
+  const last = path[path.length - 1];
+  const lastGame = GAMES[last];
+  if (!state.results[7]) {
+    box.appendChild(el('div', { class: 'path-callout' },
+      el('strong', {}, 'Lamorinda B opens vs 31-CARLSBAD'), ' — Thu 7:50 AM at Beckman HS 1 (game #7). ',
+      'Click winners below to walk the day.',
+    ));
+  } else if (terminal) {
+    const info = terminalInfo(terminal);
+    box.appendChild(el('div', { class: 'path-callout' },
+      el('strong', {}, 'Lamorinda B lands in: '), info.text, '.',
+    ));
+    if (info.group) box.appendChild(renderDay2Group(info.group));
+  } else {
+    box.appendChild(el('div', { class: 'path-callout' },
+      el('strong', {}, 'Next up for Lamorinda B: '), 'game #' + last + ' · ' + lastGame.time + ' at ' + lastGame.venue + '.',
+    ));
+  }
+  return box;
 }
 
-function renderTiebreaker(tbKey, teams) {
-  const current = state.tiebreakers[tbKey] || [null, null, null];
-  const setSeed = (pos, team) => {
-    const next = [...(state.tiebreakers[tbKey] || [null, null, null])];
-    for (let i = 0; i < 3; i++) if (next[i] === team) next[i] = null;
-    next[pos] = team || null;
-    state.tiebreakers[tbKey] = next;
-    if (tbKey === 'G') clearDownstreamFromPool();
-    else if (tbKey.startsWith('SAT_')) clearDownstreamFromSat();
-    render();
-  };
-  const makeSelect = (pos) => {
-    const opts = [el('option', { value: '' }, '\u2014 pick team \u2014')];
-    teams.forEach(t => {
-      const o = el('option', { value: t }, t);
-      if (current[pos] === t) o.selected = true;
-      opts.push(o);
-    });
-    return el('select', { onChange: (e) => setSeed(pos, e.target.value) }, ...opts);
-  };
-  return el('div', { class: 'tiebreaker-box' },
-    el('div', { class: 'tb-title' }, 'Three-way tie \u2014 all teams 1\u20131'),
-    el('p', { class: 'tb-desc' }, 'The tournament breaks this by goal differential. Pick the seeding manually:'),
-    el('div', { class: 'tb-pickers' },
-      el('div', { class: 'tb-row' }, el('label', {}, '1st seed'), makeSelect(0)),
-      el('div', { class: 'tb-row' }, el('label', {}, '2nd seed'), makeSelect(1)),
-      el('div', { class: 'tb-row' }, el('label', {}, '3rd seed'), makeSelect(2)),
-    ),
-  );
-}
-
-function renderPoolPlaySection() {
-  const container = el('div', {});
-  ['G', 'B', 'J'].forEach(poolCode => {
-    const pool = POOLS[poolCode];
-    const standing = getPoolStanding(poolCode);
-    const section = el('div', { class: 'pool-section' });
-    section.appendChild(el('h3', {}, pool.label + ' \u00b7 ' + pool.teams.join(' \u00b7 ')));
-    const grid = el('div', { class: 'games-grid' });
-    pool.games.forEach(gNum => {
-      const g = GAMES[gNum];
-      grid.appendChild(renderMatchupCard({
-        num: gNum,
-        time: g.time,
-        loc: g.loc,
-        home: g.home,
-        away: g.away,
-        winner: state.poolResults[gNum],
-        onClick: (team) => {
-          state.poolResults[gNum] = team;
-          delete state.tiebreakers[poolCode];
-          clearDownstreamFromPool();
-          render();
-        },
-      }));
-    });
-    section.appendChild(grid);
-    if (standing.needsTiebreaker) {
-      section.appendChild(renderTiebreaker(standing.tbKey, standing.teams));
-    } else if (standing.ready) {
-      section.appendChild(renderStandingsBox(standing));
-    }
-    container.appendChild(section);
-  });
-  return container;
-}
-
-function renderSaturdaySection() {
-  const gStanding = getPoolStanding('G');
-  const bStanding = getPoolStanding('B');
-  const jStanding = getPoolStanding('J');
-  if (!gStanding.ready) {
-    return el('div', { class: 'empty-state' }, 'Complete Pool G games (including any tiebreaker) to see the Saturday crossover.');
-  }
-  if (!bStanding.ready || !jStanding.ready) {
-    const finish = getLamPoolFinish();
-    const cross = SAT_CROSSOVER[finish];
-    return el('div', {},
-      el('div', { class: 'path-callout' },
-        'Lamorinda B finishes ', el('strong', {}, ['1st','2nd','3rd'][finish-1] + ' in Pool G'),
-        ' \u2192 heading to ', el('strong', {}, cross.label), '.',
-      ),
-      el('div', { class: 'empty-state', style: { marginTop: '10px' } }, 'Finish Pool B and Pool J games to resolve the crossover opponents.'),
-    );
-  }
-  const cross = getSatCrossover();
-  const finish = getLamPoolFinish();
-  const teamBySlot = {};
-  for (const slot of Object.keys(cross.slots)) teamBySlot[slot] = resolveSlot(slot);
-
-  const container = el('div', {});
-  container.appendChild(el('div', { class: 'path-callout' },
-    'Lamorinda B finishes ', el('strong', {}, ['1st','2nd','3rd'][finish-1] + ' in Pool G'),
-    ' \u2192 enters ', el('strong', {}, cross.label), '. All games at Tierrasanta.',
-  ));
-  container.appendChild(el('h3', {}, cross.poolCode + ' games \u00b7 ' + Object.values(teamBySlot).join(' \u00b7 ')));
-
-  const grid = el('div', { class: 'games-grid' });
-  cross.games.forEach(g => {
-    const home = teamBySlot[g.a];
-    const away = teamBySlot[g.b];
-    grid.appendChild(renderMatchupCard({
-      num: g.num,
-      time: g.time,
-      loc: 'Tierrasanta',
-      home, away,
-      winner: state.satResults[g.num],
-      onClick: (team) => {
-        state.satResults[g.num] = team;
-        delete state.tiebreakers['SAT_' + cross.poolCode];
-        clearDownstreamFromSat();
-        render();
-      },
-    }));
-  });
-  container.appendChild(grid);
-
-  const satStanding = getSatStanding();
-  if (satStanding.needsTiebreaker) {
-    container.appendChild(renderTiebreaker(satStanding.tbKey, Object.values(teamBySlot)));
-  } else if (satStanding.ready) {
-    container.appendChild(renderStandingsBox(satStanding));
-  }
-  return container;
-}
-
-function renderSundaySection() {
-  const satStanding = getSatStanding();
-  if (!satStanding.ready) {
-    return el('div', { class: 'empty-state' }, 'Complete Saturday crossover games to see the Sunday bracket path.');
-  }
-  const satFinish = getLamSatFinish();
-  const cross = getSatCrossover();
-  const path = getSundayPath();
-  const trace = getSundayPathTrace().trace;
-
-  const container = el('div', {});
-  container.appendChild(el('div', { class: 'path-callout' },
-    'Lamorinda B finishes ', el('strong', {}, ['1st','2nd','3rd'][satFinish-1] + ' in Pool ' + cross.poolCode),
-    ' \u2192 heading to ', el('strong', {}, path.bracket), '.',
-  ));
-  container.appendChild(el('h3', {}, 'Sunday bracket games'));
-
-  const grid = el('div', { class: 'games-grid' });
-  trace.forEach(g => {
-    const result = state.sunResults[g.num];
-    const winCls = 'team-btn is-lam' + (result === 'w' ? ' winner' : '') + (result === 'l' ? ' loser' : '');
-    const loseCls = 'team-btn' + (result === 'l' ? ' winner' : '') + (result === 'w' ? ' loser' : '');
-    let loseLabel = 'Lamorinda LOSES';
-    let winLabel = 'Lamorinda WINS';
-    if (g.terminal && !g.noPlacement) {
-      const ord = (n) => n === 1 ? 'st' : n === 2 ? 'nd' : n === 3 ? 'rd' : 'th';
-      winLabel = 'WIN \u2192 ' + g.winPlace + ord(g.winPlace);
-      loseLabel = 'LOSE \u2192 ' + g.losePlace + ord(g.losePlace);
-    }
-    const stakes = describeStakes(g, path);
-    const stakesEl = el('div', { class: 'stakes-banner ' + stakes.tone },
-      stakes.label,
-      el('span', { class: 'stakes-sub' }, stakes.sub),
-    );
-    const extra = el('div', { class: 'next-hint' }, 'Opponent: ' + g.opp);
-    const advance = (res) => {
-      state.sunResults[g.num] = res;
-      const newTrace = [g];
-      let cur = g;
-      while (!cur.terminal) {
-        const r = state.sunResults[cur.num];
-        if (!r) break;
-        const nn = r === 'w' ? cur.winTo : cur.loseTo;
-        const next = path.games.find(x => x.num === nn);
-        if (!next) break;
-        newTrace.push(next);
-        cur = next;
-      }
-      const keepNums = new Set(newTrace.map(x => x.num));
-      Object.keys(state.sunResults).forEach(k => { if (!keepNums.has(parseInt(k))) delete state.sunResults[k]; });
-      render();
-    };
-    grid.appendChild(el('div', { class: 'game-card is-lam' + (result ? ' is-complete' : '') },
-      el('div', { class: 'game-meta' },
-        el('span', { class: 'game-id' }, '#' + g.num),
-        el('span', {}, g.time + ' \u00b7 ' + g.loc),
-      ),
-      stakesEl,
-      el('div', { class: 'team-row' },
-        el('button', { class: winCls, onClick: () => advance('w') }, winLabel),
-        el('span', { class: 'vs-label' }, 'vs'),
-        el('button', { class: loseCls, onClick: () => advance('l') }, loseLabel),
-      ),
-      extra,
+function renderDay2Group(key) {
+  const grp = DAY2_GROUPS[key];
+  const box = el('div', { class: 'day2-box' });
+  box.appendChild(el('h3', { style: { marginTop: '0' } }, grp.label + ' · Fri July 24 round robin'));
+  grp.slots.forEach(([seed, src]) => {
+    const name = src ? resolveSlot(src) : null;
+    const isLam = name === LAM;
+    box.appendChild(el('div', { class: 'day2-slot' + (isLam ? ' lam' : '') },
+      el('span', { class: 'seed-badge' }, seed),
+      el('span', { class: 'slot-name' + (isLam ? ' lam' : '') + (!name ? ' tbd' : '') },
+        name || (src ? slotHint(src) : 'TBD — not yet published')),
     ));
   });
-  container.appendChild(grid);
-  return container;
+  return box;
 }
 
-function renderPlayingForCallout() {
-  const fp = getFinalPlacement();
-  if (fp && fp.done) return null;
-  const range = getPlayingForRange();
-  if (!range) return null;
-
-  let label;
-  if (range.places.length === 0) {
-    label = 'consolation crossover (no posted final place)';
-  } else if (range.min === range.max) {
-    label = ordinal(range.min) + ' place';
-  } else {
-    label = ordinal(range.min) + '–' + ordinal(range.max) + ' place';
-  }
-  if (range.hasConsolation && range.places.length) label += ' (or consolation)';
-
-  return el('div', { class: 'path-callout' },
-    el('strong', {}, 'Lamorinda B is playing for: '), label,
-  );
-}
-
-function renderFinalPlacement() {
-  const fp = getFinalPlacement();
-  if (!fp || fp.pending) return null;
-  if (fp.noPlacement) {
-    return el('div', { class: 'placement-hero low' },
-      el('div', { class: 'hero-label' }, 'Final result'),
-      el('div', { class: 'hero-place' }, 'Consolation'),
-      el('div', { class: 'hero-desc' }, 'This path ends in a single Sunday crossover with no posted final place on the schedule. Lamorinda finishes outside the top 16.'),
-    );
-  }
-  const place = fp.place;
-  const ord = ['th','st','nd','rd'];
-  const suffix = (place % 100 >= 11 && place % 100 <= 13) ? 'th' : (ord[place % 10] || 'th');
-  let cls = 'placement-hero';
-  if (place > 4 && place <= 8) cls += ' silver';
-  else if (place > 8 && place <= 12) cls += ' mid';
-  else if (place > 12) cls += ' low';
-  return el('div', { class: cls },
-    el('div', { class: 'hero-label' }, 'Final placement'),
-    el('div', { class: 'hero-place' }, place + suffix),
-    el('div', { class: 'hero-desc' }, 'of 36 teams \u00b7 14U Boys A \u00b7 San Diego County Cup'),
-  );
-}
-
-// ==================== MAIN RENDER ====================
 function render() {
   updateURL();
   const app = document.getElementById('app');
   app.innerHTML = '';
   app.appendChild(el('div', { class: 'hdr' },
     el('div', {},
-      el('h1', {}, 'Lamorinda B \u00b7 Scenario Explorer'),
-      el('p', { class: 'subtitle' }, 'San Diego County Cup \u00b7 14U Boys A \u00b7 May 1\u20133, 2026'),
+      el('h1', {}, "LAMO JO's B-Team"),
+      el('p', { class: 'subtitle' }, '2026 National Junior Olympics · Session 2 · 14U Men Classic (14BX) · July 23–26 · Orange County'),
     ),
     el('div', { class: 'hdr-actions' },
-      el('a', { class: 'btn', href: 'stats.html' }, 'Player stats \u2192'),
-      el('a', { class: 'btn', href: SCHEDULE_URL, target: '_blank', rel: 'noopener' }, 'View full schedule \u2197'),
-      el('a', { class: 'btn', href: GROUPME_URL, target: '_blank', rel: 'noopener' }, 'GroupMe \u2197'),
-      el('a', { class: 'btn', href: VOLUNTEER_URL, target: '_blank', rel: 'noopener' }, 'Volunteer sheet \u2197'),
+      el('a', { class: 'btn', href: 'stats.html' }, 'Player stats →'),
+      el('a', { class: 'btn', href: SCHEDULE_URL, target: '_blank', rel: 'noopener' }, 'JO schedule sheet ↗'),
+      el('a', { class: 'btn', href: GROUPME_URL, target: '_blank', rel: 'noopener' }, 'GroupMe ↗'),
       el('button', { class: 'btn primary', onClick: (e) => copyShareLink(e.currentTarget) }, 'Copy share link'),
       el('button', { class: 'btn', onClick: resetAll }, 'Reset all'),
     ),
   ));
 
-  const pfCallout = renderPlayingForCallout();
-  if (pfCallout) app.appendChild(pfCallout);
+  app.appendChild(renderLamPath());
 
-  app.appendChild(el('h2', {}, 'Pool Play \u00b7 Friday + Saturday AM'));
-  app.appendChild(el('p', { class: 'subtitle', style: { margin: '0 0 12px' } }, 'Click the winner of each pool game. Lamorinda\'s finish in Pool G decides the Saturday track.'));
-  app.appendChild(renderPoolPlaySection());
+  app.appendChild(el('div', { class: 'warn-callout' },
+    el('strong', {}, 'Bracket notes: '),
+    'Day 1 (Thu) is modeled below — each group of four plays a mini-bracket, winners feed the Day 2 upper-bracket groups, losers the lower-bracket groups. ',
+    'Beckman HS 1 pairings are inferred from the sheet’s game routing and could shift — confirm times on the sheet the night before. ',
+    'Day 2 groups appear as you click; Day 3–4 placement brackets get added once that part of the schedule is published.',
+  ));
 
-  app.appendChild(el('h2', {}, 'Saturday Crossover'));
-  app.appendChild(renderSaturdaySection());
+  VENUE_SECTIONS.forEach(sec => {
+    app.appendChild(el('h2', {}, sec.name + (sec.lam ? ' · LAMORINDA' : '')));
+    app.appendChild(el('p', { class: 'subtitle', style: { margin: '0 0 12px' } }, sec.sub + ' · Thu July 23'));
+    const grid = el('div', { class: 'games-grid' });
+    sec.games.forEach(num => grid.appendChild(renderGameCard(num)));
+    app.appendChild(grid);
+  });
 
-  app.appendChild(el('h2', {}, 'Sunday Bracket'));
-  app.appendChild(renderSundaySection());
-
-  const fp = renderFinalPlacement();
-  if (fp) app.appendChild(fp);
+  app.appendChild(el('h2', {}, 'Day 1 groups'));
+  const ggrid = el('div', { class: 'games-grid' });
+  Object.keys(GROUPS).forEach(code => {
+    ggrid.appendChild(el('div', { class: 'game-card' + (code === 'G' ? ' is-lam' : '') },
+      el('div', { class: 'game-meta' }, el('span', { class: 'game-id' }, 'Group ' + code)),
+      el('div', { style: { fontSize: '13px', lineHeight: '1.7' } },
+        GROUPS[code].map(s => el('div', { style: s === 18 ? { color: '#047857', fontWeight: '700' } : null }, teamLabel(s))),
+      ),
+    ));
+  });
+  app.appendChild(ggrid);
 }
 
 function renderVenues() {
   const root = document.getElementById('venues');
   if (!root) return;
   root.innerHTML = '';
-  root.appendChild(el('h2', {}, 'Locations'));
-  const groups = [
-    { kind: 'venue', label: 'Tournament venues' },
-    { kind: 'travel', label: 'Travel' },
-  ];
-  groups.forEach(g => {
-    const items = VENUES.filter(v => v.kind === g.kind);
-    if (!items.length) return;
-    root.appendChild(el('h3', { class: 'venue-group' }, g.label));
-    const list = el('div', { class: 'venue-list' });
-    items.forEach(v => {
-      const q = encodeURIComponent(v.name + ', ' + v.address);
-      const url = 'https://www.google.com/maps/search/?api=1&query=' + q;
-      list.appendChild(el('a', { class: 'venue-item', href: url, target: '_blank', rel: 'noopener' },
-        el('div', { class: 'venue-name' }, v.name),
-        el('div', { class: 'venue-aliases' }, v.aliases),
-        el('div', { class: 'venue-addr' }, v.address),
-        el('div', { class: 'venue-maps' }, 'Open in Google Maps ↗'),
-      ));
-    });
-    root.appendChild(list);
+  root.appendChild(el('h2', {}, 'Venues'));
+  const list = el('div', { class: 'venue-list' });
+  VENUES.forEach(v => {
+    const q = encodeURIComponent(v.name + ', ' + v.address);
+    list.appendChild(el('a', { class: 'venue-item', href: 'https://www.google.com/maps/search/?api=1&query=' + q, target: '_blank', rel: 'noopener' },
+      el('div', { class: 'venue-name' }, v.name),
+      el('div', { class: 'venue-aliases' }, v.aliases),
+      el('div', { class: 'venue-addr' }, v.address),
+      el('div', { class: 'venue-maps' }, 'Open in Google Maps ↗'),
+    ));
   });
+  root.appendChild(list);
 }
 
-// Decode any state from URL hash, then render. If no hash, pre-fill
-// played games so the explorer reflects the tournament's current state.
 if (!decodeStateFromHash()) {
-  state.poolResults = { ...PLAYED_POOL_RESULTS };
-  state.satResults = { ...PLAYED_SAT_RESULTS };
+  state.results = { ...PLAYED_RESULTS };
 }
 render();
 renderVenues();
 
-// Re-render if user navigates back/forward through hash history
 window.addEventListener('hashchange', () => {
-  const ok = decodeStateFromHash();
-  if (ok) render();
+  if (decodeStateFromHash()) render();
 });
 </script>
 </body>

@@ -1,8 +1,15 @@
-# Lamorinda B · SDCC 14U Boys A Scenario Explorer
+# LAMO JO's B-Team
 
-An interactive what-if explorer for **Lamorinda B** at the 2026 San Diego County Cup, 14U Boys A division (May 1–3, 2026).
+Companion app for **Lamorinda B (18-LAMORINDA B)** at the **2026 National Junior Olympics · Session 2 · 14U Men Classic (14BX)**, July 23–26 in Orange County — a bracket explorer (`index.html`) plus a player stat tracker (`stats.html`).
 
-Click the winner of each game and the app computes Lamorinda's path through pool play, the Saturday crossover, and the Sunday bracket — all the way to a final placement.
+## Bracket explorer (`index.html`)
+
+All 48 teams and all 60 Day-1 games are modeled from the published NJO schedule (14U_Men_Classic tab). Click the winner of each game and the app resolves downstream matchups — Lamorinda's path is highlighted, and a callout shows which Day-2 upper/lower-bracket group each outcome leads to, including the other teams that land there.
+
+- **Day 1 structure**: each group of four plays a mini-bracket (opener → winners/losers games → 2-3 crossovers). Winners feed eight Day-2 "upper" groups, losers eight "lower" groups.
+- **Beckman HS 1 caveat**: the sheet's Beckman section (groups G/H/I — Lamorinda's pool) wasn't fully visible when this was built; its pairings/times are inferred from the W-to/L-to game routing on the other venues and marked as such in the UI. Verify against the sheet before game day.
+- **Days 3–4**: placement brackets get added to `GAMES`/`DAY2_GROUPS` once that part of the schedule is published.
+- **Shareable scenarios** via URL hash (`Copy share link`), venues rail with Google Maps links, and `PLAYED_RESULTS`/`PLAYED_SCORES` overlays for locking in real results as they happen (same mechanism as the old SDCC explorer — see git history for that app).
 
 ## Player Stat Tracker (`stats.html`)
 
@@ -26,14 +33,6 @@ The sync backend is a single serverless function (`api/sync.js`) that stores eac
 
 Notes: the passcode is set on first save and verified (SHA-256 hash) on every request; sync is last-write-wins per whole database (fine for one scorekeeper at a time — simultaneous editing on two devices can overwrite each other); the JSON export/sync-link remain as an offline fallback and never contain the passcode.
 
-## Features
-
-- **All 36 teams modeled** across the three pools that affect Lamorinda (G, B, J) and the routing into Saturday's O / S / W crossover pools.
-- **Three-way tie handling** — when a pool ends with everyone at 1–1, a manual seeding picker appears (the tournament breaks this with goal differential, which the app does not track).
-- **Sunday bracket walk** — clicks through semifinals, championship, and 3rd / 5th / 7th / 9th / 11th / 13th / 15th place games depending on the path.
-- **Shareable scenarios** — every click updates the URL hash, so the "Copy share link" button hands you a URL that loads exactly the scenario you set up.
-- **Schedule link** — header button opens the full tournament schedule (Google Sheet).
-
 ## Local development
 
 This is a single static HTML file with no build step.
@@ -54,14 +53,3 @@ Vercel auto-detects this as a static site — no config needed.
 4. Click **Deploy**
 
 You'll get a `*.vercel.app` URL within ~30 seconds.
-
-## Editing scenarios / teams
-
-All tournament data is at the top of the `<script>` block in `index.html`:
-
-- `POOLS` — pool team rosters and game numbers
-- `GAMES` — pool play game metadata (time, location, matchup)
-- `SAT_CROSSOVER` — Saturday pool routing by Pool G finish
-- `SUNDAY_PATHS` — Sunday bracket trees keyed by Saturday pool + finish
-
-To swap to a different team, change `LAM` and update `POOLS.G` / the relevant pool routing.
