@@ -26,6 +26,9 @@ function sources() {
     : [
         // By tab NAME first — immune to gid churn when the sheet is rebuilt.
         { name: 'byname', url: base + '/gviz/tq?tqx=out:csv&sheet=' + encodeURIComponent(SHEET_NAME) },
+        // Whole-spreadsheet HTML view: every tab in one response, no gid or
+        // tab name needed — the GMID filter finds the 14BX rows wherever they are.
+        { name: 'htmlview', url: base + '/htmlview' },
         { name: 'export', url: base + '/export?format=csv&gid=' + GID },
         { name: 'gviz', url: base + '/gviz/tq?tqx=out:csv&gid=' + GID },
       ];
@@ -103,16 +106,17 @@ function num(v) {
   return /^\d+$/.test(s) ? parseInt(s, 10) : null;
 }
 
-// Row layout around the GMID cell (anchor at index i):
+// Row layout around the GMID cell (anchor at index i), all offsets relative
+// so leading extra cells (e.g. htmlview's row-number column) don't matter:
+// i-11 Date · i-10 Time · i-9 Type · i-8 Location · i-7 Gm# ·
 // i-6 White · i-5 White score · i-4 Dark · i-3 Dark score · i-2 W-to · i-1 L-to
-// Absolute columns: 1 = Time, 3 = Location.
 function parseGames(rows) {
   const games = [];
   for (const row of rows) {
     for (let i = 6; i < row.length; i++) {
       const m = String(row[i]).trim().match(/^14BX-(\d{3})$/);
       if (!m) continue;
-      const clean = (idx) => String(row[idx] == null ? '' : row[idx]).trim();
+      const clean = (idx) => idx >= 0 && row[idx] != null ? String(row[idx]).trim() : '';
       games.push({
         n: parseInt(m[1], 10),
         white: clean(i - 6),
@@ -121,8 +125,8 @@ function parseGames(rows) {
         ds: num(row[i - 3]),
         wTo: clean(i - 2),
         lTo: clean(i - 1),
-        time: clean(1),
-        loc: clean(3),
+        time: clean(i - 10),
+        loc: clean(i - 8),
       });
       break;
     }
