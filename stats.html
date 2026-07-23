@@ -862,6 +862,22 @@ function boxScoreURL(g) {
   return location.origin + location.pathname + '#g=' + b64encode(boxScoreData(g));
 }
 
+// Prefer a short server-stored link (#b=<id>); fall back to the long
+// self-contained #g= link when the store is unavailable.
+let boxLinks = {}; // gameId -> URL (transient, snapshot taken when panel opens)
+async function ensureBoxLink(g) {
+  try {
+    const r = await fetch('api/box', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ data: boxScoreData(g) }),
+    });
+    const out = await r.json().catch(() => ({}));
+    if (r.ok && out.id) return location.origin + location.pathname + '#b=' + out.id;
+  } catch (e) {}
+  return boxScoreURL(g);
+}
+
 // ---- Completed-game locking ----
 // Once a final score is entered the game is read-only until explicitly
 // unlocked; the unlock flag persists so a correction session stays open.
@@ -920,7 +936,7 @@ function gameSummaryText(g) {
   }
   if (g.notes) lines.push('📝 ' + g.notes);
   lines.push('');
-  lines.push('📈 Full box score: ' + boxScoreURL(g));
+  lines.push('📈 Full box score: ' + (boxLinks[g.id] || boxScoreURL(g)));
   return lines.join('\n');
 }
 
@@ -1075,7 +1091,14 @@ function renderGameView(app, gameId) {
       el('a', { class: 'btn', href: '#/games' }, '← All games'),
       el('button', {
         class: 'btn' + (summaryOpen[g.id] ? ' primary' : ''),
-        onClick: () => { summaryOpen[g.id] = !summaryOpen[g.id]; render(); },
+        onClick: async (e) => {
+          if (!summaryOpen[g.id]) {
+            e.currentTarget.textContent = 'Drafting…';
+            boxLinks[g.id] = await ensureBoxLink(g);
+          }
+          summaryOpen[g.id] = !summaryOpen[g.id];
+          render();
+        },
       }, 'Game summary'),
       el('button', {
         class: 'btn danger', onClick: () => {
@@ -1125,7 +1148,7 @@ function renderGameView(app, gameId) {
       }, 'Share…') : null,
     ));
     sumCard.appendChild(el('p', { class: 'subtitle', style: { marginTop: '8px' } },
-      'Drafted from the tallies and final score — updates live as you tally.'));
+      'Summary text updates live as you tally; the box-score link is a snapshot from when this panel opened — reopen Game summary to refresh it.'));
     app.appendChild(sumCard);
   }
 
@@ -1717,11 +1740,38 @@ function currentRoute() {
   const h = location.hash || '#/games';
   if (h.startsWith('#i=')) return { view: 'import', arg: h.slice(3) };
   if (h.startsWith('#g=')) return { view: 'box', arg: h.slice(3) };
+  if (h.startsWith('#b=')) return { view: 'boxid', arg: h.slice(3) };
   const parts = h.replace(/^#\//, '').split('/');
   return { view: parts[0] || 'games', arg: parts[1] };
 }
 
-// Read-only shared box score — all data decoded from the URL itself.
+// Read-only shared box score — from the URL itself (#g=) or the server (#b=).
+let boxFetchCache = {}; // id -> { data } | { error }
+async function fetchBoxById(id) {
+  try {
+    const r = await fetch('api/box?id=' + encodeURIComponent(id));
+    const out = await r.json().catch(() => ({}));
+    boxFetchCache[id] = r.ok && out.data ? { data: out.data } : { error: out.error || ('HTTP ' + r.status) };
+  } catch (e) {
+    boxFetchCache[id] = { error: 'Could not load this box score.' };
+  }
+  render();
+}
+
+function renderBoxIdView(app, id) {
+  const c = boxFetchCache[id];
+  if (!c) {
+    app.appendChild(el('div', { class: 'empty-state' }, 'Loading box score…'));
+    fetchBoxById(id);
+    return;
+  }
+  if (c.error) {
+    app.appendChild(el('div', { class: 'empty-state' }, c.error));
+    return;
+  }
+  renderBoxData(app, c.data);
+}
+
 function renderBoxView(app, encoded) {
   let d = null;
   try { d = b64decode(encoded); } catch (e) {}
@@ -1729,6 +1779,10 @@ function renderBoxView(app, encoded) {
     app.appendChild(el('div', { class: 'empty-state' }, 'This box score link could not be read.'));
     return;
   }
+  renderBoxData(app, d);
+}
+
+function renderBoxData(app, d) {
   const hasScore = d.us !== '' && d.us != null && d.them !== '' && d.them != null;
   const res = hasScore ? (Number(d.us) > Number(d.them) ? 'W' : Number(d.us) < Number(d.them) ? 'L' : 'T') : null;
   app.appendChild(el('div', { class: 'player-hero' },
@@ -1794,6 +1848,7 @@ function render() {
   ));
 
   if (route.view === 'box') { renderBoxView(app, route.arg); return; }
+  if (route.view === 'boxid') { renderBoxIdView(app, route.arg); return; }
 
   const tab = (id, label, href) => el('a', {
     class: 'tab' + (route.view === id || (id === 'games' && route.view === 'game') || (id === 'players' && route.view === 'player') ? ' active' : ''),
