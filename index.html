@@ -531,6 +531,8 @@ document.addEventListener('visibilitychange', () => {
   if (document.visibilityState === 'visible' && Date.now() - liveInfo.fetchedAt > 2 * 60 * 1000) fetchLive(false);
 });
 
+let adminOpen = false; // Admin panel (manual score paste) toggle
+
 // "Our games only" filter — device preference, not part of share links.
 const FILTER_KEY = 'jo-filter-lam';
 let filterLam = false;
@@ -780,6 +782,47 @@ function renderLamPath() {
   return box;
 }
 
+// Admin panel — the manual paste fallback, toggled from the header.
+function renderAdminPanel() {
+  const box = el('div', { class: 'day2-box', style: { borderColor: '#94a3b8' } });
+  box.appendChild(el('h3', { style: { marginTop: '0' } }, 'Admin · Manual score update'));
+  const ta = el('textarea', {
+    placeholder: 'Open the 14U_Men_Classic tab (or the Kahuna results page), Select All, Copy, and paste everything here…',
+    style: { width: '100%', minHeight: '90px', border: '1px solid #cbd5e1', borderRadius: '6px', padding: '8px', font: 'inherit', fontSize: '12px' },
+  });
+  const pasteBtn = el('button', {
+    class: 'btn primary', style: { marginTop: '8px' },
+    onClick: async (e) => {
+      const btn = e.currentTarget;
+      if (!ta.value.trim()) { ta.focus(); return; }
+      btn.textContent = 'Applying…';
+      try {
+        const r = await fetch('api/schedule', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'paste', text: ta.value }),
+        });
+        const out = await r.json().catch(() => ({}));
+        if (!r.ok) throw new Error(out.error || ('HTTP ' + r.status));
+        applyLiveData(out);
+        liveInfo.updatedAt = new Date();
+        liveInfo.source = 'paste';
+        liveInfo.error = null;
+        render();
+        alert('Applied ' + out.count + ' games' + (out.stored ? ' — shared to every device.' : ' on this device (connect the Redis store to share automatically).'));
+      } catch (err) {
+        btn.textContent = 'Apply pasted schedule';
+        alert(err && err.message ? err.message : 'Could not parse that paste.');
+      }
+    },
+  }, 'Apply pasted schedule');
+  box.appendChild(el('p', { class: 'subtitle', style: { margin: '0 0 8px' } },
+    'If automatic updates are down, paste a copy of the schedule here (Select All → Copy on the sheet or the Kahuna results page). Scores are parsed exactly like the live feed.'));
+  box.appendChild(ta);
+  box.appendChild(el('div', {}, pasteBtn));
+  return box;
+}
+
 function renderDay2Group(key) {
   const grp = DAY2_GROUPS[key];
   const box = el('div', { class: 'day2-box' });
@@ -813,6 +856,10 @@ function render() {
       el('a', { class: 'btn', href: 'stats.html' }, 'Player stats →'),
       el('a', { class: 'btn', href: SCHEDULE_URL, target: '_blank', rel: 'noopener' }, 'JO schedule sheet ↗'),
       el('a', { class: 'btn', href: GROUPME_URL, target: '_blank', rel: 'noopener' }, 'GroupMe ↗'),
+      el('button', {
+        class: 'btn' + (adminOpen ? ' primary' : ''),
+        onClick: () => { adminOpen = !adminOpen; render(); },
+      }, adminOpen ? '⚙ Admin' : 'Admin'),
       el('button', { class: 'btn primary', onClick: (e) => copyShareLink(e.currentTarget) }, 'Copy share link'),
       el('button', { class: 'btn', onClick: resetAll }, 'Reset all'),
     ),
@@ -848,6 +895,8 @@ function render() {
     el('a', { href: '#', onClick: (e) => { e.preventDefault(); fetchLive(true); } }, 'check now'),
   ));
 
+  if (adminOpen) app.appendChild(renderAdminPanel());
+
   app.appendChild(renderLamPath());
 
   app.appendChild(el('div', { class: 'warn-callout' },
@@ -871,45 +920,6 @@ function render() {
     nums.forEach(num => grid.appendChild(renderGameCard(num)));
     app.appendChild(grid);
   });
-
-  // Manual paste fallback — works even when every automatic source is blocked.
-  app.appendChild(el('h2', {}, 'Manual score update'));
-  const pasteBox = el('div', { class: 'day2-box' });
-  const ta = el('textarea', {
-    placeholder: 'Open the 14U_Men_Classic tab (or the Kahuna results page), Select All, Copy, and paste everything here…',
-    style: { width: '100%', minHeight: '90px', border: '1px solid #cbd5e1', borderRadius: '6px', padding: '8px', font: 'inherit', fontSize: '12px' },
-  });
-  const pasteBtn = el('button', {
-    class: 'btn primary', style: { marginTop: '8px' },
-    onClick: async (e) => {
-      const btn = e.currentTarget;
-      if (!ta.value.trim()) { ta.focus(); return; }
-      btn.textContent = 'Applying…';
-      try {
-        const r = await fetch('api/schedule', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ action: 'paste', text: ta.value }),
-        });
-        const out = await r.json().catch(() => ({}));
-        if (!r.ok) throw new Error(out.error || ('HTTP ' + r.status));
-        applyLiveData(out);
-        liveInfo.updatedAt = new Date();
-        liveInfo.source = 'paste';
-        liveInfo.error = null;
-        render();
-        alert('Applied ' + out.count + ' games' + (out.stored ? ' — shared to every device.' : ' on this device (connect the Redis store to share automatically).'));
-      } catch (err) {
-        btn.textContent = 'Apply pasted schedule';
-        alert(err && err.message ? err.message : 'Could not parse that paste.');
-      }
-    },
-  }, 'Apply pasted schedule');
-  pasteBox.appendChild(el('p', { class: 'subtitle', style: { margin: '0 0 8px' } },
-    'If automatic updates are down, paste a copy of the schedule here (Select All → Copy on the sheet or the Kahuna results page). Scores are parsed exactly like the live feed.'));
-  pasteBox.appendChild(ta);
-  pasteBox.appendChild(el('div', {}, pasteBtn));
-  app.appendChild(pasteBox);
 
   app.appendChild(el('h2', {}, 'Day 1 groups'));
   const ggrid = el('div', { class: 'games-grid' });
