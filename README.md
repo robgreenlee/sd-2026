@@ -7,7 +7,7 @@ Companion app for **Lamorinda B (18-LAMORINDA B)** at the **2026 National Junior
 All 48 teams and all 60 Day-1 games are modeled from the published NJO schedule (14U_Men_Classic tab). Click the winner of each game and the app resolves downstream matchups — Lamorinda's path is highlighted, and a callout shows which Day-2 upper/lower-bracket group each outcome leads to, including the other teams that land there.
 
 - **Day 1 structure**: each group of four plays a mini-bracket (opener → winners/losers games → 2-3 crossovers). Winners feed eight Day-2 "upper" groups, losers eight "lower" groups.
-- **Beckman HS 1 caveat**: the sheet's Beckman section (groups G/H/I — Lamorinda's pool) wasn't fully visible when this was built; its pairings/times are inferred from the W-to/L-to game routing on the other venues and marked as such in the UI. Verify against the sheet before game day.
+- **Beckman HS 1 caveat**: the sheet's Beckman section (groups I/G/H — Lamorinda's pool is G) wasn't fully visible when this was built; its pairings/times are inferred from the W-to/L-to game routing on the other venues, which run their groups in a rotated order. Lamorinda's 9:30 AM opener (game #15) is confirmed; the I/H time pairs are inferred — verify against the sheet.
 - **Days 3–4**: placement brackets get added to `GAMES`/`DAY2_GROUPS` once that part of the schedule is published.
 - **Shareable scenarios** via URL hash (`Copy share link`), venues rail with Google Maps links, and `PLAYED_RESULTS`/`PLAYED_SCORES` overlays for locking in real results as they happen (same mechanism as the old SDCC explorer — see git history for that app).
 

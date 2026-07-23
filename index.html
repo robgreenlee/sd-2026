@@ -315,14 +315,15 @@ const GROUPS = {
 //   'bz_MN'  → Day 2 lower group M or N, assignment TBD
 // Times are Thu, July 23. GMID = '14BX-' + zero-padded game number.
 const GAMES = {
-  // Beckman HS 1 — Groups G (Lamorinda), H, I. Pairings/times inferred from
-  // the bracket routing on the published sheet; verify once visible.
-  3:  { time: '7:00 AM',  venue: 'Beckman HS 1', white: 7,     dark: 42,    wTo: 27, lTo: 31 },
-  7:  { time: '7:50 AM',  venue: 'Beckman HS 1', white: 18,    dark: 31,    wTo: 27, lTo: 31 },
-  11: { time: '8:40 AM',  venue: 'Beckman HS 1', white: 8,     dark: 41,    wTo: 35, lTo: 39 },
-  15: { time: '9:30 AM',  venue: 'Beckman HS 1', white: 17,    dark: 32,    wTo: 35, lTo: 39 },
-  19: { time: '10:20 AM', venue: 'Beckman HS 1', white: 9,     dark: 40,    wTo: 43, lTo: 47 },
-  23: { time: '11:10 AM', venue: 'Beckman HS 1', white: 16,    dark: 33,    wTo: 43, lTo: 47 },
+  // Beckman HS 1 — Groups I, G (Lamorinda), H, in the same rotated order the
+  // other venues use (e.g. Ocean View runs C, A, B). Group G's 9:30 opener is
+  // confirmed; the I/H time pairs are inferred — verify against the sheet.
+  3:  { time: '7:00 AM',  venue: 'Beckman HS 1', white: 9,     dark: 40,    wTo: 27, lTo: 31 },
+  7:  { time: '7:50 AM',  venue: 'Beckman HS 1', white: 16,    dark: 33,    wTo: 27, lTo: 31 },
+  11: { time: '8:40 AM',  venue: 'Beckman HS 1', white: 7,     dark: 42,    wTo: 35, lTo: 39 },
+  15: { time: '9:30 AM',  venue: 'Beckman HS 1', white: 18,    dark: 31,    wTo: 35, lTo: 39 },
+  19: { time: '10:20 AM', venue: 'Beckman HS 1', white: 8,     dark: 41,    wTo: 43, lTo: 47 },
+  23: { time: '11:10 AM', venue: 'Beckman HS 1', white: 17,    dark: 32,    wTo: 43, lTo: 47 },
   27: { time: '12:00 PM', venue: 'Beckman HS 1', white: 'W3',  dark: 'W7',  wTo: 'ag_M3', lTo: 52 },
   31: { time: '12:50 PM', venue: 'Beckman HS 1', white: 'L3',  dark: 'L7',  wTo: 51, lTo: 'bz_U1' },
   35: { time: '1:40 PM',  venue: 'Beckman HS 1', white: 'W11', dark: 'W15', wTo: 'ag_N2', lTo: 59 },
@@ -390,7 +391,7 @@ const GAMES = {
 };
 
 const VENUE_SECTIONS = [
-  { name: 'Beckman HS 1', sub: 'Groups G (Lamorinda) · H · I', lam: true,
+  { name: 'Beckman HS 1', sub: 'Groups I · G (Lamorinda) · H', lam: true,
     games: [3, 7, 11, 15, 19, 23, 27, 31, 35, 39, 43, 47, 51, 55, 59] },
   { name: 'Ocean View HS 1 + Newport Harbor HS', sub: 'Groups C · A · B (evening games at Newport Harbor)',
     games: [1, 5, 9, 13, 17, 21, 25, 29, 33, 37, 41, 45, 49, 53, 57] },
@@ -402,11 +403,10 @@ const VENUE_SECTIONS = [
 
 // Day 2 groups reachable by Lamorinda: slot label → source ref (null = unknown).
 const DAY2_GROUPS = {
-  ag_M: { label: 'Day 2 upper bracket · Group M', slots: [['M1', 'W33'], ['M2', 'W43'], ['M3', 'W27']] },
+  ag_N: { label: 'Day 2 upper bracket · Group N', slots: [['N1', 'W41'], ['N2', 'W35'], ['N3', 'W28']] },
   ag_T: { label: 'Day 2 upper bracket · Group T', slots: [['T?', 'W51'], ['T?', 'W59'], ['T3', 'W53']] },
   ag_U: { label: 'Day 2 upper bracket · Group U', slots: [['U1', 'W52'], ['U2', 'W55'], ['U3', 'W57']] },
-  bz_N: { label: 'Day 2 lower bracket · Group N', slots: [['N1', 'L57'], ['N2', null], ['N3', 'L52']] },
-  bz_U: { label: 'Day 2 lower bracket · Group U', slots: [['U1', 'L31'], ['U2', 'L47'], ['U3', 'L37']] },
+  bz_T: { label: 'Day 2 lower bracket · Group T', slots: [['T1', 'L32'], ['T2', 'L39'], ['T3', 'L45']] },
 };
 
 // Terminal ref → { group key (if known), text }
@@ -489,10 +489,10 @@ function pickWinner(num, side) {
   render();
 }
 
-// Trace Lamorinda's Day-1 path from game 7.
+// Trace Lamorinda's Day-1 path from game 15.
 function lamTrace() {
   const path = [];
-  let cur = 7;
+  let cur = 15;
   let terminal = null;
   for (;;) {
     path.push(cur);
@@ -639,9 +639,9 @@ function renderLamPath() {
   const box = el('div', {});
   const last = path[path.length - 1];
   const lastGame = GAMES[last];
-  if (!state.results[7]) {
+  if (!state.results[15]) {
     box.appendChild(el('div', { class: 'path-callout' },
-      el('strong', {}, 'Lamorinda B opens vs 31-CARLSBAD'), ' — Thu 7:50 AM at Beckman HS 1 (game #7). ',
+      el('strong', {}, 'Lamorinda B opens vs 31-CARLSBAD'), ' — Thu 9:30 AM at Beckman HS 1 (game #15). ',
       'Click winners below to walk the day.',
     ));
   } else if (terminal) {
