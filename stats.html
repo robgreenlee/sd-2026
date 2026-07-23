@@ -279,7 +279,23 @@ tr.inactive td.name-cell { color: #94a3b8; }
   font-variant-numeric: tabular-nums;
   transition: background 0.1s, border-color 0.1s, transform 0.05s;
 }
-.tally-cell:hover { border-color: #10b981; background: #f0fdf4; }
+.tally-cell:hover:not(:disabled) { border-color: #10b981; background: #f0fdf4; }
+.tally-cell:disabled:not(.gk-off) { cursor: default; }
+
+.lock-callout {
+  background: #fffbeb;
+  border-left: 4px solid #f59e0b;
+  padding: 10px 14px;
+  border-radius: 0 8px 8px 0;
+  margin: 10px 0;
+  font-size: 13px;
+  color: #78350f;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
 .tally-cell:active { transform: scale(0.94); }
 .tally-cell.zero { color: #cbd5e1; font-weight: 500; }
 .tally-cell.gk-off { background: #f8fafc; border-color: #f1f5f9; color: #e2e8f0; cursor: not-allowed; }
@@ -817,6 +833,42 @@ function playerShareText(p, season) {
   return lines.join('\n');
 }
 
+// ---- Shareable read-only box score ----
+// The link carries the entire box score in its hash, so recipients need no
+// app data, cloud connection, or passcode to view it.
+function boxScoreData(g) {
+  return {
+    v: 1,
+    team: db.settings.team,
+    opp: g.opponent || '',
+    date: g.date || '',
+    loc: g.location || '',
+    season: g.season || '',
+    us: g.scoreUs,
+    them: g.scoreThem,
+    notes: g.notes || '',
+    rows: g.roster
+      .map(pid => {
+        const p = playerById(pid);
+        if (!p) return null;
+        const ln = g.stats[pid] || {};
+        return [p.cap || '', p.name, ALL_STATS.map(s => ln[s.key] || 0), ln.gk ? 1 : 0];
+      })
+      .filter(Boolean),
+  };
+}
+
+function boxScoreURL(g) {
+  return location.origin + location.pathname + '#g=' + b64encode(boxScoreData(g));
+}
+
+// ---- Completed-game locking ----
+// Once a final score is entered the game is read-only until explicitly
+// unlocked; the unlock flag persists so a correction session stays open.
+function isGameLocked(g) {
+  return gameResult(g) != null && !g.unlocked;
+}
+
 // ---- Game summary (box score) for texting / GroupMe ----
 function initialLast(name) {
   const parts = String(name).trim().split(/\s+/);
@@ -867,6 +919,8 @@ function gameSummaryText(g) {
     lines.push(teamLine);
   }
   if (g.notes) lines.push('📝 ' + g.notes);
+  lines.push('');
+  lines.push('📈 Full box score: ' + boxScoreURL(g));
   return lines.join('\n');
 }
 
@@ -1034,6 +1088,26 @@ function renderGameView(app, gameId) {
     ),
   ));
 
+  // --- Completed-game lock ---
+  const locked = isGameLocked(g);
+  if (locked) {
+    app.appendChild(el('div', { class: 'lock-callout' },
+      el('span', {}, el('strong', {}, '🔒 Final — stats are locked. '), 'This game has a final score, so tallies, roster, and details are read-only.'),
+      el('button', {
+        class: 'btn',
+        onClick: () => mutate(() => { g.unlocked = true; }),
+      }, 'Unlock stats'),
+    ));
+  } else if (gameResult(g) != null) {
+    app.appendChild(el('div', { class: 'lock-callout' },
+      el('span', {}, el('strong', {}, '🔓 Unlocked for corrections. '), 'Re-lock when you are done editing.'),
+      el('button', {
+        class: 'btn primary',
+        onClick: () => mutate(() => { g.unlocked = false; }),
+      }, 'Lock stats'),
+    ));
+  }
+
   // --- Game summary draft (box score for texting / GroupMe) ---
   if (summaryOpen[g.id]) {
     const text = gameSummaryText(g);
@@ -1064,7 +1138,7 @@ function renderGameView(app, gameId) {
   details.appendChild(el('div', { class: 'form-row' },
     el('label', {}, 'Opponent'),
     el('input', {
-      type: 'text', value: g.opponent, placeholder: 'e.g. Alameda',
+      type: 'text', value: g.opponent, placeholder: 'e.g. Alameda', disabled: locked,
       onInput: (e) => {
         g.opponent = e.target.value; saveDB();
         const h = document.getElementById('game-title');
@@ -1074,29 +1148,29 @@ function renderGameView(app, gameId) {
   ));
   details.appendChild(el('div', { class: 'form-row' },
     el('label', {}, 'Date'),
-    el('input', { type: 'date', value: g.date, onInput: bind('date') }),
+    el('input', { type: 'date', value: g.date, disabled: locked, onInput: bind('date') }),
   ));
   details.appendChild(el('div', { class: 'form-row' },
     el('label', {}, 'Location'),
-    el('input', { type: 'text', value: g.location, placeholder: 'e.g. Esmeralda HS', onInput: bind('location') }),
+    el('input', { type: 'text', value: g.location, placeholder: 'e.g. Esmeralda HS', disabled: locked, onInput: bind('location') }),
   ));
   details.appendChild(el('div', { class: 'form-row' },
     el('label', {}, 'Season'),
-    el('input', { type: 'text', value: g.season, placeholder: 'e.g. Summer 2026', onInput: bind('season') }),
+    el('input', { type: 'text', value: g.season, placeholder: 'e.g. Summer 2026', disabled: locked, onInput: bind('season') }),
   ));
   const goalsTallied = g.roster.reduce((n, pid) => n + ((g.stats[pid] && g.stats[pid].gl) || 0), 0);
   details.appendChild(el('div', { class: 'form-row' },
     el('label', {}, 'Final score'),
     el('div', { class: 'score-inputs' },
-      el('input', { type: 'number', min: '0', value: g.scoreUs, placeholder: 'Us', onInput: bind('scoreUs') }),
+      el('input', { type: 'number', min: '0', value: g.scoreUs, placeholder: 'Us', disabled: locked, onInput: bind('scoreUs') }),
       el('span', { class: 'muted' }, '–'),
-      el('input', { type: 'number', min: '0', value: g.scoreThem, placeholder: 'Them', onInput: bind('scoreThem') }),
+      el('input', { type: 'number', min: '0', value: g.scoreThem, placeholder: 'Them', disabled: locked, onInput: bind('scoreThem') }),
       el('span', { class: 'muted', style: { fontSize: '11px' } }, goalsTallied ? '(' + goalsTallied + ' goals tallied below)' : ''),
     ),
   ));
   details.appendChild(el('div', { class: 'form-row' },
     el('label', {}, 'Notes'),
-    el('textarea', { placeholder: 'Game notes — what worked, what to fix…', onInput: bind('notes') }, g.notes || ''),
+    el('textarea', { placeholder: 'Game notes — what worked, what to fix…', disabled: locked, onInput: bind('notes') }, g.notes || ''),
   ));
   app.appendChild(details);
 
@@ -1104,14 +1178,17 @@ function renderGameView(app, gameId) {
   const rosterCard = el('div', { class: 'card' });
   rosterCard.appendChild(el('h3', { style: { marginTop: '0' } }, 'Roster for this game (' + g.roster.length + ')'));
   rosterCard.appendChild(el('p', { class: 'subtitle', style: { margin: '0 0 4px' } },
-    'Tap to add or remove players from this game. Players removed here keep their stats from other games.'));
+    locked ? 'Roster is locked with the final score.' : 'Tap to add or remove players from this game. Players removed here keep their stats from other games.'));
   const chips = el('div', { class: 'roster-chips' });
   sortedPlayers(true).forEach(p => {
     const inGame = g.roster.indexOf(p.id) >= 0;
     if (!p.active && !inGame) return; // inactive players appear only if already in the game
     chips.appendChild(el('button', {
       class: 'roster-chip' + (inGame ? ' in' : ''),
+      disabled: locked,
+      style: locked ? { cursor: 'default' } : null,
       onClick: () => {
+        if (locked) return;
         if (inGame) {
           const line = g.stats[p.id];
           const hasStats = line && ALL_STATS.some(s => line[s.key] > 0);
@@ -1131,7 +1208,7 @@ function renderGameView(app, gameId) {
   // Inline quick-add for a guest / new player
   const nameIn = el('input', { type: 'text', placeholder: 'New player name', style: { width: '180px' } });
   const capIn = el('input', { type: 'text', placeholder: '#', style: { width: '56px' } });
-  rosterCard.appendChild(el('div', { class: 'inline-form', style: { marginTop: '6px' } },
+  if (!locked) rosterCard.appendChild(el('div', { class: 'inline-form', style: { marginTop: '6px' } },
     capIn, nameIn,
     el('button', {
       class: 'btn small', onClick: () => {
@@ -1146,13 +1223,13 @@ function renderGameView(app, gameId) {
 
   // --- Tally table ---
   app.appendChild(el('div', { class: 'hdr', style: { margin: '18px 0 0' } },
-    el('h3', { style: { margin: '0' } }, 'Stat tally — tap a cell to add 1'),
+    el('h3', { style: { margin: '0' } }, locked ? 'Stat tally — locked (final)' : 'Stat tally — tap a cell to add 1'),
     el('div', { class: 'hdr-actions' },
-      correctionMode ? el('span', { class: 'correction-note' }, 'Fix mode: taps subtract 1') : null,
-      el('button', {
+      !locked && correctionMode ? el('span', { class: 'correction-note' }, 'Fix mode: taps subtract 1') : null,
+      !locked ? el('button', {
         class: 'btn small' + (correctionMode ? ' danger' : ''),
         onClick: () => { correctionMode = !correctionMode; render(); }
-      }, correctionMode ? 'Done fixing' : '− Fix a mistake'),
+      }, correctionMode ? 'Done fixing' : '− Fix a mistake') : null,
     ),
   ));
 
@@ -1176,7 +1253,9 @@ function renderGameView(app, gameId) {
       if (!enabled) return el('td', {}, el('button', { class: 'tally-cell gk-off', disabled: true }, '·'));
       return el('td', {}, el('button', {
         class: 'tally-cell' + (v === 0 ? ' zero' : ''),
+        disabled: locked,
         onClick: () => {
+          if (locked) return;
           mutate(() => {
             const ln = gameLine(g, p.id);
             ln[statKey] = Math.max(0, (ln[statKey] || 0) + (correctionMode ? -1 : 1));
@@ -1194,7 +1273,8 @@ function renderGameView(app, gameId) {
           el('button', {
             class: 'gk-toggle' + (line.gk ? ' on' : ''),
             title: 'Toggle goalie for this game (enables Saves / Goals Against)',
-            onClick: () => mutate(() => { const ln = gameLine(g, p.id); ln.gk = !ln.gk; }),
+            disabled: locked,
+            onClick: () => { if (!locked) mutate(() => { const ln = gameLine(g, p.id); ln.gk = !ln.gk; }); },
           }, 'GK'),
         ),
         ...STATS.map(s => tallyBtn(p, s.key, true)),
@@ -1636,8 +1716,64 @@ function renderDataView(app) {
 function currentRoute() {
   const h = location.hash || '#/games';
   if (h.startsWith('#i=')) return { view: 'import', arg: h.slice(3) };
+  if (h.startsWith('#g=')) return { view: 'box', arg: h.slice(3) };
   const parts = h.replace(/^#\//, '').split('/');
   return { view: parts[0] || 'games', arg: parts[1] };
+}
+
+// Read-only shared box score — all data decoded from the URL itself.
+function renderBoxView(app, encoded) {
+  let d = null;
+  try { d = b64decode(encoded); } catch (e) {}
+  if (!d || !Array.isArray(d.rows)) {
+    app.appendChild(el('div', { class: 'empty-state' }, 'This box score link could not be read.'));
+    return;
+  }
+  const hasScore = d.us !== '' && d.us != null && d.them !== '' && d.them != null;
+  const res = hasScore ? (Number(d.us) > Number(d.them) ? 'W' : Number(d.us) < Number(d.them) ? 'L' : 'T') : null;
+  app.appendChild(el('div', { class: 'player-hero' },
+    el('div', { class: 'hero-left' },
+      res ? el('div', { class: 'hero-cap' }, res) : null,
+      el('div', {},
+        el('div', { class: 'hero-name' },
+          hasScore ? d.team + ' ' + d.us + ' – ' + d.them + ' ' + (d.opp || 'TBD') : d.team + ' vs ' + (d.opp || 'TBD')),
+        el('div', { class: 'hero-sub' }, [fmtDate(d.date), d.loc, d.season].filter(Boolean).join(' · ')),
+      ),
+    ),
+    el('a', { class: 'btn hero', href: location.pathname }, 'Open Stat Tracker'),
+  ));
+  const hasGK = d.rows.some(r => r[3]);
+  const cols = hasGK ? ALL_STATS : STATS;
+  const wrap = el('div', { class: 'table-wrap' });
+  const totals = ALL_STATS.map((s, idx) => d.rows.reduce((n, r) => n + (r[2][idx] || 0), 0));
+  wrap.appendChild(el('table', {},
+    el('thead', {}, el('tr', {},
+      el('th', { class: 'name-cell' }, 'Player'),
+      ...cols.map(s => el('th', { title: s.label }, s.short)),
+    )),
+    el('tbody', {},
+      d.rows.map(r => el('tr', {},
+        el('td', { class: 'name-cell' },
+          el('span', { class: 'cap-badge' }, r[0] || '·'),
+          r[1],
+          r[3] ? el('span', { class: 'gk-toggle on', style: { cursor: 'default' } }, 'GK') : null,
+        ),
+        ...cols.map((s, i) => {
+          const idx = ALL_STATS.indexOf(s);
+          const v = r[2][idx] || 0;
+          return el('td', {}, v ? v : el('span', { class: 'muted' }, '·'));
+        }),
+      )),
+      el('tr', { class: 'totals-row' },
+        el('td', { class: 'name-cell' }, 'Team total'),
+        ...cols.map(s => el('td', {}, totals[ALL_STATS.indexOf(s)] || 0)),
+      ),
+    ),
+  ));
+  app.appendChild(wrap);
+  if (d.notes) app.appendChild(el('div', { class: 'card share-preview' }, '📝 ' + d.notes));
+  app.appendChild(el('p', { class: 'subtitle' },
+    'Read-only box score shared from the ' + (d.team || 'team') + ' stat tracker.'));
 }
 
 function render() {
@@ -1656,6 +1792,8 @@ function render() {
       el('a', { class: 'btn', href: 'index.html' }, '← Scenario explorer'),
     ),
   ));
+
+  if (route.view === 'box') { renderBoxView(app, route.arg); return; }
 
   const tab = (id, label, href) => el('a', {
     class: 'tab' + (route.view === id || (id === 'games' && route.view === 'game') || (id === 'players' && route.view === 'player') ? ' active' : ''),
