@@ -817,6 +817,59 @@ function playerShareText(p, season) {
   return lines.join('\n');
 }
 
+// ---- Game summary (box score) for texting / GroupMe ----
+function initialLast(name) {
+  const parts = String(name).trim().split(/\s+/);
+  return parts.length > 1 ? parts[0][0] + '. ' + parts.slice(1).join(' ') : name;
+}
+
+function summaryStatLine(g, key, emoji, label) {
+  const entries = g.roster
+    .map(pid => ({ p: playerById(pid), v: (g.stats[pid] && g.stats[pid][key]) || 0 }))
+    .filter(x => x.p && x.v > 0)
+    .sort((a, b) => b.v - a.v)
+    .map(x => initialLast(x.p.name) + (x.v > 1 ? ' ' + x.v : ''));
+  return entries.length ? emoji + ' ' + label + ': ' + entries.join(', ') : null;
+}
+
+function gameSummaryText(g) {
+  const team = db.settings.team;
+  const opp = g.opponent || 'TBD';
+  const r = gameResult(g);
+  const hasScore = g.scoreUs !== '' && g.scoreUs != null && g.scoreThem !== '' && g.scoreThem != null;
+  const lines = [];
+  lines.push(hasScore
+    ? team + ' ' + g.scoreUs + ', ' + opp + ' ' + g.scoreThem + (r ? ' — ' + (r === 'w' ? 'W' : r === 'l' ? 'L' : 'T') : '')
+    : team + ' vs ' + opp);
+  const meta = [fmtDate(g.date), g.location, g.season].filter(Boolean).join(' · ');
+  if (meta) lines.push(meta);
+  lines.push('');
+  [
+    summaryStatLine(g, 'gl', '⚽', 'Goals'),
+    summaryStatLine(g, 'as', '🅰️', 'Assists'),
+    summaryStatLine(g, 'st', '🛡️', 'Steals'),
+    summaryStatLine(g, 'bk', '🧱', 'Blocks'),
+    summaryStatLine(g, 'ed', '➕', 'Excl drawn'),
+  ].forEach(l => { if (l) lines.push(l); });
+  const goalies = g.roster
+    .map(pid => ({ p: playerById(pid), ln: g.stats[pid] }))
+    .filter(x => x.p && x.ln && x.ln.gk && (x.ln.sv || x.ln.ga))
+    .map(x => {
+      const savePct = pct(x.ln.sv || 0, (x.ln.sv || 0) + (x.ln.ga || 0));
+      return initialLast(x.p.name) + ' ' + (x.ln.sv || 0) + ' SV, ' + (x.ln.ga || 0) + ' GA' + (savePct != null ? ' (' + savePct + '%)' : '');
+    });
+  if (goalies.length) lines.push('🥅 In goal: ' + goalies.join('; '));
+  const totals = sumLines(g.roster.map(pid => g.stats[pid]));
+  if (totals.sh || totals.gl) {
+    let teamLine = '📊 ' + totals.gl + '/' + totals.sh + ' shots' + (pct(totals.gl, totals.sh) != null ? ' (' + pct(totals.gl, totals.sh) + '%)' : '');
+    if (totals.ed) teamLine += ' · ' + totals.ed + ' excl drawn';
+    if (totals.to) teamLine += ' · ' + totals.to + ' TO';
+    lines.push(teamLine);
+  }
+  if (g.notes) lines.push('📝 ' + g.notes);
+  return lines.join('\n');
+}
+
 function sharePlayer(p, season, btn) {
   const text = playerShareText(p, season);
   if (navigator.share) {
@@ -949,6 +1002,7 @@ function renderGamesView(app) {
 
 // ==================== VIEWS: SINGLE GAME ====================
 let correctionMode = false;
+let summaryOpen = {}; // gameId -> bool (transient)
 
 function renderGameView(app, gameId) {
   const g = gameById(gameId);
@@ -966,6 +1020,10 @@ function renderGameView(app, gameId) {
     el('div', { class: 'hdr-actions' },
       el('a', { class: 'btn', href: '#/games' }, '← All games'),
       el('button', {
+        class: 'btn' + (summaryOpen[g.id] ? ' primary' : ''),
+        onClick: () => { summaryOpen[g.id] = !summaryOpen[g.id]; render(); },
+      }, 'Game summary'),
+      el('button', {
         class: 'btn danger', onClick: () => {
           if (confirm('Delete this game and all its stats? This cannot be undone.')) {
             mutate(() => { db.games = db.games.filter(x => x.id !== g.id); });
@@ -975,6 +1033,27 @@ function renderGameView(app, gameId) {
       }, 'Delete game'),
     ),
   ));
+
+  // --- Game summary draft (box score for texting / GroupMe) ---
+  if (summaryOpen[g.id]) {
+    const text = gameSummaryText(g);
+    const sumCard = el('div', { class: 'card' });
+    sumCard.appendChild(el('h3', { style: { marginTop: '0' } }, 'Game summary — copy & drop into GroupMe'));
+    sumCard.appendChild(el('div', { class: 'share-preview', id: 'game-summary-text' }, text));
+    sumCard.appendChild(el('div', { class: 'hdr-actions' },
+      el('button', {
+        class: 'btn primary',
+        onClick: (e) => copyToClipboard(text, e.currentTarget),
+      }, 'Copy summary'),
+      navigator.share ? el('button', {
+        class: 'btn',
+        onClick: () => { navigator.share({ title: db.settings.team + ' vs ' + (g.opponent || 'TBD'), text }).catch(() => {}); },
+      }, 'Share…') : null,
+    ));
+    sumCard.appendChild(el('p', { class: 'subtitle', style: { marginTop: '8px' } },
+      'Drafted from the tallies and final score — updates live as you tally.'));
+    app.appendChild(sumCard);
+  }
 
   // --- Game details ---
   // Fields save on input WITHOUT re-rendering: a re-render here would destroy
