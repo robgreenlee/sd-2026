@@ -435,6 +435,16 @@ const VENUES = [
 // results[num] = 'w' | 'd' — which side won game num.
 const state = { results: {} };
 
+// "Our games only" filter — device preference, not part of share links.
+const FILTER_KEY = 'jo-filter-lam';
+let filterLam = false;
+try { filterLam = localStorage.getItem(FILTER_KEY) === '1'; } catch (e) {}
+function setFilterLam(on) {
+  filterLam = on;
+  try { localStorage.setItem(FILTER_KEY, on ? '1' : '0'); } catch (e) {}
+  render();
+}
+
 // Games already played — fill in as the tournament runs (side that won + score).
 const PLAYED_RESULTS = {};
 // Final scores keyed by game number: { w: <white goals>, d: <dark goals> }
@@ -508,7 +518,23 @@ function lamTrace() {
   return { path, terminal };
 }
 
-function ref(el) { return el; }
+// Games shown in "our games only" mode: Lamorinda's traced path plus the
+// transitive closure of games its slots depend on — so the opponent of each
+// path game can still be resolved without leaving the filtered view.
+function lamVisibleGames() {
+  const { path } = lamTrace();
+  const set = new Set();
+  const addWithDeps = (num) => {
+    if (set.has(num)) return;
+    set.add(num);
+    [GAMES[num].white, GAMES[num].dark].forEach(slot => {
+      const m = String(slot).match(/^[WL](\d+)$/);
+      if (m) addWithDeps(Number(m[1]));
+    });
+  };
+  path.forEach(addWithDeps);
+  return set;
+}
 
 // ==================== URL STATE ====================
 function encodeState() {
@@ -684,6 +710,10 @@ function render() {
       el('p', { class: 'subtitle' }, '2026 National Junior Olympics · Session 2 · 14U Men Classic (14BX) · July 23–26 · Orange County'),
     ),
     el('div', { class: 'hdr-actions' },
+      el('button', {
+        class: 'btn' + (filterLam ? ' primary' : ''),
+        onClick: () => setFilterLam(!filterLam),
+      }, filterLam ? '★ Our games only' : 'Our games only'),
       el('a', { class: 'btn', href: 'stats.html' }, 'Player stats →'),
       el('a', { class: 'btn', href: SCHEDULE_URL, target: '_blank', rel: 'noopener' }, 'JO schedule sheet ↗'),
       el('a', { class: 'btn', href: GROUPME_URL, target: '_blank', rel: 'noopener' }, 'GroupMe ↗'),
@@ -701,17 +731,25 @@ function render() {
     'Day 2 groups appear as you click; Day 3–4 placement brackets get added once that part of the schedule is published.',
   ));
 
+  const visible = filterLam ? lamVisibleGames() : null;
+  if (filterLam) {
+    app.appendChild(el('p', { class: 'subtitle', style: { margin: '0 0 4px' } },
+      'Showing Lamorinda’s path plus the games that decide each opponent. Pick winners to reveal the next round.'));
+  }
   VENUE_SECTIONS.forEach(sec => {
+    const nums = visible ? sec.games.filter(n => visible.has(n)) : sec.games;
+    if (!nums.length) return;
     app.appendChild(el('h2', {}, sec.name + (sec.lam ? ' · LAMORINDA' : '')));
     app.appendChild(el('p', { class: 'subtitle', style: { margin: '0 0 12px' } }, sec.sub + ' · Thu July 23'));
     const grid = el('div', { class: 'games-grid' });
-    sec.games.forEach(num => grid.appendChild(renderGameCard(num)));
+    nums.forEach(num => grid.appendChild(renderGameCard(num)));
     app.appendChild(grid);
   });
 
   app.appendChild(el('h2', {}, 'Day 1 groups'));
   const ggrid = el('div', { class: 'games-grid' });
   Object.keys(GROUPS).forEach(code => {
+    if (filterLam && code !== 'G') return;
     ggrid.appendChild(el('div', { class: 'game-card' + (code === 'G' ? ' is-lam' : '') },
       el('div', { class: 'game-meta' }, el('span', { class: 'game-id' }, 'Group ' + code)),
       el('div', { style: { fontSize: '13px', lineHeight: '1.7' } },
