@@ -113,7 +113,8 @@ function textToRows(text) {
 
 function num(v) {
   const s = String(v == null ? '' : v).trim();
-  return /^\d+$/.test(s) ? parseInt(s, 10) : null;
+  // Decimals are the sheet's shootout notation (8.3 = 8 goals + 3 shootout).
+  return /^\d+(\.\d+)?$/.test(s) ? parseFloat(s) : null;
 }
 
 // Row layout around the GMID cell (anchor at index i), all offsets relative
