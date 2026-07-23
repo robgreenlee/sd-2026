@@ -356,9 +356,9 @@ const GAMES = {
   39: { time: '2:30 PM',  venue: 'Beckman HS 1', white: 'L11', dark: 'L15', wTo: 55, lTo: 'bz_T2' },
   43: { time: '3:20 PM',  venue: 'Beckman HS 1', white: 'W19', dark: 'W23', wTo: 'ag_M2', lTo: 55 },
   47: { time: '4:10 PM',  venue: 'Beckman HS 1', white: 'L19', dark: 'L23', wTo: 59, lTo: 'bz_U2' },
-  51: { time: '5:50 PM',  venue: 'Beckman HS 1', white: 'L28', dark: 'W31', wTo: 'ag_T', lTo: 'bz_MN' },
-  55: { time: '6:40 PM',  venue: 'Beckman HS 1', white: 'L43', dark: 'W39', wTo: 'ag_U2', lTo: 'bz_MN' },
-  59: { time: '7:30 PM',  venue: 'Beckman HS 1', white: 'L35', dark: 'W47', wTo: 'ag_T', lTo: 'bz_MN' },
+  51: { time: '5:50 PM',  venue: 'Beckman HS 1', white: 'L28', dark: 'W31', wTo: 'ag_T1', lTo: 'bz_M3' },
+  55: { time: '6:40 PM',  venue: 'Beckman HS 1', white: 'L43', dark: 'W39', wTo: 'ag_U2', lTo: 'bz_N2' },
+  59: { time: '7:30 PM',  venue: 'Beckman HS 1', white: 'L35', dark: 'W47', wTo: 'ag_T2', lTo: 'bz_M2' },
 
   // Ocean View HS 1 — Groups C, A, B
   1:  { time: '7:00 AM',  venue: 'Ocean View HS 1', white: 3,     dark: 46,    wTo: 25, lTo: 29 },
@@ -414,38 +414,209 @@ const GAMES = {
   52: { time: '5:50 PM',  venue: 'Brea Olinda HS', white: 'L27', dark: 'W32', wTo: 'ag_U1', lTo: 'bz_N3' },
   56: { time: '6:40 PM',  venue: 'Brea Olinda HS', white: 'L44', dark: 'W40', wTo: 'ag_R1', lTo: 'bz_O3' },
   60: { time: '7:30 PM',  venue: 'Brea Olinda HS', white: 'L36', dark: 'W48', wTo: 'ag_S1', lTo: 'bz_P3' },
+
+  // Days 2-4 (structure mirrored from the published 14B tab — same format,
+  // pt/au there = ag/bz here). Venues TBD until the 14BX rows publish; the
+  // live feed overrides time/venue/matchups automatically once they do.
+  61: { time: '7:00 AM', venue: 'TBD', white: 'W43', dark: 'W27', label: 'Silver group M' },
+  65: { time: '7:50 AM', venue: 'TBD', white: 'W35', dark: 'W28', label: 'Silver group N' },
+  69: { time: '8:40 AM', venue: 'TBD', white: 'W60', dark: 'W54', label: 'Silver group S' },
+  73: { time: '9:30 AM', venue: 'TBD', white: 'W56', dark: 'W58', label: 'Silver group R' },
+  77: { time: '10:20 AM', venue: 'TBD', white: 'W33', dark: 'W27', label: 'Silver group M' },
+  81: { time: '11:10 AM', venue: 'TBD', white: 'W41', dark: 'W28', label: 'Silver group N' },
+  85: { time: '12:00 PM', venue: 'TBD', white: 'W60', dark: 'W50', label: 'Silver group S' },
+  89: { time: '12:50 PM', venue: 'TBD', white: 'W56', dark: 'W49', label: 'Silver group R' },
+  93: { time: '1:40 PM', venue: 'TBD', white: 'W33', dark: 'W43', label: 'Silver group M' },
+  97: { time: '2:30 PM', venue: 'TBD', white: 'W41', dark: 'W35', label: 'Silver group N' },
+  101: { time: '3:20 PM', venue: 'TBD', white: 'W54', dark: 'W50', label: 'Silver group S' },
+  105: { time: '4:10 PM', venue: 'TBD', white: 'W58', dark: 'W49', label: 'Silver group R' },
+  62: { time: '7:00 AM', venue: 'TBD', white: 'W42', dark: 'W36', label: 'Silver group O' },
+  66: { time: '7:50 AM', venue: 'TBD', white: 'W34', dark: 'W44', label: 'Silver group P' },
+  70: { time: '8:40 AM', venue: 'TBD', white: 'W52', dark: 'W55', label: 'Silver group U' },
+  74: { time: '9:30 AM', venue: 'TBD', white: 'W51', dark: 'W59', label: 'Silver group T' },
+  78: { time: '10:20 AM', venue: 'TBD', white: 'W25', dark: 'W36', label: 'Silver group O' },
+  82: { time: '11:10 AM', venue: 'TBD', white: 'W26', dark: 'W44', label: 'Silver group P' },
+  86: { time: '12:00 PM', venue: 'TBD', white: 'W52', dark: 'W57', label: 'Silver group U' },
+  90: { time: '12:50 PM', venue: 'TBD', white: 'W51', dark: 'W53', label: 'Silver group T' },
+  94: { time: '1:40 PM', venue: 'TBD', white: 'W25', dark: 'W42', label: 'Silver group O' },
+  98: { time: '2:30 PM', venue: 'TBD', white: 'W26', dark: 'W34', label: 'Silver group P' },
+  102: { time: '3:20 PM', venue: 'TBD', white: 'W55', dark: 'W57', label: 'Silver group U' },
+  106: { time: '4:10 PM', venue: 'TBD', white: 'W59', dark: 'W53', label: 'Silver group T' },
+  63: { time: '7:00 AM', venue: 'TBD', white: 'L40', dark: 'L46', label: 'Bronze group S' },
+  67: { time: '7:50 AM', venue: 'TBD', white: 'L48', dark: 'L38', label: 'Bronze group R' },
+  71: { time: '8:40 AM', venue: 'TBD', white: 'L59', dark: 'L51', label: 'Bronze group M' },
+  75: { time: '9:30 AM', venue: 'TBD', white: 'L55', dark: 'L52', label: 'Bronze group N' },
+  79: { time: '10:20 AM', venue: 'TBD', white: 'L40', dark: 'L29', label: 'Bronze group S' },
+  83: { time: '11:10 AM', venue: 'TBD', white: 'L48', dark: 'L30', label: 'Bronze group R' },
+  87: { time: '12:00 PM', venue: 'TBD', white: 'L53', dark: 'L51', label: 'Bronze group M' },
+  91: { time: '12:50 PM', venue: 'TBD', white: 'L57', dark: 'L52', label: 'Bronze group N' },
+  95: { time: '1:40 PM', venue: 'TBD', white: 'L46', dark: 'L29', label: 'Bronze group S' },
+  99: { time: '2:30 PM', venue: 'TBD', white: 'L38', dark: 'L30', label: 'Bronze group R' },
+  103: { time: '3:20 PM', venue: 'TBD', white: 'L53', dark: 'L59', label: 'Bronze group M' },
+  107: { time: '4:10 PM', venue: 'TBD', white: 'L57', dark: 'L55', label: 'Bronze group N' },
+  64: { time: '7:00 AM', venue: 'TBD', white: 'L31', dark: 'L47', label: 'Bronze group U' },
+  68: { time: '7:50 AM', venue: 'TBD', white: 'L32', dark: 'L39', label: 'Bronze group T' },
+  72: { time: '8:40 AM', venue: 'TBD', white: 'L58', dark: 'L56', label: 'Bronze group O' },
+  76: { time: '9:30 AM', venue: 'TBD', white: 'L54', dark: 'L60', label: 'Bronze group P' },
+  80: { time: '10:20 AM', venue: 'TBD', white: 'L31', dark: 'L37', label: 'Bronze group U' },
+  84: { time: '11:10 AM', venue: 'TBD', white: 'L32', dark: 'L45', label: 'Bronze group T' },
+  88: { time: '12:00 PM', venue: 'TBD', white: 'L49', dark: 'L56', label: 'Bronze group O' },
+  92: { time: '12:50 PM', venue: 'TBD', white: 'L50', dark: 'L60', label: 'Bronze group P' },
+  96: { time: '1:40 PM', venue: 'TBD', white: 'L47', dark: 'L37', label: 'Bronze group U' },
+  100: { time: '2:30 PM', venue: 'TBD', white: 'L39', dark: 'L45', label: 'Bronze group T' },
+  104: { time: '3:20 PM', venue: 'TBD', white: 'L49', dark: 'L58', label: 'Bronze group O' },
+  108: { time: '4:10 PM', venue: 'TBD', white: 'L50', dark: 'L54', label: 'Bronze group P' },
+  109: { time: '6:40 PM', venue: 'TBD', white: 'P3@ag_M', dark: 'P1@ag_S', wTo: 129, lTo: 134, label: 'Silver play-in' },
+  113: { time: '7:30 PM', venue: 'TBD', white: 'P3@ag_N', dark: 'P1@ag_R', wTo: 121, lTo: 126, label: 'Silver play-in' },
+  110: { time: '6:40 PM', venue: 'TBD', white: 'P3@ag_O', dark: 'P1@ag_U', wTo: 117, lTo: 138, label: 'Silver play-in' },
+  114: { time: '7:30 PM', venue: 'TBD', white: 'P3@ag_P', dark: 'P1@ag_T', wTo: 125, lTo: 130, label: 'Silver play-in' },
+  111: { time: '6:40 PM', venue: 'TBD', white: 'P3@bz_M', dark: 'P1@bz_S', wTo: 131, lTo: 136, label: 'Bronze play-in' },
+  115: { time: '7:30 PM', venue: 'TBD', white: 'P3@bz_N', dark: 'P1@bz_R', wTo: 123, lTo: 128, label: 'Bronze play-in' },
+  112: { time: '6:40 PM', venue: 'TBD', white: 'P3@bz_O', dark: 'P1@bz_U', wTo: 119, lTo: 140, label: 'Bronze play-in' },
+  116: { time: '7:30 PM', venue: 'TBD', white: 'P3@bz_P', dark: 'P1@bz_T', wTo: 127, lTo: 132, label: 'Bronze play-in' },
+  117: { time: '8:00 AM', venue: 'TBD', white: 'P2@ag_P', dark: 'W110', wTo: 141, lTo: 149, label: 'Silver 5–8 vs 9–12' },
+  121: { time: '9:00 AM', venue: 'TBD', white: 'P2@ag_M', dark: 'W113', wTo: 141, lTo: 149, label: 'Silver 5–8 vs 9–12' },
+  125: { time: '10:00 AM', venue: 'TBD', white: 'P2@ag_O', dark: 'W114', wTo: 145, lTo: 153, label: 'Silver 5–8 vs 9–12' },
+  129: { time: '11:00 AM', venue: 'TBD', white: 'P2@ag_N', dark: 'W109', wTo: 145, lTo: 153, label: 'Silver 5–8 vs 9–12' },
+  133: { time: '12:00 PM', venue: 'TBD', white: 'P1@ag_N', dark: 'P1@ag_O', wTo: 174, lTo: 157, label: 'Silver 1–2 vs 3–4' },
+  137: { time: '1:00 PM', venue: 'TBD', white: 'P1@ag_M', dark: 'P1@ag_P', wTo: 173, lTo: 161, label: 'Silver 1–2 vs 3–4' },
+  141: { time: '2:00 PM', venue: 'TBD', white: 'W117', dark: 'W121', wTo: 157, lTo: 185, label: 'Silver 5–6 vs 7–8' },
+  145: { time: '3:00 PM', venue: 'TBD', white: 'W125', dark: 'W129', wTo: 161, lTo: 185, label: 'Silver 5–6 vs 7–8' },
+  149: { time: '4:00 PM', venue: 'TBD', white: 'L121', dark: 'L117', wTo: 182, lTo: 181, label: 'Silver 9–12 semi' },
+  153: { time: '5:00 PM', venue: 'TBD', white: 'L129', dark: 'L125', wTo: 182, lTo: 181, label: 'Silver 9–12 semi' },
+  157: { time: '6:00 PM', venue: 'TBD', white: 'L133', dark: 'W141', wTo: 173, lTo: 186, label: 'Silver play to semi' },
+  161: { time: '7:00 PM', venue: 'TBD', white: 'L137', dark: 'W145', wTo: 174, lTo: 186, label: 'Silver play to semi' },
+  118: { time: '8:00 AM', venue: 'TBD', white: 'P3@ag_U', dark: 'P3@ag_R', label: 'Silver 21–24 round robin' },
+  122: { time: '9:00 AM', venue: 'TBD', white: 'P3@ag_T', dark: 'P3@ag_S', label: 'Silver 21–24 round robin' },
+  126: { time: '10:00 AM', venue: 'TBD', white: 'L113', dark: 'P2@ag_U', wTo: 150, lTo: 154, label: 'Silver 13–20 quarter' },
+  130: { time: '11:00 AM', venue: 'TBD', white: 'L114', dark: 'P2@ag_S', wTo: 150, lTo: 154, label: 'Silver 13–20 quarter' },
+  134: { time: '12:00 PM', venue: 'TBD', white: 'L109', dark: 'P2@ag_T', wTo: 158, lTo: 162, label: 'Silver 13–20 quarter' },
+  138: { time: '1:00 PM', venue: 'TBD', white: 'L110', dark: 'P2@ag_R', wTo: 158, lTo: 162, label: 'Silver 13–20 quarter' },
+  142: { time: '2:00 PM', venue: 'TBD', white: 'P3@ag_U', dark: 'P3@ag_S', label: 'Silver 21–24 round robin' },
+  146: { time: '3:00 PM', venue: 'TBD', white: 'P3@ag_T', dark: 'P3@ag_R', label: 'Silver 21–24 round robin' },
+  150: { time: '4:00 PM', venue: 'TBD', white: 'W126', dark: 'W130', wTo: 178, lTo: 177, label: 'Silver 13–16 semi' },
+  154: { time: '5:00 PM', venue: 'TBD', white: 'L130', dark: 'L126', wTo: 170, lTo: 169, label: 'Silver 17–20 semi' },
+  158: { time: '6:00 PM', venue: 'TBD', white: 'W134', dark: 'W138', wTo: 178, lTo: 177, label: 'Silver 13–16 semi' },
+  162: { time: '7:00 PM', venue: 'TBD', white: 'L138', dark: 'L134', wTo: 170, lTo: 169, label: 'Silver 17–20 semi' },
+  119: { time: '8:00 AM', venue: 'TBD', white: 'P2@bz_P', dark: 'W112', wTo: 143, lTo: 151, label: 'Bronze 5–8 vs 9–12' },
+  123: { time: '9:00 AM', venue: 'TBD', white: 'P2@bz_M', dark: 'W115', wTo: 143, lTo: 151, label: 'Bronze 5–8 vs 9–12' },
+  127: { time: '10:00 AM', venue: 'TBD', white: 'P2@bz_O', dark: 'W116', wTo: 147, lTo: 155, label: 'Bronze 5–8 vs 9–12' },
+  131: { time: '11:00 AM', venue: 'TBD', white: 'P2@bz_N', dark: 'W111', wTo: 147, lTo: 155, label: 'Bronze 5–8 vs 9–12' },
+  135: { time: '12:00 PM', venue: 'TBD', white: 'P1@bz_N', dark: 'P1@bz_O', wTo: 172, lTo: 159, label: 'Bronze 1–2 vs 3–4' },
+  139: { time: '1:00 PM', venue: 'TBD', white: 'P1@bz_M', dark: 'P1@bz_P', wTo: 171, lTo: 163, label: 'Bronze 1–2 vs 3–4' },
+  143: { time: '2:00 PM', venue: 'TBD', white: 'W119', dark: 'W123', wTo: 159, lTo: 188, label: 'Bronze 5–6 vs 7–8' },
+  147: { time: '3:00 PM', venue: 'TBD', white: 'W127', dark: 'W131', wTo: 163, lTo: 188, label: 'Bronze 5–6 vs 7–8' },
+  151: { time: '4:00 PM', venue: 'TBD', white: 'L123', dark: 'L119', wTo: 183, lTo: 184, label: 'Bronze 9–12 semi' },
+  155: { time: '5:00 PM', venue: 'TBD', white: 'L131', dark: 'L127', wTo: 183, lTo: 184, label: 'Bronze 9–12 semi' },
+  159: { time: '6:00 PM', venue: 'TBD', white: 'L135', dark: 'W143', wTo: 171, lTo: 187, label: 'Bronze play to semi' },
+  163: { time: '7:00 PM', venue: 'TBD', white: 'L139', dark: 'W147', wTo: 172, lTo: 187, label: 'Bronze play to semi' },
+  120: { time: '8:00 AM', venue: 'TBD', white: 'P3@bz_U', dark: 'P3@bz_R', label: 'Bronze 21–24 round robin' },
+  124: { time: '9:00 AM', venue: 'TBD', white: 'P3@bz_T', dark: 'P3@bz_S', label: 'Bronze 21–24 round robin' },
+  128: { time: '10:00 AM', venue: 'TBD', white: 'L115', dark: 'P2@bz_U', wTo: 152, lTo: 156, label: 'Bronze 13–20 quarter' },
+  132: { time: '11:00 AM', venue: 'TBD', white: 'L116', dark: 'P2@bz_S', wTo: 152, lTo: 156, label: 'Bronze 13–20 quarter' },
+  136: { time: '12:00 PM', venue: 'TBD', white: 'L111', dark: 'P2@bz_T', wTo: 160, lTo: 164, label: 'Bronze 13–20 quarter' },
+  140: { time: '1:00 PM', venue: 'TBD', white: 'L112', dark: 'P2@bz_R', wTo: 160, lTo: 164, label: 'Bronze 13–20 quarter' },
+  144: { time: '2:00 PM', venue: 'TBD', white: 'P3@bz_U', dark: 'P3@bz_S', label: 'Bronze 21–24 round robin' },
+  148: { time: '3:00 PM', venue: 'TBD', white: 'P3@bz_T', dark: 'P3@bz_R', label: 'Bronze 21–24 round robin' },
+  152: { time: '4:00 PM', venue: 'TBD', white: 'W128', dark: 'W132', wTo: 179, lTo: 180, label: 'Bronze 13–16 semi' },
+  156: { time: '5:00 PM', venue: 'TBD', white: 'L132', dark: 'L128', wTo: 175, lTo: 176, label: 'Bronze 17–20 semi' },
+  160: { time: '6:00 PM', venue: 'TBD', white: 'W136', dark: 'W140', wTo: 179, lTo: 180, label: 'Bronze 13–16 semi' },
+  164: { time: '7:00 PM', venue: 'TBD', white: 'L140', dark: 'L136', wTo: 175, lTo: 176, label: 'Bronze 17–20 semi' },
+  165: { time: '7:00 AM', venue: 'TBD', white: 'P3@ag_T', dark: 'P3@ag_U', label: 'Silver 21–24 round robin' },
+  166: { time: '8:00 AM', venue: 'TBD', white: 'P3@ag_R', dark: 'P3@ag_S', label: 'Silver 21–24 round robin' },
+  186: { time: '9:00 AM', venue: 'TBD', white: 'L157', dark: 'L161', wTo: 'ag_5th', lTo: 'ag_6th', label: 'Silver 5th place' },
+  185: { time: '10:00 AM', venue: 'TBD', white: 'L141', dark: 'L145', wTo: 'ag_7th', lTo: 'ag_8th', label: 'Silver 7th place' },
+  182: { time: '11:00 AM', venue: 'TBD', white: 'W149', dark: 'W153', wTo: 'ag_9th', lTo: 'ag_10th', label: 'Silver 9th place' },
+  181: { time: '12:00 PM', venue: 'TBD', white: 'L149', dark: 'L153', wTo: 'ag_11th', lTo: 'ag_12th', label: 'Silver 11th place' },
+  167: { time: '7:00 AM', venue: 'TBD', white: 'P3@bz_T', dark: 'P3@bz_U', label: 'Bronze 21–24 round robin' },
+  168: { time: '8:00 AM', venue: 'TBD', white: 'P3@bz_R', dark: 'P3@bz_S', label: 'Bronze 21–24 round robin' },
+  176: { time: '9:00 AM', venue: 'TBD', white: 'L156', dark: 'L164', wTo: 'bz_19th', lTo: 'bz_20th', label: 'Bronze 19th place' },
+  175: { time: '10:00 AM', venue: 'TBD', white: 'W156', dark: 'W164', wTo: 'bz_17th', lTo: 'bz_18th', label: 'Bronze 17th place' },
+  180: { time: '11:00 AM', venue: 'TBD', white: 'L152', dark: 'L160', wTo: 'bz_15th', lTo: 'bz_16th', label: 'Bronze 15th place' },
+  179: { time: '12:00 PM', venue: 'TBD', white: 'W152', dark: 'W160', wTo: 'bz_13th', lTo: 'bz_14th', label: 'Bronze 13th place' },
+  184: { time: '7:00 AM', venue: 'TBD', white: 'L151', dark: 'L155', wTo: 'bz_11th', lTo: 'bz_12th', label: 'Bronze 11th place' },
+  183: { time: '8:00 AM', venue: 'TBD', white: 'W151', dark: 'W155', wTo: 'bz_9th', lTo: 'bz_10th', label: 'Bronze 9th place' },
+  178: { time: '9:00 AM', venue: 'TBD', white: 'W150', dark: 'W158', wTo: 'ag_13th', lTo: 'ag_14th', label: 'Silver 13th place' },
+  177: { time: '10:00 AM', venue: 'TBD', white: 'L150', dark: 'L158', wTo: 'ag_15th', lTo: 'ag_16th', label: 'Silver 15th place' },
+  170: { time: '11:00 AM', venue: 'TBD', white: 'W154', dark: 'W162', wTo: 'ag_17th', lTo: 'ag_18th', label: 'Silver 17th place' },
+  169: { time: '12:00 PM', venue: 'TBD', white: 'L154', dark: 'L162', wTo: 'ag_19th', lTo: 'ag_20th', label: 'Silver 19th place' },
+  171: { time: '7:00 AM', venue: 'TBD', white: 'W139', dark: 'W159', wTo: 190, lTo: 189, label: 'Bronze semifinal' },
+  172: { time: '8:00 AM', venue: 'TBD', white: 'W135', dark: 'W163', wTo: 190, lTo: 189, label: 'Bronze semifinal' },
+  187: { time: '9:00 AM', venue: 'TBD', white: 'L159', dark: 'L163', wTo: 'bz_5th', lTo: 'bz_6th', label: 'Bronze 5th place' },
+  188: { time: '10:00 AM', venue: 'TBD', white: 'L143', dark: 'L147', wTo: 'bz_7th', lTo: 'bz_8th', label: 'Bronze 7th place' },
+  189: { time: '11:00 AM', venue: 'TBD', white: 'L171', dark: 'L172', wTo: 'bz_3rd', lTo: 'bz_4th', label: 'Bronze 3rd place' },
+  190: { time: '12:00 PM', venue: 'TBD', white: 'W171', dark: 'W172', wTo: 'bz_1st', lTo: 'bz_2nd', label: 'Bronze championship' },
+  173: { time: '8:00 AM', venue: 'TBD', white: 'W137', dark: 'W157', wTo: 192, lTo: 191, label: 'Silver semifinal' },
+  174: { time: '9:00 AM', venue: 'TBD', white: 'W133', dark: 'W161', wTo: 192, lTo: 191, label: 'Silver semifinal' },
+  191: { time: '2:30 PM', venue: 'TBD', white: 'L173', dark: 'L174', wTo: 'ag_3rd', lTo: 'ag_4th', label: 'Silver 3rd place' },
+  192: { time: '2:30 PM', venue: 'TBD', white: 'W173', dark: 'W174', wTo: 'ag_1st', lTo: 'ag_2nd', label: 'Silver championship' },
 };
 
 const VENUE_SECTIONS = [
-  { name: 'Beckman HS 1', sub: 'Groups I · G (Lamorinda) · H', lam: true,
+  { name: 'Beckman HS 1', sub: 'Groups I · G (Lamorinda) · H', date: 'Thu July 23', lam: true,
     games: [3, 7, 11, 15, 19, 23, 27, 31, 35, 39, 43, 47, 51, 55, 59] },
-  { name: 'Ocean View HS 1 + Newport Harbor HS', sub: 'Groups C · A · B (evening games at Newport Harbor)',
+  { name: 'Ocean View HS 1 + Newport Harbor HS', sub: 'Groups C · A · B (evening games at Newport Harbor)', date: 'Thu July 23',
     games: [1, 5, 9, 13, 17, 21, 25, 29, 33, 37, 41, 45, 49, 53, 57] },
-  { name: 'Esperanza HS + Yorba Linda HS', sub: 'Groups D · E · F (evening games at Yorba Linda)',
+  { name: 'Esperanza HS + Yorba Linda HS', sub: 'Groups D · E · F (evening games at Yorba Linda)', date: 'Thu July 23',
     games: [2, 6, 10, 14, 18, 22, 26, 30, 34, 38, 42, 46, 50, 54, 58] },
-  { name: 'Brea Olinda HS', sub: 'Groups J · K · L',
+  { name: 'Brea Olinda HS', sub: 'Groups J · K · L', date: 'Thu July 23',
     games: [4, 8, 12, 16, 20, 24, 28, 32, 36, 40, 44, 48, 52, 56, 60] },
+  { name: 'Day 2 · Silver bracket', sub: 'Group round robins + evening play-ins · venues on the sheet', date: 'Fri July 24',
+    games: [61, 62, 65, 66, 69, 70, 73, 74, 77, 78, 81, 82, 85, 86, 89, 90, 93, 94, 97, 98, 101, 102, 105, 106, 109, 110, 113, 114] },
+  { name: 'Day 2 · Bronze bracket', sub: 'Group round robins + evening play-ins · venues on the sheet', date: 'Fri July 24',
+    games: [63, 64, 67, 68, 71, 72, 75, 76, 79, 80, 83, 84, 87, 88, 91, 92, 95, 96, 99, 100, 103, 104, 107, 108, 111, 112, 115, 116] },
+  { name: 'Day 3 · Silver bracket', sub: 'Crossovers, quarters & semis · venues on the sheet', date: 'Sat July 25',
+    games: [117, 118, 121, 122, 125, 126, 129, 130, 133, 134, 137, 138, 141, 142, 145, 146, 149, 150, 153, 154, 157, 158, 161, 162] },
+  { name: 'Day 3 · Bronze bracket', sub: 'Crossovers, quarters & semis · venues on the sheet', date: 'Sat July 25',
+    games: [119, 120, 123, 124, 127, 128, 131, 132, 135, 136, 139, 140, 143, 144, 147, 148, 151, 152, 155, 156, 159, 160, 163, 164] },
+  { name: 'Day 4 · Placement games', sub: 'Semifinals, finals and every placement game', date: 'Sun July 26',
+    games: [165, 166, 167, 168, 169, 170, 171, 172, 173, 174, 175, 176, 177, 178, 179, 180, 181, 182, 183, 184, 185, 186, 187, 188, 189, 190, 191, 192] },
 ];
 
-// Day 2 groups reachable by Lamorinda: slot label → source ref (null = unknown).
+// Day 2 groups (Fri): Silver (ag) for the winners' side, Bronze (bz) for the
+// rest. Slot label → source game ref. Confirmed against the published 14B
+// structure template (identical format, pt/au there = ag/bz here).
 const DAY2_GROUPS = {
-  ag_N: { label: 'Day 2 upper bracket · Group N', slots: [['N1', 'W41'], ['N2', 'W35'], ['N3', 'W28']] },
-  ag_T: { label: 'Day 2 upper bracket · Group T', slots: [['T?', 'W51'], ['T?', 'W59'], ['T3', 'W53']] },
-  ag_U: { label: 'Day 2 upper bracket · Group U', slots: [['U1', 'W52'], ['U2', 'W55'], ['U3', 'W57']] },
-  bz_T: { label: 'Day 2 lower bracket · Group T', slots: [['T1', 'L32'], ['T2', 'L39'], ['T3', 'L45']] },
+  ag_M: { label: 'Silver group M', slots: [['M1', 'W33'], ['M2', 'W43'], ['M3', 'W27']] },
+  ag_N: { label: 'Silver group N', slots: [['N1', 'W41'], ['N2', 'W35'], ['N3', 'W28']] },
+  ag_O: { label: 'Silver group O', slots: [['O1', 'W25'], ['O2', 'W42'], ['O3', 'W36']] },
+  ag_P: { label: 'Silver group P', slots: [['P1', 'W26'], ['P2', 'W34'], ['P3', 'W44']] },
+  ag_R: { label: 'Silver group R', slots: [['R1', 'W56'], ['R2', 'W58'], ['R3', 'W49']] },
+  ag_S: { label: 'Silver group S', slots: [['S1', 'W60'], ['S2', 'W54'], ['S3', 'W50']] },
+  ag_T: { label: 'Silver group T', slots: [['T1', 'W51'], ['T2', 'W59'], ['T3', 'W53']] },
+  ag_U: { label: 'Silver group U', slots: [['U1', 'W52'], ['U2', 'W55'], ['U3', 'W57']] },
+  bz_M: { label: 'Bronze group M', slots: [['M1', 'L53'], ['M2', 'L59'], ['M3', 'L51']] },
+  bz_N: { label: 'Bronze group N', slots: [['N1', 'L57'], ['N2', 'L55'], ['N3', 'L52']] },
+  bz_O: { label: 'Bronze group O', slots: [['O1', 'L49'], ['O2', 'L58'], ['O3', 'L56']] },
+  bz_P: { label: 'Bronze group P', slots: [['P1', 'L50'], ['P2', 'L54'], ['P3', 'L60']] },
+  bz_R: { label: 'Bronze group R', slots: [['R1', 'L48'], ['R2', 'L38'], ['R3', 'L30']] },
+  bz_S: { label: 'Bronze group S', slots: [['S1', 'L40'], ['S2', 'L46'], ['S3', 'L29']] },
+  bz_T: { label: 'Bronze group T', slots: [['T1', 'L32'], ['T2', 'L39'], ['T3', 'L45']] },
+  bz_U: { label: 'Bronze group U', slots: [['U1', 'L31'], ['U2', 'L47'], ['U3', 'L37']] },
+};
+
+// The three round-robin games of each Day-2 group.
+const GROUP_GAMES = {
+  ag_M: [61, 77, 93], ag_N: [65, 81, 97], ag_S: [69, 85, 101], ag_R: [73, 89, 105],
+  ag_O: [62, 78, 94], ag_P: [66, 82, 98], ag_U: [70, 86, 102], ag_T: [74, 90, 106],
+  bz_S: [63, 79, 95], bz_R: [67, 83, 99], bz_M: [71, 87, 103], bz_N: [75, 91, 107],
+  bz_U: [64, 80, 96], bz_T: [68, 84, 100], bz_O: [72, 88, 104], bz_P: [76, 92, 108],
 };
 
 // Terminal ref → { group key (if known), text }
 function terminalInfo(t) {
-  if (t === 'bz_MN') return { group: null, text: 'Day 2 lower bracket · Group M or N (seat TBD on the sheet)' };
-  const m = t.match(/^(ag|bz)_([A-Z])(\d?)$/);
-  if (!m) return { group: null, text: t };
-  const key = m[1] + '_' + m[2];
-  const bracket = m[1] === 'ag' ? 'upper' : 'lower';
-  return {
-    group: DAY2_GROUPS[key] ? key : null,
-    text: 'Day 2 ' + bracket + ' bracket · Group ' + m[2] + (m[3] ? ' (seed ' + m[2] + m[3] + ')' : ''),
-  };
+  let m = String(t).match(/^(ag|bz)_([A-Z])(\d?)$/);
+  if (m) {
+    const key = m[1] + '_' + m[2];
+    const bracket = m[1] === 'ag' ? 'Silver' : 'Bronze';
+    return {
+      group: DAY2_GROUPS[key] ? key : null,
+      text: bracket + ' bracket · Group ' + m[2] + (m[3] ? ' (seed ' + m[2] + m[3] + ')' : ''),
+    };
+  }
+  m = String(t).match(/^(ag|bz)_(\d+(?:st|nd|rd|th))$/);
+  if (m) return { group: null, text: (m[1] === 'ag' ? 'Silver' : 'Bronze') + ' bracket · ' + m[2] + ' place' };
+  return { group: null, text: String(t) };
 }
 
 const VENUES = [
@@ -470,7 +641,8 @@ let liveInfo = { updatedAt: null, error: null, fetchedAt: 0 };
 function parseSheetSlot(s) {
   const seed = s.match(/^(\d+)-/);
   if (seed && TEAMS[parseInt(seed[1], 10)]) return parseInt(seed[1], 10);
-  if (/^[WL]\d+$/.test(s)) return s;
+  const ref = s.match(/^([WL]\d+)(?:-|$)/); // 'W3' or Kahuna's 'W3-TEAM VEGAS RED'
+  if (ref) return ref[1];
   return null;
 }
 
@@ -543,31 +715,86 @@ function setFilterLam(on) {
   render();
 }
 
-// Games already played — fill in as the tournament runs (side that won + score).
-const PLAYED_RESULTS = {};
+// Games already played — locked in as facts (live feed appends the rest).
+const PLAYED_RESULTS = {
+  1: 'w', 2: 'w', 3: 'd', 4: 'w', 5: 'w', 6: 'w', 7: 'w', 8: 'd', 9: 'w', 10: 'w',
+  11: 'w', 12: 'd', 13: 'w', 14: 'd', 15: 'w', 16: 'w', 17: 'w', 18: 'w', 19: 'w', 20: 'w',
+};
 // Final scores keyed by game number: { w: <white goals>, d: <dark goals> }
-const PLAYED_SCORES = {};
+const PLAYED_SCORES = {
+  1: { w: 17, d: 3 }, 2: { w: 7, d: 5 }, 3: { w: 11, d: 15 }, 4: { w: 21, d: 5 },
+  5: { w: 11, d: 6 }, 6: { w: 8, d: 5 }, 7: { w: 13, d: 10 }, 8: { w: 7, d: 16 },
+  9: { w: 23, d: 6 }, 10: { w: 21, d: 3 }, 11: { w: 20, d: 6 }, 12: { w: 5, d: 6 },
+  13: { w: 13, d: 5 }, 14: { w: 7, d: 9 }, 15: { w: 11, d: 10 }, 16: { w: 9, d: 7 },
+  17: { w: 18, d: 1 }, 18: { w: 18, d: 6 }, 19: { w: 23, d: 0 }, 20: { w: 14, d: 5 },
+};
 
 function isGameFinal(num) { return Object.prototype.hasOwnProperty.call(PLAYED_RESULTS, num); }
 
 // ==================== LOGIC ====================
 function resolveSlot(slot) {
   if (typeof slot === 'number') return teamLabel(slot);
-  const m = String(slot).match(/^([WL])(\d+)$/);
-  if (!m) return null;
-  const num = Number(m[2]);
-  const r = state.results[num];
-  if (!r) return null;
-  const g = GAMES[num];
-  const winSide = r === 'w' ? g.white : g.dark;
-  const loseSide = r === 'w' ? g.dark : g.white;
-  return resolveSlot(m[1] === 'W' ? winSide : loseSide);
+  let m = String(slot).match(/^([WL])(\d+)$/);
+  if (m) {
+    const num = Number(m[2]);
+    const r = state.results[num];
+    if (!r) return null;
+    const g = GAMES[num];
+    const winSide = r === 'w' ? g.white : g.dark;
+    const loseSide = r === 'w' ? g.dark : g.white;
+    return resolveSlot(m[1] === 'W' ? winSide : loseSide);
+  }
+  m = String(slot).match(/^P([123])@(\w+)$/);
+  if (m) {
+    const order = groupOrder(m[2]);
+    return order ? order[Number(m[1]) - 1] : null;
+  }
+  return null;
 }
 
+// Final order of a Day-2 group: wins, then goal difference within the group
+// (the tournament's tiebreak). Returns null until every game is decided and
+// any three-way tie is breakable with known scores.
+function groupOrder(gKey) {
+  const grp = DAY2_GROUPS[gKey];
+  const nums = GROUP_GAMES[gKey];
+  if (!grp || !nums) return null;
+  const teams = grp.slots.map(s => resolveSlot(s[1]));
+  if (teams.some(t => !t)) return null;
+  const wins = {}, gd = {};
+  teams.forEach(t => { wins[t] = 0; gd[t] = 0; });
+  for (const num of nums) {
+    const r = state.results[num];
+    if (!r) return null;
+    const g = GAMES[num];
+    const wName = resolveSlot(r === 'w' ? g.white : g.dark);
+    const lName = resolveSlot(r === 'w' ? g.dark : g.white);
+    if (!wName || !lName) return null;
+    wins[wName]++;
+    const sc = PLAYED_SCORES[num];
+    if (sc) {
+      const diff = Math.abs(Number(sc.w) - Number(sc.d));
+      gd[wName] += diff; gd[lName] -= diff;
+    }
+  }
+  const sorted = [...teams].sort((a, b) => wins[b] - wins[a] || gd[b] - gd[a]);
+  if (teams.every(t => wins[t] === 1)) {
+    // Three-way tie — only breakable when all scores are known and distinct.
+    if (!nums.every(n => PLAYED_SCORES[n])) return null;
+    const v = sorted.map(t => gd[t]);
+    if (v[0] === v[1] || v[1] === v[2]) return null;
+  }
+  return sorted;
+}
+
+const ORD = { 1: '1st', 2: '2nd', 3: '3rd' };
 function slotHint(slot) {
   if (typeof slot === 'number') return teamLabel(slot);
-  const m = String(slot).match(/^([WL])(\d+)$/);
-  return m ? (m[1] === 'W' ? 'Winner' : 'Loser') + ' of #' + m[2] : String(slot);
+  let m = String(slot).match(/^([WL])(\d+)$/);
+  if (m) return (m[1] === 'W' ? 'Winner' : 'Loser') + ' of #' + m[2];
+  m = String(slot).match(/^P([123])@(\w+)$/);
+  if (m && DAY2_GROUPS[m[2]]) return ORD[m[1]] + ' of ' + DAY2_GROUPS[m[2]].label;
+  return String(slot);
 }
 
 // Games whose slots reference game num — used to clear downstream picks.
@@ -575,8 +802,12 @@ const DEPENDENTS = {};
 for (const numStr in GAMES) {
   const num = Number(numStr);
   [GAMES[num].white, GAMES[num].dark].forEach(slot => {
-    const m = String(slot).match(/^[WL](\d+)$/);
-    if (m) (DEPENDENTS[Number(m[1])] = DEPENDENTS[Number(m[1])] || []).push(num);
+    let m = String(slot).match(/^[WL](\d+)$/);
+    if (m) { (DEPENDENTS[Number(m[1])] = DEPENDENTS[Number(m[1])] || []).push(num); return; }
+    m = String(slot).match(/^P[123]@(\w+)$/);
+    if (m && GROUP_GAMES[m[1]]) {
+      GROUP_GAMES[m[1]].forEach(n => (DEPENDENTS[n] = DEPENDENTS[n] || []).push(num));
+    }
   });
 }
 
@@ -619,18 +850,50 @@ function lamTrace() {
 // Games shown in "our games only" mode: Lamorinda's traced path plus the
 // transitive closure of games its slots depend on — so the opponent of each
 // path game can still be resolved without leaving the filtered view.
+// Lamorinda's next unplayed game (any day) where both slots resolve.
+function lamNextGameNum() {
+  const nums = Object.keys(GAMES).map(Number).sort((a, b) => a - b);
+  for (const num of nums) {
+    if (state.results[num]) continue;
+    const g = GAMES[num];
+    if (resolveSlot(g.white) === LAM || resolveSlot(g.dark) === LAM) return num;
+  }
+  return null;
+}
+
+// Final placement, once a placement game involving Lamorinda is decided.
+function lamPlacement() {
+  for (const numStr in GAMES) {
+    const num = Number(numStr);
+    const r = state.results[num];
+    if (!r) continue;
+    const g = GAMES[num];
+    const w = resolveSlot(g.white), d = resolveSlot(g.dark);
+    if (w !== LAM && d !== LAM) continue;
+    const winner = r === 'w' ? w : d;
+    const dest = winner === LAM ? g.wTo : g.lTo;
+    if (typeof dest === 'string' && /(st|nd|rd|th)$/.test(dest)) return dest;
+  }
+  return null;
+}
+
 function lamVisibleGames() {
-  const { path } = lamTrace();
   const set = new Set();
   const addWithDeps = (num) => {
     if (set.has(num)) return;
     set.add(num);
     [GAMES[num].white, GAMES[num].dark].forEach(slot => {
-      const m = String(slot).match(/^[WL](\d+)$/);
-      if (m) addWithDeps(Number(m[1]));
+      let m = String(slot).match(/^[WL](\d+)$/);
+      if (m) { addWithDeps(Number(m[1])); return; }
+      m = String(slot).match(/^P[123]@(\w+)$/);
+      if (m && GROUP_GAMES[m[1]]) GROUP_GAMES[m[1]].forEach(addWithDeps);
     });
   };
-  path.forEach(addWithDeps);
+  lamTrace().path.forEach(addWithDeps);
+  Object.keys(GAMES).map(Number).forEach(num => {
+    const g = GAMES[num];
+    if (resolveSlot(g.white) === LAM || resolveSlot(g.dark) === LAM) addWithDeps(num);
+  });
   return set;
 }
 
@@ -754,30 +1017,40 @@ function renderGameCard(num) {
       el('span', { class: 'vs-label' }, 'vs'),
       sideBtn('d', darkName, g.dark),
     ),
-    el('div', { class: 'next-hint' }, 'Win → ' + nextLabel(g.wTo) + ' · Lose → ' + nextLabel(g.lTo)),
+    el('div', { class: 'next-hint' },
+      (g.label ? g.label + ' · ' : '')
+      + (g.wTo != null ? 'Win → ' + nextLabel(g.wTo) + ' · Lose → ' + nextLabel(g.lTo)
+        : 'Group game — standings decide advancement'),
+    ),
   );
 }
 
 function renderLamPath() {
-  const { path, terminal } = lamTrace();
   const box = el('div', {});
-  const last = path[path.length - 1];
-  const lastGame = GAMES[last];
-  if (!state.results[15]) {
+  const placement = lamPlacement();
+  if (placement) {
     box.appendChild(el('div', { class: 'path-callout' },
-      el('strong', {}, 'Lamorinda B opens vs 31-CARLSBAD'), ' — Thu 9:30 AM at Beckman HS 1 (game #15). ',
-      'Click winners below to walk the day.',
+      el('strong', {}, '🏆 Lamorinda B finishes: '), terminalInfo(placement).text, '.',
     ));
-  } else if (terminal) {
-    const info = terminalInfo(terminal);
+    return box;
+  }
+  const next = lamNextGameNum();
+  const { terminal } = lamTrace();
+  if (next != null) {
+    const g = GAMES[next];
     box.appendChild(el('div', { class: 'path-callout' },
-      el('strong', {}, 'Lamorinda B lands in: '), info.text, '.',
+      el('strong', {}, 'Next up for Lamorinda B: '), 'game #' + next + ' · ' + g.time
+      + (g.venue !== 'TBD' ? ' at ' + g.venue : ' (venue on the sheet)')
+      + (g.label ? ' · ' + g.label : '') + '.',
     ));
-    if (info.group) box.appendChild(renderDay2Group(info.group));
   } else {
     box.appendChild(el('div', { class: 'path-callout' },
-      el('strong', {}, 'Next up for Lamorinda B: '), 'game #' + last + ' · ' + lastGame.time + ' at ' + lastGame.venue + '.',
+      el('strong', {}, 'Lamorinda B: '), 'waiting on other results or group standings to set the next matchup.',
     ));
+  }
+  if (terminal) {
+    const info = terminalInfo(terminal);
+    if (info.group) box.appendChild(renderDay2Group(info.group));
   }
   return box;
 }
@@ -905,9 +1178,9 @@ function render() {
 
   app.appendChild(el('div', { class: 'warn-callout' },
     el('strong', {}, 'Bracket notes: '),
-    'Day 1 (Thu) is modeled below — each group of four plays a mini-bracket, winners feed the Day 2 upper-bracket groups, losers the lower-bracket groups. ',
-    'Finished games lock in automatically from the sheet with a FINAL badge; matchup, time, and venue corrections flow in the same way. ',
-    'Day 2 groups appear as you click; Day 3–4 placement brackets get added once that part of the schedule is published.',
+    'All four days are modeled: Day-1 group mini-brackets feed the Silver (winners) and Bronze brackets, Day-2 group round robins seed the Day 3–4 placement brackets, down to the championships. ',
+    'Finished games lock in automatically with a FINAL badge; group standings use wins then goal difference. ',
+    'Day 2–4 venues show TBD until the sheet publishes them — matchups and times are from the bracket template and self-correct from the live feed.',
   ));
 
   const visible = filterLam ? lamVisibleGames() : null;
@@ -919,7 +1192,7 @@ function render() {
     const nums = visible ? sec.games.filter(n => visible.has(n)) : sec.games;
     if (!nums.length) return;
     app.appendChild(el('h2', {}, sec.name + (sec.lam ? ' · LAMORINDA' : '')));
-    app.appendChild(el('p', { class: 'subtitle', style: { margin: '0 0 12px' } }, sec.sub + ' · Thu July 23'));
+    app.appendChild(el('p', { class: 'subtitle', style: { margin: '0 0 12px' } }, sec.sub + ' · ' + sec.date));
     const grid = el('div', { class: 'games-grid' });
     nums.forEach(num => grid.appendChild(renderGameCard(num)));
     app.appendChild(grid);
