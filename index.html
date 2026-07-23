@@ -823,8 +823,10 @@ function render() {
     pillText = 'Checking the JO sheet for schedule updates…';
   } else if (liveInfo.error) {
     pillClass += ' err';
+    const detail = String(liveInfo.error).replace(/^Could not load the schedule sheet — /, '');
     pillText = 'Last checked ' + fmtT(liveInfo.fetchedAt) + ' — sheet unreachable'
-      + (liveInfo.updatedAt ? ' (showing data from ' + fmtT(liveInfo.updatedAt) + ')' : ' (manual mode)');
+      + (liveInfo.updatedAt ? ' (showing data from ' + fmtT(liveInfo.updatedAt) + ')' : '')
+      + ' · ' + (detail.length > 90 ? detail.slice(0, 90) + '…' : detail);
   } else {
     pillClass += ' ok';
     pillText = 'Schedule & scores checked ' + fmtT(liveInfo.updatedAt) + ' — auto-updates every 5 min';
