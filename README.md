@@ -9,7 +9,8 @@ All 48 teams and all 60 Day-1 games are modeled from the published NJO schedule 
 - **Day 1 structure**: each group of four plays a mini-bracket (opener → winners/losers games → 2-3 crossovers). Winners feed eight Day-2 "upper" groups, losers eight "lower" groups.
 - **Beckman HS 1 caveat**: the sheet's Beckman section (groups I/G/H — Lamorinda's pool is G) wasn't fully visible when this was built; its pairings/times are inferred from the W-to/L-to game routing on the other venues, which run their groups in a rotated order. Lamorinda's 9:30 AM opener (game #15) is confirmed; the I/H time pairs are inferred — verify against the sheet.
 - **Days 3–4**: placement brackets get added to `GAMES`/`DAY2_GROUPS` once that part of the schedule is published.
-- **Shareable scenarios** via URL hash (`Copy share link`), venues rail with Google Maps links, and `PLAYED_RESULTS`/`PLAYED_SCORES` overlays for locking in real results as they happen (same mechanism as the old SDCC explorer — see git history for that app).
+- **Live scores & schedule** (`api/schedule.js`): a serverless function fetches the sheet's 14U_Men_Classic tab as CSV (CDN-cached 5 min) and the explorer overlays it on load, every 5 minutes, and on tab focus — finished games lock with a FINAL badge and score, and matchup/time/venue/routing corrections from the sheet override the static model (so the inferred Beckman rows self-correct once visible). If the sheet is unreachable the app falls back to manual click-through mode.
+- **Shareable scenarios** via URL hash (`Copy share link`), and a venues rail with Google Maps links. Real results always overlay shared scenarios — share links only carry hypothetical picks.
 
 ## Player Stat Tracker (`stats.html`)
 
