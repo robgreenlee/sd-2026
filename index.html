@@ -877,7 +877,7 @@ function render() {
       + ' · ' + (detail.length > 90 ? detail.slice(0, 90) + '…' : detail);
   } else {
     pillClass += ' ok';
-    const srcLabel = { export: 'live sheet', gviz: 'live sheet', custom: 'live sheet', kahuna: 'Kahuna results', paste: 'pasted sheet' }[liveInfo.source] || '';
+    const srcLabel = { byname: 'live sheet', export: 'live sheet', gviz: 'live sheet', custom: 'live sheet', kahuna: 'Kahuna results', paste: 'pasted sheet' }[liveInfo.source] || '';
     pillText = (liveInfo.source === 'paste' ? 'Scores from pasted sheet (' + fmtT(liveInfo.updatedAt) + ')' :
       'Schedule & scores checked ' + fmtT(liveInfo.updatedAt) + ' — auto-updates every 5 min')
       + (srcLabel && liveInfo.source !== 'paste' ? ' · ' + srcLabel : '');

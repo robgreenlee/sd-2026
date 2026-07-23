@@ -14,16 +14,20 @@
 //        games are returned either way so the pasting device applies them.
 
 const SHEET_ID = '1ycEOkayVwo_h37vL98PTXbzEnBpRU_-3S9l6NeiwCc4';
-const GID = '727959574'; // 14U_Men_Classic tab
+const GID = process.env.SCHEDULE_GID || '727959574'; // 14U_Men_Classic tab (gid can churn when the sheet is rebuilt)
+const SHEET_NAME = process.env.SCHEDULE_SHEET_NAME || '14U_Men_Classic';
 const KAHUNA_URL = process.env.SCHEDULE_KAHUNA_URL
   || 'https://www.kahunaevents.org/cgi-bin/htmlos.cgi/005582.1.014876855010509834';
 
 function sources() {
+  const base = 'https://docs.google.com/spreadsheets/d/' + SHEET_ID;
   const list = process.env.SCHEDULE_CSV_URL
     ? [{ name: 'custom', url: process.env.SCHEDULE_CSV_URL }]
     : [
-        { name: 'export', url: 'https://docs.google.com/spreadsheets/d/' + SHEET_ID + '/export?format=csv&gid=' + GID },
-        { name: 'gviz', url: 'https://docs.google.com/spreadsheets/d/' + SHEET_ID + '/gviz/tq?tqx=out:csv&gid=' + GID },
+        // By tab NAME first — immune to gid churn when the sheet is rebuilt.
+        { name: 'byname', url: base + '/gviz/tq?tqx=out:csv&sheet=' + encodeURIComponent(SHEET_NAME) },
+        { name: 'export', url: base + '/export?format=csv&gid=' + GID },
+        { name: 'gviz', url: base + '/gviz/tq?tqx=out:csv&gid=' + GID },
       ];
   list.push({ name: 'kahuna', url: KAHUNA_URL });
   return list;
