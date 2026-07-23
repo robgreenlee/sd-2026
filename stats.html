@@ -147,10 +147,52 @@ a:hover { text-decoration: underline; }
 }
 
 .tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 10px; margin: 12px 0; }
-.tile { background: white; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 12px; }
+.tile { background: white; border: 1px solid #e2e8f0; border-top: 3px solid #10b981; border-radius: 8px; padding: 10px 12px; }
 .tile-label { font-size: 11px; color: #64748b; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
-.tile-value { font-size: 24px; font-weight: 700; margin-top: 2px; line-height: 1.1; }
+.tile-value { font-size: 26px; font-weight: 800; margin-top: 2px; line-height: 1.1; letter-spacing: -0.01em; }
 .tile-sub { font-size: 11px; color: #94a3b8; margin-top: 2px; }
+
+.player-hero {
+  background: linear-gradient(135deg, #047857 0%, #10b981 100%);
+  color: white;
+  border-radius: 12px;
+  padding: 16px 20px;
+  margin: 12px 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  box-shadow: 0 4px 14px rgba(16, 185, 129, 0.25);
+}
+.hero-left { display: flex; align-items: center; gap: 14px; min-width: 0; }
+.hero-cap {
+  font-size: 30px;
+  font-weight: 800;
+  background: rgba(255, 255, 255, 0.16);
+  border-radius: 10px;
+  padding: 6px 14px;
+  line-height: 1.2;
+  font-variant-numeric: tabular-nums;
+  flex: none;
+}
+.hero-name { font-size: 21px; font-weight: 800; line-height: 1.2; letter-spacing: -0.01em; }
+.hero-sub { font-size: 12px; opacity: 0.92; margin-top: 3px; }
+.player-hero .btn.hero { background: white; color: #047857; border-color: white; }
+.player-hero .btn.hero:hover { background: #ecfdf5; }
+.player-hero .inactive-badge { background: rgba(255,255,255,0.2); color: white; }
+
+.share-preview {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-left: 4px solid #10b981;
+  border-radius: 0 8px 8px 0;
+  padding: 12px 16px;
+  margin: 10px 0;
+  white-space: pre-line;
+  font-size: 13px;
+  color: #334155;
+}
 
 .form-row { display: grid; grid-template-columns: 110px 1fr; gap: 10px; align-items: center; margin: 8px 0; }
 .form-row label { font-size: 12px; font-weight: 600; color: #475569; }
@@ -171,8 +213,8 @@ textarea { resize: vertical; min-height: 56px; }
 .inline-form { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
 .inline-form input { width: auto; }
 
-.table-wrap { overflow-x: auto; margin: 10px 0; border: 1px solid #e2e8f0; border-radius: 8px; background: white; }
-table { border-collapse: collapse; width: 100%; font-size: 13px; }
+.table-wrap { overflow: auto; max-height: 72vh; margin: 10px 0; border: 1px solid #e2e8f0; border-radius: 8px; background: white; }
+table { border-collapse: separate; border-spacing: 0; width: 100%; font-size: 13px; }
 th {
   font-size: 10px;
   text-transform: uppercase;
@@ -184,6 +226,9 @@ th {
   text-align: center;
   white-space: nowrap;
   background: #f8fafc;
+  position: sticky;
+  top: 0;
+  z-index: 3;
 }
 th.left, td.left { text-align: left; }
 td { padding: 6px 8px; border-bottom: 1px solid #f1f5f9; text-align: center; font-variant-numeric: tabular-nums; }
@@ -198,7 +243,10 @@ td.name-cell, th.name-cell {
   z-index: 1;
   box-shadow: inset -1px 0 #e2e8f0;
 }
-th.name-cell { background: #f8fafc; z-index: 2; }
+th.name-cell { background: #f8fafc; z-index: 4; top: 0; }
+tbody td { background: white; }
+tbody tr:nth-child(even) td { background: #f8fafc; }
+tbody tr:nth-child(even) td.name-cell { background: #f8fafc; }
 .cap-badge {
   display: inline-block;
   min-width: 24px;
@@ -1179,21 +1227,34 @@ function renderPlayerView(app, pid) {
   const s = playerSeasonStats(pid, season || null);
   const t = s.totals;
 
-  app.appendChild(el('div', { class: 'hdr', style: { marginTop: '16px' } },
-    el('div', {},
-      el('h2', { style: { margin: '0', border: 'none', padding: '0' } },
-        (p.cap ? '#' + p.cap + ' ' : '') + p.name,
-        !p.active ? el('span', { class: 'inactive-badge' }, 'inactive') : null,
+  // Record in the filtered games
+  let recW = 0, recL = 0, recT = 0;
+  s.games.forEach(g => {
+    const r = gameResult(g);
+    if (r === 'w') recW++; else if (r === 'l') recL++; else if (r === 't') recT++;
+  });
+  const record = (recW + recL + recT) ? recW + '–' + recL + (recT ? '–' + recT : '') : null;
+
+  app.appendChild(el('div', { class: 'hdr', style: { marginTop: '16px', marginBottom: '0' } },
+    el('a', { class: 'btn', href: '#/players' }, '← Players'),
+  ));
+  app.appendChild(el('div', { class: 'player-hero' },
+    el('div', { class: 'hero-left' },
+      el('div', { class: 'hero-cap' }, '#' + (p.cap || '–')),
+      el('div', {},
+        el('div', { class: 'hero-name' },
+          p.name,
+          !p.active ? el('span', { class: 'inactive-badge' }, 'inactive') : null,
+        ),
+        el('div', { class: 'hero-sub' },
+          db.settings.team + ' · ' + (season || 'All seasons') + ' · ' + s.gp + ' game' + (s.gp === 1 ? '' : 's')
+          + (record ? ' · ' + record : '')),
       ),
-      el('p', { class: 'subtitle' }, db.settings.team + ' · ' + (season || 'All seasons') + ' · ' + s.gp + ' game' + (s.gp === 1 ? '' : 's')),
     ),
-    el('div', { class: 'hdr-actions' },
-      el('a', { class: 'btn', href: '#/players' }, '← Players'),
-      el('button', {
-        class: 'btn primary',
-        onClick: (e) => sharePlayer(p, season || null, e.currentTarget),
-      }, 'Share stats'),
-    ),
+    el('button', {
+      class: 'btn hero',
+      onClick: (e) => sharePlayer(p, season || null, e.currentTarget),
+    }, 'Share stats'),
   ));
 
   // Season filter
@@ -1217,22 +1278,25 @@ function renderPlayerView(app, pid) {
     return;
   }
 
-  // Headline tiles
+  // Headline tiles — top accent color gives each stat an identity.
   const shootPct = pct(t.gl, t.sh);
+  const tile = (label, value, sub, accent) => el('div', { class: 'tile', style: { borderTopColor: accent } },
+    el('div', { class: 'tile-label' }, label),
+    el('div', { class: 'tile-value' }, value),
+    sub ? el('div', { class: 'tile-sub' }, sub) : null,
+  );
   const tiles = el('div', { class: 'tiles' },
-    el('div', { class: 'tile' }, el('div', { class: 'tile-label' }, 'Games'), el('div', { class: 'tile-value' }, s.gp)),
-    el('div', { class: 'tile' }, el('div', { class: 'tile-label' }, 'Goals'), el('div', { class: 'tile-value' }, t.gl), el('div', { class: 'tile-sub' }, avg(t.gl, s.gp) + ' per game')),
-    el('div', { class: 'tile' }, el('div', { class: 'tile-label' }, 'Assists'), el('div', { class: 'tile-value' }, t.as), el('div', { class: 'tile-sub' }, avg(t.as, s.gp) + ' per game')),
-    el('div', { class: 'tile' }, el('div', { class: 'tile-label' }, 'Shooting'), el('div', { class: 'tile-value' }, shootPct != null ? shootPct + '%' : '–'), el('div', { class: 'tile-sub' }, t.gl + ' of ' + t.sh + ' shots')),
-    el('div', { class: 'tile' }, el('div', { class: 'tile-label' }, 'Steals'), el('div', { class: 'tile-value' }, t.st), el('div', { class: 'tile-sub' }, avg(t.st, s.gp) + ' per game')),
+    tile('Games', s.gp, record ? 'record ' + record : null, '#94a3b8'),
+    tile('Goals', t.gl, avg(t.gl, s.gp) + ' per game', '#10b981'),
+    tile('Assists', t.as, avg(t.as, s.gp) + ' per game', '#3b82f6'),
+    tile('Points', t.gl + t.as, avg(t.gl + t.as, s.gp) + ' per game', '#8b5cf6'),
+    tile('Shooting', shootPct != null ? shootPct + '%' : '–', t.gl + ' of ' + t.sh + ' shots', '#f59e0b'),
+    tile('Steals', t.st, avg(t.st, s.gp) + ' per game', '#06b6d4'),
   );
   if (t.sv || t.ga) {
     const savePct = pct(t.sv, t.sv + t.ga);
-    tiles.appendChild(el('div', { class: 'tile' },
-      el('div', { class: 'tile-label' }, 'Save rate'),
-      el('div', { class: 'tile-value' }, savePct != null ? savePct + '%' : '–'),
-      el('div', { class: 'tile-sub' }, t.sv + ' SV · ' + t.ga + ' GA · ' + s.gkGames + ' in goal'),
-    ));
+    tiles.appendChild(tile('Save rate', savePct != null ? savePct + '%' : '–',
+      t.sv + ' SV · ' + t.ga + ' GA · ' + s.gkGames + ' in goal', '#1d4ed8'));
   }
   app.appendChild(tiles);
 
@@ -1288,8 +1352,7 @@ function renderPlayerView(app, pid) {
 
   // Share preview
   app.appendChild(el('h3', {}, 'Share preview'));
-  const shareCard = el('div', { class: 'card', style: { whiteSpace: 'pre-line', fontSize: '13px' } }, playerShareText(p, season || null));
-  app.appendChild(shareCard);
+  app.appendChild(el('div', { class: 'card share-preview' }, playerShareText(p, season || null)));
 }
 
 // Per-game column chart for one stat. Single series (the app's emerald), thin
