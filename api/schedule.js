@@ -39,10 +39,20 @@ function sources() {
 const PASTE_KEY = 'polo:schedule:14bx';
 const MAX_PASTE = 900 * 1024;
 
+// Find the Upstash REST credentials under any name Vercel may have injected
+// them with, including custom prefixes (e.g. LAMOStorage_KV_REST_API_URL).
 function redisEnv() {
-  const url = process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL;
-  const token = process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN;
-  return url && token ? { url, token } : null;
+  const env = process.env;
+  const pair = (u, t) => (env[u] && env[t]) ? { url: env[u], token: env[t] } : null;
+  const direct = pair('KV_REST_API_URL', 'KV_REST_API_TOKEN')
+    || pair('UPSTASH_REDIS_REST_URL', 'UPSTASH_REDIS_REST_TOKEN');
+  if (direct) return direct;
+  for (const key of Object.keys(env)) {
+    if (!/(KV_REST_API_URL|UPSTASH_REDIS_REST_URL)$/.test(key)) continue;
+    const found = pair(key, key.replace(/_URL$/, '_TOKEN'));
+    if (found) return found;
+  }
+  return null;
 }
 
 async function redisCmd(env, cmd) {
