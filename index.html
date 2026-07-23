@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>LAMO JO's B-Team · 2026 Junior Olympics</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%A4%BD%3C/text%3E%3C/svg%3E">
 <meta name="description" content="Interactive bracket explorer for Lamorinda B (18-LAMORINDA B) at the 2026 National Junior Olympics, Session 2, 14U Men Classic (14BX) division. Click winners and follow the path through Day 1 into the Day 2 groups.">
 <meta property="og:title" content="LAMO JO's B-Team · JO Bracket Explorer">
 <meta property="og:description" content="Click winners, see Lamorinda B's path through the 2026 Junior Olympics 14BX bracket. Share scenarios via link.">
@@ -170,12 +171,17 @@ a:hover { text-decoration: underline; }
   color: #475569;
   margin: 8px 0 2px;
 }
-.live-pill .dot { width: 8px; height: 8px; border-radius: 50%; background: #94a3b8; flex: none; }
 .live-pill.ok { border-color: #a7f3d0; background: #f0fdf4; color: #065f46; }
-.live-pill.ok .dot { background: #10b981; }
 .live-pill.err { border-color: #fde68a; background: #fffbeb; color: #78350f; }
-.live-pill.err .dot { background: #f59e0b; }
 .live-pill a { font-weight: 700; }
+.live-ico { display: inline-flex; flex: none; color: #94a3b8; }
+.live-pill.ok .live-ico { color: #10b981; }
+.live-pill.err .live-ico { color: #f59e0b; }
+.live-ico svg { display: block; }
+@keyframes livePulse { 0%, 100% { opacity: 0.25; } 50% { opacity: 1; } }
+.live-ico .arc { animation: livePulse 2s ease-in-out infinite; }
+.live-ico .arc-outer { animation-delay: 0.35s; }
+.live-pill.err .live-ico .arc { animation: none; opacity: 0.4; }
 
 .path-callout {
   background: #ecfdf5;
@@ -823,8 +829,15 @@ function render() {
     pillClass += ' ok';
     pillText = 'Schedule & scores checked ' + fmtT(liveInfo.updatedAt) + ' — auto-updates every 5 min';
   }
+  // Pulsing broadcast icon — arcs animate while the live feed is healthy.
+  const ico = el('span', { class: 'live-ico', 'aria-hidden': 'true' });
+  ico.innerHTML = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">'
+    + '<circle cx="12" cy="12" r="2.4" fill="currentColor" stroke="none"/>'
+    + '<path class="arc" d="M8.5 8.5a5 5 0 0 0 0 7M15.5 8.5a5 5 0 0 1 0 7"/>'
+    + '<path class="arc arc-outer" d="M5.6 5.6a9 9 0 0 0 0 12.8M18.4 5.6a9 9 0 0 1 0 12.8"/>'
+    + '</svg>';
   app.appendChild(el('div', { class: pillClass },
-    el('span', { class: 'dot' }),
+    ico,
     pillText, ' · ',
     el('a', { href: '#', onClick: (e) => { e.preventDefault(); fetchLive(true); } }, 'check now'),
   ));
