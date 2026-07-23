@@ -1,21 +1,54 @@
 // Live schedule/results endpoint for the JO bracket explorer (index.html).
 //
-// Fetches the published NJO schedule sheet's 14U_Men_Classic tab as CSV and
-// returns one entry per 14BX game: matchup labels, scores (when entered),
-// time, location, and win/lose routing. The explorer overlays this on its
-// bracket model, so results and any sheet corrections flow in automatically.
-// CDN-cached for 5 minutes — the sheet only changes a few times a day.
+// GET  — returns one entry per 14BX game (matchup, scores, time, location,
+//        W/L routing), pulled from the first source that works:
+//          1. the published Google Sheet's 14U_Men_Classic tab (CSV export)
+//          2. the same tab via Google's gviz CSV endpoint
+//          3. the Kahuna Events live-results page (HTML table)
+//          4. the most recent manually pasted schedule (stored in Redis)
+//        All sources share one column layout: the GMID cell (14BX-###) is the
+//        anchor; White/scores/Dark/routing sit at fixed offsets before it.
+// POST — { action: 'paste', text } parses a pasted copy of the sheet
+//        (TSV from Google Sheets select-all, CSV, or HTML) and stores it in
+//        Redis (when configured) so every device gets the update; the parsed
+//        games are returned either way so the pasting device applies them.
 
 const SHEET_ID = '1ycEOkayVwo_h37vL98PTXbzEnBpRU_-3S9l6NeiwCc4';
 const GID = '727959574'; // 14U_Men_Classic tab
-// Two anonymous CSV endpoints — link-shared sheets sometimes allow one but
-// not the other, so try both.
-const CSV_URLS = process.env.SCHEDULE_CSV_URL ? [process.env.SCHEDULE_CSV_URL] : [
-  'https://docs.google.com/spreadsheets/d/' + SHEET_ID + '/export?format=csv&gid=' + GID,
-  'https://docs.google.com/spreadsheets/d/' + SHEET_ID + '/gviz/tq?tqx=out:csv&gid=' + GID,
-];
+const KAHUNA_URL = process.env.SCHEDULE_KAHUNA_URL
+  || 'https://www.kahunaevents.org/cgi-bin/htmlos.cgi/005582.1.014876855010509834';
 
-// Minimal CSV parser (handles quoted cells and embedded commas/newlines).
+function sources() {
+  const list = process.env.SCHEDULE_CSV_URL
+    ? [{ name: 'custom', url: process.env.SCHEDULE_CSV_URL }]
+    : [
+        { name: 'export', url: 'https://docs.google.com/spreadsheets/d/' + SHEET_ID + '/export?format=csv&gid=' + GID },
+        { name: 'gviz', url: 'https://docs.google.com/spreadsheets/d/' + SHEET_ID + '/gviz/tq?tqx=out:csv&gid=' + GID },
+      ];
+  list.push({ name: 'kahuna', url: KAHUNA_URL });
+  return list;
+}
+
+const PASTE_KEY = 'polo:schedule:14bx';
+const MAX_PASTE = 900 * 1024;
+
+function redisEnv() {
+  const url = process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL;
+  const token = process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN;
+  return url && token ? { url, token } : null;
+}
+
+async function redisCmd(env, cmd) {
+  const r = await fetch(env.url, {
+    method: 'POST',
+    headers: { Authorization: 'Bearer ' + env.token, 'Content-Type': 'application/json' },
+    body: JSON.stringify(cmd),
+  });
+  if (!r.ok) throw new Error('storage error ' + r.status);
+  return (await r.json()).result;
+}
+
+// ---------- parsing ----------
 function parseCSV(text) {
   const rows = [];
   let row = [], cell = '', inQuotes = false;
@@ -38,21 +71,43 @@ function parseCSV(text) {
   return rows;
 }
 
-function num(v) {
-  const s = String(v == null ? '' : v).trim();
-  if (!/^\d+$/.test(s)) return null;
-  return parseInt(s, 10);
+function htmlToRows(html) {
+  const rows = [];
+  const trRe = /<tr[^>]*>([\s\S]*?)<\/tr>/gi;
+  let m;
+  while ((m = trRe.exec(html))) {
+    const cells = [];
+    const tdRe = /<t[dh][^>]*>([\s\S]*?)<\/t[dh]>/gi;
+    let c;
+    while ((c = tdRe.exec(m[1]))) {
+      cells.push(c[1].replace(/<[^>]*>/g, ' ').replace(/&nbsp;/gi, ' ').replace(/&amp;/gi, '&')
+        .replace(/\s+/g, ' ').trim());
+    }
+    if (cells.length) rows.push(cells);
+  }
+  return rows;
 }
 
-// Sheet row layout around the GMID column (anchor at index i):
+function textToRows(text) {
+  if (/<table|<tr[\s>]/i.test(text)) return htmlToRows(text);
+  if (text.indexOf('\t') >= 0) return text.split(/\r?\n/).map(l => l.split('\t'));
+  return parseCSV(text);
+}
+
+function num(v) {
+  const s = String(v == null ? '' : v).trim();
+  return /^\d+$/.test(s) ? parseInt(s, 10) : null;
+}
+
+// Row layout around the GMID cell (anchor at index i):
 // i-6 White · i-5 White score · i-4 Dark · i-3 Dark score · i-2 W-to · i-1 L-to
 // Absolute columns: 1 = Time, 3 = Location.
-function parseGames(csv) {
+function parseGames(rows) {
   const games = [];
-  for (const row of parseCSV(csv)) {
-    for (let i = 0; i < row.length; i++) {
+  for (const row of rows) {
+    for (let i = 6; i < row.length; i++) {
       const m = String(row[i]).trim().match(/^14BX-(\d{3})$/);
-      if (!m || i < 6) continue;
+      if (!m) continue;
       const clean = (idx) => String(row[idx] == null ? '' : row[idx]).trim();
       games.push({
         n: parseInt(m[1], 10),
@@ -71,32 +126,84 @@ function parseGames(csv) {
   return games;
 }
 
-module.exports = async (req, res) => {
+// ---------- handlers ----------
+async function handleGet(req, res) {
   const attempts = [];
-  for (const url of CSV_URLS) {
-    const label = url.indexOf('/gviz/') >= 0 ? 'gviz' : url.indexOf('/export') >= 0 ? 'export' : 'custom';
+  for (const src of sources()) {
     try {
-      const r = await fetch(url, { redirect: 'follow' });
+      const r = await fetch(src.url, { redirect: 'follow' });
       const text = await r.text();
-      const games = r.ok ? parseGames(text) : [];
+      const games = r.ok ? parseGames(textToRows(text)) : [];
       if (r.ok && games.length) {
         res.setHeader('Cache-Control', 's-maxage=300, stale-while-revalidate=600');
-        return res.status(200).json({ updatedAt: Date.now(), games, source: label });
+        return res.status(200).json({ updatedAt: Date.now(), games, source: src.name });
       }
       attempts.push({
-        source: label,
+        source: src.name,
         status: r.status,
         contentType: String((r.headers && r.headers.get && r.headers.get('content-type')) || ''),
-        snippet: text.slice(0, 120),
+        snippet: text.slice(0, 160),
         reason: !r.ok ? 'HTTP ' + r.status : 'no 14BX rows parsed',
       });
     } catch (e) {
-      attempts.push({ source: label, reason: 'fetch failed: ' + (e && e.message ? e.message : 'unknown') });
+      attempts.push({ source: src.name, reason: 'fetch failed: ' + (e && e.message ? e.message : 'unknown') });
     }
+  }
+  // Last resort: the most recent pasted schedule.
+  const env = redisEnv();
+  if (env) {
+    try {
+      const raw = await redisCmd(env, ['GET', PASTE_KEY]);
+      if (raw) {
+        const stored = JSON.parse(raw);
+        if (stored && Array.isArray(stored.games) && stored.games.length) {
+          res.setHeader('Cache-Control', 's-maxage=120, stale-while-revalidate=300');
+          return res.status(200).json({ updatedAt: stored.storedAt, games: stored.games, source: 'paste' });
+        }
+      }
+      attempts.push({ source: 'paste', reason: 'no pasted schedule stored yet' });
+    } catch (e) {
+      attempts.push({ source: 'paste', reason: 'storage: ' + (e && e.message ? e.message : 'unknown') });
+    }
+  } else {
+    attempts.push({ source: 'paste', reason: 'no Redis store connected' });
   }
   res.setHeader('Cache-Control', 'no-store');
   const summary = attempts.map(a => a.source + ': ' + a.reason).join(' · ');
-  const body = { error: 'Could not load the schedule sheet — ' + (summary || 'no endpoints tried') };
+  const body = { error: 'Could not load the schedule — ' + summary };
   if (String(req.url || '').indexOf('debug=1') >= 0) body.attempts = attempts;
   return res.status(502).json(body);
+}
+
+async function handlePaste(req, res) {
+  const text = (req.body && req.body.text) || '';
+  if (typeof text !== 'string' || !text.trim()) {
+    return res.status(400).json({ error: 'Nothing to parse — paste the schedule text first.' });
+  }
+  if (text.length > MAX_PASTE) {
+    return res.status(413).json({ error: 'Pasted text too large.' });
+  }
+  const games = parseGames(textToRows(text));
+  if (!games.length) {
+    return res.status(400).json({ error: 'No 14BX game rows found in the pasted text. Copy the whole 14U_Men_Classic tab (Ctrl/Cmd-A, then copy) and paste it all.' });
+  }
+  let stored = false;
+  const env = redisEnv();
+  if (env) {
+    try {
+      await redisCmd(env, ['SET', PASTE_KEY, JSON.stringify({ games, storedAt: Date.now() })]);
+      stored = true;
+    } catch (e) { /* still return the games for local use */ }
+  }
+  return res.status(200).json({ ok: true, count: games.length, stored, games, updatedAt: Date.now(), source: 'paste' });
+}
+
+module.exports = async (req, res) => {
+  res.setHeader('Cache-Control', 'no-store');
+  if (req.method === 'POST') {
+    const action = req.body && req.body.action;
+    if (action === 'paste') return handlePaste(req, res);
+    return res.status(400).json({ error: 'Unknown action.' });
+  }
+  return handleGet(req, res);
 };

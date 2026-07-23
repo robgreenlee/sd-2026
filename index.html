@@ -517,7 +517,8 @@ async function fetchLive(manual) {
     const data = await r.json().catch(() => ({}));
     if (!r.ok) throw new Error(data.error || ('HTTP ' + r.status));
     applyLiveData(data);
-    liveInfo.updatedAt = new Date();
+    liveInfo.updatedAt = data.source === 'paste' && data.updatedAt ? new Date(data.updatedAt) : new Date();
+    liveInfo.source = data.source || '';
     liveInfo.error = null;
   } catch (e) {
     liveInfo.error = e && e.message ? e.message : 'fetch failed';
@@ -829,7 +830,10 @@ function render() {
       + ' · ' + (detail.length > 90 ? detail.slice(0, 90) + '…' : detail);
   } else {
     pillClass += ' ok';
-    pillText = 'Schedule & scores checked ' + fmtT(liveInfo.updatedAt) + ' — auto-updates every 5 min';
+    const srcLabel = { export: 'live sheet', gviz: 'live sheet', custom: 'live sheet', kahuna: 'Kahuna results', paste: 'pasted sheet' }[liveInfo.source] || '';
+    pillText = (liveInfo.source === 'paste' ? 'Scores from pasted sheet (' + fmtT(liveInfo.updatedAt) + ')' :
+      'Schedule & scores checked ' + fmtT(liveInfo.updatedAt) + ' — auto-updates every 5 min')
+      + (srcLabel && liveInfo.source !== 'paste' ? ' · ' + srcLabel : '');
   }
   // Pulsing broadcast icon — arcs animate while the live feed is healthy.
   const ico = el('span', { class: 'live-ico', 'aria-hidden': 'true' });
@@ -867,6 +871,45 @@ function render() {
     nums.forEach(num => grid.appendChild(renderGameCard(num)));
     app.appendChild(grid);
   });
+
+  // Manual paste fallback — works even when every automatic source is blocked.
+  app.appendChild(el('h2', {}, 'Manual score update'));
+  const pasteBox = el('div', { class: 'day2-box' });
+  const ta = el('textarea', {
+    placeholder: 'Open the 14U_Men_Classic tab (or the Kahuna results page), Select All, Copy, and paste everything here…',
+    style: { width: '100%', minHeight: '90px', border: '1px solid #cbd5e1', borderRadius: '6px', padding: '8px', font: 'inherit', fontSize: '12px' },
+  });
+  const pasteBtn = el('button', {
+    class: 'btn primary', style: { marginTop: '8px' },
+    onClick: async (e) => {
+      const btn = e.currentTarget;
+      if (!ta.value.trim()) { ta.focus(); return; }
+      btn.textContent = 'Applying…';
+      try {
+        const r = await fetch('api/schedule', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'paste', text: ta.value }),
+        });
+        const out = await r.json().catch(() => ({}));
+        if (!r.ok) throw new Error(out.error || ('HTTP ' + r.status));
+        applyLiveData(out);
+        liveInfo.updatedAt = new Date();
+        liveInfo.source = 'paste';
+        liveInfo.error = null;
+        render();
+        alert('Applied ' + out.count + ' games' + (out.stored ? ' — shared to every device.' : ' on this device (connect the Redis store to share automatically).'));
+      } catch (err) {
+        btn.textContent = 'Apply pasted schedule';
+        alert(err && err.message ? err.message : 'Could not parse that paste.');
+      }
+    },
+  }, 'Apply pasted schedule');
+  pasteBox.appendChild(el('p', { class: 'subtitle', style: { margin: '0 0 8px' } },
+    'If automatic updates are down, paste a copy of the schedule here (Select All → Copy on the sheet or the Kahuna results page). Scores are parsed exactly like the live feed.'));
+  pasteBox.appendChild(ta);
+  pasteBox.appendChild(el('div', {}, pasteBtn));
+  app.appendChild(pasteBox);
 
   app.appendChild(el('h2', {}, 'Day 1 groups'));
   const ggrid = el('div', { class: 'games-grid' });
