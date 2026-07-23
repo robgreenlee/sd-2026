@@ -782,10 +782,44 @@ function renderLamPath() {
   return box;
 }
 
-// Admin panel — the manual paste fallback, toggled from the header.
+// Live-feed status pill — shown inside the Admin panel only.
+function renderLivePill() {
+  const fmtT = (d) => new Date(d).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+  let pillClass = 'live-pill', pillText;
+  if (!liveInfo.fetchedAt) {
+    pillText = 'Checking the JO sheet for schedule updates…';
+  } else if (liveInfo.error) {
+    pillClass += ' err';
+    const detail = String(liveInfo.error).replace(/^Could not load the schedule — /, '');
+    pillText = 'Last checked ' + fmtT(liveInfo.fetchedAt) + ' — sheet unreachable'
+      + (liveInfo.updatedAt ? ' (showing data from ' + fmtT(liveInfo.updatedAt) + ')' : '')
+      + ' · ' + (detail.length > 120 ? detail.slice(0, 120) + '…' : detail);
+  } else {
+    pillClass += ' ok';
+    const srcLabel = { byname: 'live sheet', htmlview: 'live sheet', export: 'live sheet', gviz: 'live sheet', custom: 'live sheet', kahuna: 'Kahuna results', paste: 'pasted sheet' }[liveInfo.source] || '';
+    pillText = (liveInfo.source === 'paste' ? 'Scores from pasted sheet (' + fmtT(liveInfo.updatedAt) + ')' :
+      'Schedule & scores checked ' + fmtT(liveInfo.updatedAt) + ' — auto-updates every 5 min')
+      + (srcLabel && liveInfo.source !== 'paste' ? ' · ' + srcLabel : '');
+  }
+  // Pulsing broadcast icon — arcs animate while the live feed is healthy.
+  const ico = el('span', { class: 'live-ico', 'aria-hidden': 'true' });
+  ico.innerHTML = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">'
+    + '<circle cx="12" cy="12" r="2.4" fill="currentColor" stroke="none"/>'
+    + '<path class="arc" d="M8.5 8.5a5 5 0 0 0 0 7M15.5 8.5a5 5 0 0 1 0 7"/>'
+    + '<path class="arc arc-outer" d="M5.6 5.6a9 9 0 0 0 0 12.8M18.4 5.6a9 9 0 0 1 0 12.8"/>'
+    + '</svg>';
+  return el('div', { class: pillClass, style: { margin: '0 0 10px' } },
+    ico,
+    pillText, ' · ',
+    el('a', { href: '#', onClick: (e) => { e.preventDefault(); fetchLive(true); } }, 'check now'),
+  );
+}
+
+// Admin panel — feed status + the manual paste fallback, toggled from the header.
 function renderAdminPanel() {
   const box = el('div', { class: 'day2-box', style: { borderColor: '#94a3b8' } });
-  box.appendChild(el('h3', { style: { marginTop: '0' } }, 'Admin · Manual score update'));
+  box.appendChild(el('h3', { style: { marginTop: '0' } }, 'Admin · Live feed & manual score update'));
+  box.appendChild(renderLivePill());
   const ta = el('textarea', {
     placeholder: 'Open the 14U_Men_Classic tab (or the Kahuna results page), Select All, Copy, and paste everything here…',
     style: { width: '100%', minHeight: '90px', border: '1px solid #cbd5e1', borderRadius: '6px', padding: '8px', font: 'inherit', fontSize: '12px' },
@@ -863,36 +897,6 @@ function render() {
       el('button', { class: 'btn primary', onClick: (e) => copyShareLink(e.currentTarget) }, 'Copy share link'),
       el('button', { class: 'btn', onClick: resetAll }, 'Reset all'),
     ),
-  ));
-
-  const fmtT = (d) => new Date(d).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
-  let pillClass = 'live-pill', pillText;
-  if (!liveInfo.fetchedAt) {
-    pillText = 'Checking the JO sheet for schedule updates…';
-  } else if (liveInfo.error) {
-    pillClass += ' err';
-    const detail = String(liveInfo.error).replace(/^Could not load the schedule sheet — /, '');
-    pillText = 'Last checked ' + fmtT(liveInfo.fetchedAt) + ' — sheet unreachable'
-      + (liveInfo.updatedAt ? ' (showing data from ' + fmtT(liveInfo.updatedAt) + ')' : '')
-      + ' · ' + (detail.length > 90 ? detail.slice(0, 90) + '…' : detail);
-  } else {
-    pillClass += ' ok';
-    const srcLabel = { byname: 'live sheet', export: 'live sheet', gviz: 'live sheet', custom: 'live sheet', kahuna: 'Kahuna results', paste: 'pasted sheet' }[liveInfo.source] || '';
-    pillText = (liveInfo.source === 'paste' ? 'Scores from pasted sheet (' + fmtT(liveInfo.updatedAt) + ')' :
-      'Schedule & scores checked ' + fmtT(liveInfo.updatedAt) + ' — auto-updates every 5 min')
-      + (srcLabel && liveInfo.source !== 'paste' ? ' · ' + srcLabel : '');
-  }
-  // Pulsing broadcast icon — arcs animate while the live feed is healthy.
-  const ico = el('span', { class: 'live-ico', 'aria-hidden': 'true' });
-  ico.innerHTML = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">'
-    + '<circle cx="12" cy="12" r="2.4" fill="currentColor" stroke="none"/>'
-    + '<path class="arc" d="M8.5 8.5a5 5 0 0 0 0 7M15.5 8.5a5 5 0 0 1 0 7"/>'
-    + '<path class="arc arc-outer" d="M5.6 5.6a9 9 0 0 0 0 12.8M18.4 5.6a9 9 0 0 1 0 12.8"/>'
-    + '</svg>';
-  app.appendChild(el('div', { class: pillClass },
-    ico,
-    pillText, ' · ',
-    el('a', { href: '#', onClick: (e) => { e.preventDefault(); fetchLive(true); } }, 'check now'),
   ));
 
   if (adminOpen) app.appendChild(renderAdminPanel());
