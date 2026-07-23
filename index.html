@@ -719,6 +719,8 @@ function setFilterLam(on) {
 const PLAYED_RESULTS = {
   1: 'w', 2: 'w', 3: 'd', 4: 'w', 5: 'w', 6: 'w', 7: 'w', 8: 'd', 9: 'w', 10: 'w',
   11: 'w', 12: 'd', 13: 'w', 14: 'd', 15: 'w', 16: 'w', 17: 'w', 18: 'w', 19: 'w', 20: 'w',
+  21: 'w', 22: 'd', 23: 'w', 24: 'w', 25: 'w', 26: 'd', 27: 'd', 28: 'w', 29: 'd', 30: 'w',
+  31: 'w', 32: 'd', 33: 'w', 34: 'd', 35: 'w', 36: 'd', 38: 'd', 39: 'd', 40: 'w',
 };
 // Final scores keyed by game number: { w: <white goals>, d: <dark goals> }
 const PLAYED_SCORES = {
@@ -727,6 +729,12 @@ const PLAYED_SCORES = {
   9: { w: 23, d: 6 }, 10: { w: 21, d: 3 }, 11: { w: 20, d: 6 }, 12: { w: 5, d: 6 },
   13: { w: 13, d: 5 }, 14: { w: 7, d: 9 }, 15: { w: 11, d: 10 }, 16: { w: 9, d: 7 },
   17: { w: 18, d: 1 }, 18: { w: 18, d: 6 }, 19: { w: 23, d: 0 }, 20: { w: 14, d: 5 },
+  // Decimal scores are the sheet's shootout notation (8.3 = 8 goals, 3 in the shootout).
+  21: { w: 17, d: 7 }, 22: { w: 8, d: 10 }, 23: { w: 15, d: 4 }, 24: { w: 12, d: 11 },
+  25: { w: 7, d: 4 }, 26: { w: 8.3, d: 8.4 }, 27: { w: 6, d: 8 }, 28: { w: 11, d: 7 },
+  29: { w: 11, d: 21 }, 30: { w: 12, d: 6 }, 31: { w: 11, d: 7 }, 32: { w: 3, d: 14 },
+  33: { w: 11, d: 7 }, 34: { w: 8, d: 12 }, 35: { w: 11, d: 7 }, 36: { w: 9, d: 11 },
+  38: { w: 7, d: 18 }, 39: { w: 4, d: 19 }, 40: { w: 5.3, d: 5.1 },
 };
 
 function isGameFinal(num) { return Object.prototype.hasOwnProperty.call(PLAYED_RESULTS, num); }
@@ -773,7 +781,8 @@ function groupOrder(gKey) {
     wins[wName]++;
     const sc = PLAYED_SCORES[num];
     if (sc) {
-      const diff = Math.abs(Number(sc.w) - Number(sc.d));
+      // Floor: decimal scores are shootout notation, a regulation tie (GD 0).
+      const diff = Math.abs(Math.floor(Number(sc.w)) - Math.floor(Number(sc.d)));
       gd[wName] += diff; gd[lName] -= diff;
     }
   }
