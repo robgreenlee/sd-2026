@@ -435,6 +435,75 @@ const VENUES = [
 // results[num] = 'w' | 'd' — which side won game num.
 const state = { results: {} };
 
+// ==================== LIVE SHEET SYNC ====================
+// /api/schedule proxies the published Google Sheet a few times per hour.
+// Finished games become locked FINAL results; matchup/time/venue/routing
+// corrections from the sheet override the static model below.
+let liveInfo = { updatedAt: null, error: null, fetchedAt: 0 };
+
+function parseSheetSlot(s) {
+  const seed = s.match(/^(\d+)-/);
+  if (seed && TEAMS[parseInt(seed[1], 10)]) return parseInt(seed[1], 10);
+  if (/^[WL]\d+$/.test(s)) return s;
+  return null;
+}
+
+function parseSheetDest(s) {
+  if (/^\d+$/.test(s)) return parseInt(s, 10);
+  if (/^(ag|bz)_[A-Z]\d?$/.test(s)) return s;
+  return null;
+}
+
+function prettyVenue(loc) {
+  return loc.toLowerCase().replace(/\b\w/g, c => c.toUpperCase())
+    .replace(/\bHs\b/g, 'HS').replace(/\bCc\b/g, 'CC').replace(/\bUc\b/g, 'UC');
+}
+
+function applyLiveData(data) {
+  (data.games || []).forEach(g => {
+    const model = GAMES[g.n];
+    if (!model) return;
+    if (g.time) model.time = g.time;
+    if (g.loc) {
+      const v = prettyVenue(g.loc);
+      if (v !== model.venue) { model.venue = v; model.venueLive = true; }
+    }
+    const w = parseSheetSlot(g.white), d = parseSheetSlot(g.dark);
+    if (w != null) model.white = w;
+    if (d != null) model.dark = d;
+    const wTo = parseSheetDest(g.wTo), lTo = parseSheetDest(g.lTo);
+    if (wTo != null) model.wTo = wTo;
+    if (lTo != null) model.lTo = lTo;
+    if (g.ws != null && g.ds != null && g.ws !== g.ds) {
+      const side = g.ws > g.ds ? 'w' : 'd';
+      if (state.results[g.n] !== side) clearDownstream(g.n);
+      PLAYED_RESULTS[g.n] = side;
+      PLAYED_SCORES[g.n] = { w: g.ws, d: g.ds };
+    }
+  });
+  state.results = { ...state.results, ...PLAYED_RESULTS };
+}
+
+async function fetchLive(manual) {
+  liveInfo.fetchedAt = Date.now();
+  try {
+    const r = await fetch('api/schedule' + (manual ? '?t=' + Date.now() : ''));
+    const data = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(data.error || ('HTTP ' + r.status));
+    applyLiveData(data);
+    liveInfo.updatedAt = new Date();
+    liveInfo.error = null;
+  } catch (e) {
+    liveInfo.error = e && e.message ? e.message : 'fetch failed';
+  }
+  render();
+}
+
+setInterval(() => fetchLive(false), 5 * 60 * 1000);
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible' && Date.now() - liveInfo.fetchedAt > 2 * 60 * 1000) fetchLive(false);
+});
+
 // "Our games only" filter — device preference, not part of share links.
 const FILTER_KEY = 'jo-filter-lam';
 let filterLam = false;
@@ -649,7 +718,7 @@ function renderGameCard(num) {
         el('span', { class: 'game-id' }, '#' + num),
         isFinal ? el('span', { class: 'final-badge' }, 'FINAL') : null,
       ),
-      el('span', {}, g.time + ' · ' + gmid),
+      el('span', {}, g.time + (g.venueLive ? ' · ' + g.venue : '') + ' · ' + gmid),
     ),
     el('div', { class: 'team-row' },
       sideBtn('w', whiteName, g.white),
@@ -722,12 +791,21 @@ function render() {
     ),
   ));
 
+  app.appendChild(el('p', { class: 'subtitle', style: { margin: '2px 0 0' } },
+    liveInfo.updatedAt
+      ? ['Scores & schedule auto-update from the JO sheet · updated ' + liveInfo.updatedAt.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }) + ' · ']
+      : liveInfo.error
+        ? ['Live scores unavailable (manual mode) · ']
+        : ['Loading live scores from the JO sheet… · '],
+    el('a', { href: '#', onClick: (e) => { e.preventDefault(); fetchLive(true); } }, 'refresh now'),
+  ));
+
   app.appendChild(renderLamPath());
 
   app.appendChild(el('div', { class: 'warn-callout' },
     el('strong', {}, 'Bracket notes: '),
     'Day 1 (Thu) is modeled below — each group of four plays a mini-bracket, winners feed the Day 2 upper-bracket groups, losers the lower-bracket groups. ',
-    'Beckman HS 1 pairings are inferred from the sheet’s game routing and could shift — confirm times on the sheet the night before. ',
+    'Finished games lock in automatically from the sheet with a FINAL badge; matchup, time, and venue corrections flow in the same way. ',
     'Day 2 groups appear as you click; Day 3–4 placement brackets get added once that part of the schedule is published.',
   ));
 
@@ -783,6 +861,7 @@ if (!decodeStateFromHash()) {
 }
 render();
 renderVenues();
+fetchLive(false);
 
 window.addEventListener('hashchange', () => {
   if (decodeStateFromHash()) render();
