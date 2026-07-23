@@ -412,20 +412,39 @@ function todayStr() {
   return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate());
 }
 
+// LAMO B-team roster for the 2026 Junior Olympics — edit freely on the Players tab.
+const ROSTER_SEED = [
+  ['1', 'Benjamin Eastep'], ['2', 'Beckett Bravo'], ['3', 'Owen DeShazer'],
+  ['5', 'Jackson Greenlee'], ['6', 'Bryce Jaeger'], ['7', 'Jai Merlo'],
+  ['8', 'Evan Nguyen'], ['9', 'Jackson Pangilinan'], ['10', 'Xavier Portet'],
+  ['11', 'Brayden Hayes'], ['12', 'Blake Hartley'], ['14', 'Coulter Isenburg'],
+  ['15', 'Anthony Patroni'],
+];
+
 function defaultDB() {
-  // Roster seeded from the June 2026 paper stat sheet — edit freely on the Players tab.
-  const seed = [
-    ['2', 'Beckett Bravo'], ['3', 'Owen DeShazer'], ['4', 'Ben Eastep'],
-    ['6', 'Jackson Greenlee'], ['7', 'Brayden Hayes'], ['8', 'Jai Merlo'],
-    ['9', 'Coulter Isenburg'], ['10', 'Evan Nguyen'], ['11', 'Jackson Pangilinan'],
-    ['12', 'Xavier Portet'], ['14', 'Bryce Jaeger'], ['15', 'John Endemann'],
-  ];
   return {
     version: 1,
-    settings: { team: 'LAMO', season: 'Summer 2026' },
-    players: seed.map(([cap, name]) => ({ id: uid(), cap, name, active: true })),
+    settings: { team: 'LAMO', season: 'JOs 2026' },
+    players: ROSTER_SEED.map(([cap, name]) => ({ id: uid(), cap, name, active: true })),
     games: [],
   };
+}
+
+// A device that still holds the untouched pre-JO default roster (and no games)
+// silently picks up the current seed; any recorded data blocks the swap.
+const OLD_SEED_NAMES = [
+  'Beckett Bravo', 'Owen DeShazer', 'Ben Eastep', 'Jackson Greenlee', 'Brayden Hayes',
+  'Jai Merlo', 'Coulter Isenburg', 'Evan Nguyen', 'Jackson Pangilinan', 'Xavier Portet',
+  'Bryce Jaeger', 'John Endemann',
+];
+function migrateStaleSeed(obj) {
+  if (obj.games.length) return obj;
+  const names = obj.players.map(p => p.name).sort().join('|');
+  if (names === OLD_SEED_NAMES.slice().sort().join('|')) {
+    obj.players = ROSTER_SEED.map(([cap, name]) => ({ id: uid(), cap, name, active: true }));
+    if (obj.settings && obj.settings.season === 'Summer 2026') obj.settings.season = 'JOs 2026';
+  }
+  return obj;
 }
 
 let db = loadDB();
@@ -437,7 +456,7 @@ function loadDB() {
     const obj = JSON.parse(raw);
     if (!obj || !Array.isArray(obj.players) || !Array.isArray(obj.games)) return defaultDB();
     obj.settings = obj.settings || { team: 'LAMO', season: '' };
-    return obj;
+    return migrateStaleSeed(obj);
   } catch (e) { return defaultDB(); }
 }
 
