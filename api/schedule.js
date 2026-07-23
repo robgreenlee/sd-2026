@@ -8,8 +8,12 @@
 
 const SHEET_ID = '1ycEOkayVwo_h37vL98PTXbzEnBpRU_-3S9l6NeiwCc4';
 const GID = '727959574'; // 14U_Men_Classic tab
-const CSV_URL = process.env.SCHEDULE_CSV_URL
-  || 'https://docs.google.com/spreadsheets/d/' + SHEET_ID + '/export?format=csv&gid=' + GID;
+// Two anonymous CSV endpoints — link-shared sheets sometimes allow one but
+// not the other, so try both.
+const CSV_URLS = process.env.SCHEDULE_CSV_URL ? [process.env.SCHEDULE_CSV_URL] : [
+  'https://docs.google.com/spreadsheets/d/' + SHEET_ID + '/export?format=csv&gid=' + GID,
+  'https://docs.google.com/spreadsheets/d/' + SHEET_ID + '/gviz/tq?tqx=out:csv&gid=' + GID,
+];
 
 // Minimal CSV parser (handles quoted cells and embedded commas/newlines).
 function parseCSV(text) {
@@ -68,16 +72,31 @@ function parseGames(csv) {
 }
 
 module.exports = async (req, res) => {
-  try {
-    const r = await fetch(CSV_URL, { redirect: 'follow' });
-    if (!r.ok) throw new Error('sheet returned ' + r.status);
-    const csv = await r.text();
-    const games = parseGames(csv);
-    if (!games.length) throw new Error('no 14BX games found in the sheet');
-    res.setHeader('Cache-Control', 's-maxage=300, stale-while-revalidate=600');
-    return res.status(200).json({ updatedAt: Date.now(), games });
-  } catch (e) {
-    res.setHeader('Cache-Control', 'no-store');
-    return res.status(502).json({ error: 'Could not load the schedule sheet: ' + (e && e.message ? e.message : 'unknown error') });
+  const attempts = [];
+  for (const url of CSV_URLS) {
+    const label = url.indexOf('/gviz/') >= 0 ? 'gviz' : url.indexOf('/export') >= 0 ? 'export' : 'custom';
+    try {
+      const r = await fetch(url, { redirect: 'follow' });
+      const text = await r.text();
+      const games = r.ok ? parseGames(text) : [];
+      if (r.ok && games.length) {
+        res.setHeader('Cache-Control', 's-maxage=300, stale-while-revalidate=600');
+        return res.status(200).json({ updatedAt: Date.now(), games, source: label });
+      }
+      attempts.push({
+        source: label,
+        status: r.status,
+        contentType: String((r.headers && r.headers.get && r.headers.get('content-type')) || ''),
+        snippet: text.slice(0, 120),
+        reason: !r.ok ? 'HTTP ' + r.status : 'no 14BX rows parsed',
+      });
+    } catch (e) {
+      attempts.push({ source: label, reason: 'fetch failed: ' + (e && e.message ? e.message : 'unknown') });
+    }
   }
+  res.setHeader('Cache-Control', 'no-store');
+  const summary = attempts.map(a => a.source + ': ' + a.reason).join(' · ');
+  const body = { error: 'Could not load the schedule sheet — ' + (summary || 'no endpoints tried') };
+  if (String(req.url || '').indexOf('debug=1') >= 0) body.attempts = attempts;
+  return res.status(502).json(body);
 };
