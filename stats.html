@@ -1188,7 +1188,7 @@ function renderGameView(app, gameId) {
       el('input', { type: 'number', min: '0', value: g.scoreUs, placeholder: 'Us', disabled: locked, onInput: bind('scoreUs') }),
       el('span', { class: 'muted' }, '–'),
       el('input', { type: 'number', min: '0', value: g.scoreThem, placeholder: 'Them', disabled: locked, onInput: bind('scoreThem') }),
-      el('span', { class: 'muted', style: { fontSize: '11px' } }, goalsTallied ? '(' + goalsTallied + ' goals tallied below)' : ''),
+      el('span', { class: 'muted', id: 'goals-tallied-hint', style: { fontSize: '11px' } }, goalsTallied ? '(' + goalsTallied + ' goals tallied below)' : ''),
     ),
   ));
   details.appendChild(el('div', { class: 'form-row' },
@@ -1277,12 +1277,30 @@ function renderGameView(app, gameId) {
       return el('td', {}, el('button', {
         class: 'tally-cell' + (v === 0 ? ' zero' : ''),
         disabled: locked,
-        onClick: () => {
+        onClick: (e) => {
           if (locked) return;
-          mutate(() => {
-            const ln = gameLine(g, p.id);
-            ln[statKey] = Math.max(0, (ln[statKey] || 0) + (correctionMode ? -1 : 1));
-          });
+          // In-place update — no re-render, so the table never scrolls away
+          // from the cell being tapped.
+          const ln = gameLine(g, p.id);
+          ln[statKey] = Math.max(0, (ln[statKey] || 0) + (correctionMode ? -1 : 1));
+          saveDB();
+          const nv = ln[statKey] || 0;
+          const btn = e.currentTarget;
+          btn.textContent = nv === 0 ? '–' : nv;
+          btn.classList.toggle('zero', nv === 0);
+          const totalCell = document.getElementById('total-' + statKey);
+          if (totalCell) {
+            totalCell.textContent = g.roster.reduce((n, pid) => n + ((g.stats[pid] && g.stats[pid][statKey]) || 0), 0);
+          }
+          if (statKey === 'gl') {
+            const hint = document.getElementById('goals-tallied-hint');
+            if (hint) {
+              const tot = g.roster.reduce((n, pid) => n + ((g.stats[pid] && g.stats[pid].gl) || 0), 0);
+              hint.textContent = tot ? '(' + tot + ' goals tallied below)' : '';
+            }
+          }
+          const sum = document.getElementById('game-summary-text');
+          if (sum) sum.textContent = gameSummaryText(g);
         }
       }, v === 0 ? '–' : v));
     };
@@ -1310,8 +1328,8 @@ function renderGameView(app, gameId) {
     const totals = sumLines(rosterPlayers.map(p => g.stats[p.id]));
     tbody.appendChild(el('tr', { class: 'totals-row' },
       el('td', { class: 'name-cell' }, 'Team total'),
-      ...STATS.map(s => el('td', {}, totals[s.key] || 0)),
-      ...GK_STATS.map(s => el('td', {}, totals[s.key] || 0)),
+      ...STATS.map(s => el('td', { id: 'total-' + s.key }, totals[s.key] || 0)),
+      ...GK_STATS.map(s => el('td', { id: 'total-' + s.key }, totals[s.key] || 0)),
     ));
 
     table.appendChild(tbody);
@@ -1830,7 +1848,22 @@ function renderBoxData(app, d) {
     'Read-only box score shared from the ' + (d.team || 'team') + ' stat tracker.'));
 }
 
+// Full re-render, preserving scroll positions (page + scrollable tables) so
+// actions that rebuild the view — GK toggle, roster edits, lock/unlock —
+// don't jump the user away from where they were tapping.
 function render() {
+  const winY = window.scrollY;
+  const tableScroll = Array.from(document.querySelectorAll('.table-wrap'))
+    .map(w => ({ top: w.scrollTop, left: w.scrollLeft }));
+  renderApp();
+  const wraps = document.querySelectorAll('.table-wrap');
+  tableScroll.forEach((s, i) => {
+    if (wraps[i]) { wraps[i].scrollTop = s.top; wraps[i].scrollLeft = s.left; }
+  });
+  window.scrollTo(0, winY);
+}
+
+function renderApp() {
   const route = currentRoute();
   document.body.classList.toggle('correcting', correctionMode && route.view === 'game');
   const app = document.getElementById('app');
