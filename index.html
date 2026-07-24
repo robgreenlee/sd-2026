@@ -418,8 +418,8 @@ const GAMES = {
   // Days 2-4 (structure mirrored from the published 14B tab — same format,
   // pt/au there = ag/bz here). Venues TBD until the 14BX rows publish; the
   // live feed overrides time/venue/matchups automatically once they do.
-  61: { time: '7:00 AM', venue: 'TBD', white: 'W43', dark: 'W27', label: 'Silver group M' },
-  65: { time: '7:50 AM', venue: 'TBD', white: 'W35', dark: 'W28', label: 'Silver group N' },
+  61: { time: '7:00 AM', venue: 'Ocean View HS 1', white: 'W43', dark: 'W27', label: 'Silver group M' },
+  65: { time: '7:50 AM', venue: 'Ocean View HS 1', white: 'W35', dark: 'W28', label: 'Silver group N' },
   69: { time: '8:40 AM', venue: 'TBD', white: 'W60', dark: 'W54', label: 'Silver group S' },
   73: { time: '9:30 AM', venue: 'TBD', white: 'W56', dark: 'W58', label: 'Silver group R' },
   77: { time: '10:20 AM', venue: 'TBD', white: 'W33', dark: 'W27', label: 'Silver group M' },
@@ -430,8 +430,8 @@ const GAMES = {
   97: { time: '2:30 PM', venue: 'TBD', white: 'W41', dark: 'W35', label: 'Silver group N' },
   101: { time: '3:20 PM', venue: 'TBD', white: 'W54', dark: 'W50', label: 'Silver group S' },
   105: { time: '4:10 PM', venue: 'TBD', white: 'W58', dark: 'W49', label: 'Silver group R' },
-  62: { time: '7:00 AM', venue: 'TBD', white: 'W42', dark: 'W36', label: 'Silver group O' },
-  66: { time: '7:50 AM', venue: 'TBD', white: 'W34', dark: 'W44', label: 'Silver group P' },
+  62: { time: '7:00 AM', venue: 'Tustin HS 1', white: 'W42', dark: 'W36', label: 'Silver group O' },
+  66: { time: '7:50 AM', venue: 'Tustin HS 1', white: 'W34', dark: 'W44', label: 'Silver group P' },
   70: { time: '8:40 AM', venue: 'TBD', white: 'W52', dark: 'W55', label: 'Silver group U' },
   74: { time: '9:30 AM', venue: 'TBD', white: 'W51', dark: 'W59', label: 'Silver group T' },
   78: { time: '10:20 AM', venue: 'TBD', white: 'W25', dark: 'W36', label: 'Silver group O' },
@@ -442,8 +442,8 @@ const GAMES = {
   98: { time: '2:30 PM', venue: 'TBD', white: 'W26', dark: 'W34', label: 'Silver group P' },
   102: { time: '3:20 PM', venue: 'TBD', white: 'W55', dark: 'W57', label: 'Silver group U' },
   106: { time: '4:10 PM', venue: 'TBD', white: 'W59', dark: 'W53', label: 'Silver group T' },
-  63: { time: '7:00 AM', venue: 'TBD', white: 'L40', dark: 'L46', label: 'Bronze group S' },
-  67: { time: '7:50 AM', venue: 'TBD', white: 'L48', dark: 'L38', label: 'Bronze group R' },
+  63: { time: '7:00 AM', venue: 'Brea Olinda HS', white: 'L40', dark: 'L46', label: 'Bronze group S' },
+  67: { time: '7:50 AM', venue: 'Brea Olinda HS', white: 'L48', dark: 'L38', label: 'Bronze group R' },
   71: { time: '8:40 AM', venue: 'TBD', white: 'L59', dark: 'L51', label: 'Bronze group M' },
   75: { time: '9:30 AM', venue: 'TBD', white: 'L55', dark: 'L52', label: 'Bronze group N' },
   79: { time: '10:20 AM', venue: 'TBD', white: 'L40', dark: 'L29', label: 'Bronze group S' },
@@ -454,7 +454,7 @@ const GAMES = {
   99: { time: '2:30 PM', venue: 'TBD', white: 'L38', dark: 'L30', label: 'Bronze group R' },
   103: { time: '3:20 PM', venue: 'TBD', white: 'L53', dark: 'L59', label: 'Bronze group M' },
   107: { time: '4:10 PM', venue: 'TBD', white: 'L57', dark: 'L55', label: 'Bronze group N' },
-  64: { time: '7:00 AM', venue: 'TBD', white: 'L31', dark: 'L47', label: 'Bronze group U' },
+  64: { time: '7:00 AM', venue: 'Esperanza HS', white: 'L31', dark: 'L47', label: 'Bronze group U' },
   68: { time: '7:50 AM', venue: 'TBD', white: 'L32', dark: 'L39', label: 'Bronze group T' },
   72: { time: '8:40 AM', venue: 'TBD', white: 'L58', dark: 'L56', label: 'Bronze group O' },
   76: { time: '9:30 AM', venue: 'TBD', white: 'L54', dark: 'L60', label: 'Bronze group P' },
@@ -626,6 +626,7 @@ const VENUES = [
   { kind: 'venue', name: 'Yorba Linda High School', aliases: 'Yorba Linda HS', address: '19900 Bastanchury Rd, Yorba Linda, CA 92886' },
   { kind: 'venue', name: 'Ocean View High School', aliases: 'Ocean View HS 1', address: '17071 Gothard St, Huntington Beach, CA 92647' },
   { kind: 'venue', name: 'Newport Harbor High School', aliases: 'Newport Harbor HS', address: '600 Irvine Ave, Newport Beach, CA 92663' },
+  { kind: 'venue', name: 'Tustin High School', aliases: 'Tustin HS 1', address: '1171 El Camino Real, Tustin, CA 92780' },
 ];
 
 // ==================== STATE ====================
@@ -720,7 +721,10 @@ const PLAYED_RESULTS = {
   1: 'w', 2: 'w', 3: 'd', 4: 'w', 5: 'w', 6: 'w', 7: 'w', 8: 'd', 9: 'w', 10: 'w',
   11: 'w', 12: 'd', 13: 'w', 14: 'd', 15: 'w', 16: 'w', 17: 'w', 18: 'w', 19: 'w', 20: 'w',
   21: 'w', 22: 'd', 23: 'w', 24: 'w', 25: 'w', 26: 'd', 27: 'd', 28: 'w', 29: 'd', 30: 'w',
-  31: 'w', 32: 'd', 33: 'w', 34: 'd', 35: 'w', 36: 'd', 38: 'd', 39: 'd', 40: 'w',
+  31: 'w', 32: 'd', 33: 'w', 34: 'd', 35: 'w', 36: 'd', 37: 'w', 38: 'd', 39: 'd', 40: 'w',
+  41: 'w', 42: 'w', 43: 'w', 44: 'w', 45: 'd', 46: 'd', 47: 'd', 48: 'w', 49: 'w', 50: 'd',
+  51: 'd', 52: 'd', 53: 'w', 54: 'w', 55: 'w', 56: 'd', 57: 'w', 58: 'w', 59: 'w', 60: 'w',
+  61: 'w', 62: 'd', 63: 'w', 64: 'w',
 };
 // Final scores keyed by game number: { w: <white goals>, d: <dark goals> }
 const PLAYED_SCORES = {
@@ -735,6 +739,15 @@ const PLAYED_SCORES = {
   29: { w: 11, d: 21 }, 30: { w: 12, d: 6 }, 31: { w: 11, d: 7 }, 32: { w: 3, d: 14 },
   33: { w: 11, d: 7 }, 34: { w: 8, d: 12 }, 35: { w: 11, d: 7 }, 36: { w: 9, d: 11 },
   38: { w: 7, d: 18 }, 39: { w: 4, d: 19 }, 40: { w: 5.3, d: 5.1 },
+  // Games 37 and 41–43 finished but their scores weren't published — only the
+  // winners (implied by the later-round matchups), so they have results above
+  // but no score entry here.
+  44: { w: 9, d: 8 }, 45: { w: 5, d: 16 }, 46: { w: 5, d: 18 }, 47: { w: 10, d: 19 },
+  48: { w: 11, d: 8 }, 49: { w: 12.7, d: 12.6 }, 50: { w: 7, d: 8 }, 51: { w: 5, d: 12 },
+  52: { w: 4, d: 5 }, 53: { w: 14, d: 5 }, 54: { w: 11, d: 8 }, 55: { w: 18, d: 4 },
+  56: { w: 6, d: 12 }, 57: { w: 13, d: 9 }, 58: { w: 7, d: 6 }, 59: { w: 9, d: 3 },
+  60: { w: 11, d: 10 }, 61: { w: 10, d: 4 }, 62: { w: 5, d: 7 }, 63: { w: 15, d: 9 },
+  64: { w: 16, d: 7 },
 };
 
 function isGameFinal(num) { return Object.prototype.hasOwnProperty.call(PLAYED_RESULTS, num); }
