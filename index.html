@@ -728,7 +728,8 @@ const PLAYED_RESULTS = {
   51: 'd', 52: 'd', 53: 'w', 54: 'w', 55: 'w', 56: 'd', 57: 'w', 58: 'w', 59: 'w', 60: 'w',
   61: 'w', 62: 'd', 63: 'w', 64: 'w', 65: 'w', 66: 'w', 67: 'w', 68: 'w', 69: 'w', 70: 'd',
   71: 'd', 72: 'w', 73: 'w', 74: 'w', 75: 'd', 76: 'w', 77: 'w', 78: 'w', 79: 'w', 80: 'w',
-  81: 'd',
+  81: 'd', 82: 'd', 83: 'w', 84: 'w', 85: 'w', 86: 'w', 87: 'd', 88: 'w', 89: 'w', 90: 'w',
+  91: 'd', 92: 'w', 93: 'w', 94: 'w', 95: 'w', 96: 'd', 97: 'd', 98: 'w', 99: 'd', 100: 'w',
 };
 // Final scores keyed by game number: { w: <white goals>, d: <dark goals> }
 const PLAYED_SCORES = {
@@ -755,7 +756,12 @@ const PLAYED_SCORES = {
   68: { w: 16, d: 6 }, 69: { w: 13, d: 8 }, 70: { w: 4, d: 18 }, 71: { w: 8, d: 13 },
   72: { w: 9, d: 8 }, 73: { w: 7, d: 6 }, 74: { w: 9.4, d: 9.2 }, 75: { w: 3, d: 5 },
   76: { w: 6.4, d: 6.2 }, 77: { w: 8.5, d: 8.4 }, 78: { w: 11, d: 4 }, 79: { w: 16, d: 2 },
-  80: { w: 10, d: 6 }, 81: { w: 7, d: 12 },
+  80: { w: 10, d: 6 }, 81: { w: 7, d: 12 }, 82: { w: 9, d: 10 }, 83: { w: 12, d: 10 },
+  84: { w: 18, d: 6 }, 85: { w: 14, d: 10 }, 86: { w: 6, d: 1 }, 87: { w: 8, d: 10 },
+  88: { w: 12, d: 9 }, 89: { w: 7, d: 4 }, 90: { w: 17, d: 8 }, 91: { w: 6, d: 11 },
+  92: { w: 11, d: 5 }, 93: { w: 11, d: 10 }, 94: { w: 15, d: 4 }, 95: { w: 11, d: 6 },
+  96: { w: 9, d: 14 }, 97: { w: 9, d: 15 }, 98: { w: 5.3, d: 5.2 }, 99: { w: 4, d: 22 },
+  100: { w: 17, d: 4 },
 };
 
 function isGameFinal(num) { return Object.prototype.hasOwnProperty.call(PLAYED_RESULTS, num); }
@@ -877,9 +883,6 @@ function lamTrace() {
   return { path, terminal };
 }
 
-// Games shown in "our games only" mode: Lamorinda's traced path plus the
-// transitive closure of games its slots depend on — so the opponent of each
-// path game can still be resolved without leaving the filtered view.
 // Lamorinda's next unplayed game (any day) where both slots resolve.
 function lamNextGameNum() {
   const nums = Object.keys(GAMES).map(Number).sort((a, b) => a - b);
@@ -908,22 +911,34 @@ function lamPlacement() {
 }
 
 function lamVisibleGames() {
+  // Seeds: every game Lamorinda is actually in (played or upcoming), plus its
+  // current group's round robin — those three decide Lamorinda's placement.
+  const seeds = new Set(lamTrace().path);
+  Object.keys(GAMES).map(Number).forEach(num => {
+    const g = GAMES[num];
+    if (resolveSlot(g.white) === LAM || resolveSlot(g.dark) === LAM) seeds.add(num);
+  });
+  const terminal = lamTrace().terminal;
+  const gKey = terminal ? String(terminal).replace(/[123]$/, '') : null;
+  if (gKey && GROUP_GAMES[gKey]) GROUP_GAMES[gKey].forEach(n => seeds.add(n));
+
+  // Then pull in feeder games only while they're still undecided — those are
+  // the ones a pending opponent is waiting on, so they have to stay pickable
+  // from inside the filtered view. Once a feeder is FINAL its result is
+  // already baked into the slots above it, so showing it is just noise.
   const set = new Set();
-  const addWithDeps = (num) => {
-    if (set.has(num)) return;
+  const add = (num, isSeed) => {
+    if (set.has(num) || !GAMES[num]) return;
+    if (!isSeed && state.results[num]) return;
     set.add(num);
     [GAMES[num].white, GAMES[num].dark].forEach(slot => {
       let m = String(slot).match(/^[WL](\d+)$/);
-      if (m) { addWithDeps(Number(m[1])); return; }
+      if (m) { add(Number(m[1]), false); return; }
       m = String(slot).match(/^P[123]@(\w+)$/);
-      if (m && GROUP_GAMES[m[1]]) GROUP_GAMES[m[1]].forEach(addWithDeps);
+      if (m && GROUP_GAMES[m[1]]) GROUP_GAMES[m[1]].forEach(n => add(n, false));
     });
   };
-  lamTrace().path.forEach(addWithDeps);
-  Object.keys(GAMES).map(Number).forEach(num => {
-    const g = GAMES[num];
-    if (resolveSlot(g.white) === LAM || resolveSlot(g.dark) === LAM) addWithDeps(num);
-  });
+  seeds.forEach(num => add(num, true));
   return set;
 }
 
